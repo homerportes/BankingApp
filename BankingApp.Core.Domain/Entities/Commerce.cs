@@ -4,12 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BankingApp.Core.Domain.Common.Enums
+namespace BankingApp.Core.Domain.Entities
 {
-    public enum AppRoles
+    internal class Commerce
     {
-        ADMIN =1,
-        TELLER,
-        CLIENT
     }
 }

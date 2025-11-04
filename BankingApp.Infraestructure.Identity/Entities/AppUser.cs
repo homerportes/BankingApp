@@ -8,5 +8,9 @@ namespace BankingApp.Infraestructure.Identity.Entities
     {
         public required string Name { get; set; }
         public required string LastName { get; set; }
+        public required string DocumentIdNumber { get; set; }
+
+        public bool IsActive { get; set; }
+
     }
 }

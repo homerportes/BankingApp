@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 
 namespace BankingApp.Core.Domain.Common.Enums
 {
-    public enum AppRoles
+    public enum AccountType
     {
-        ADMIN =1,
-        TELLER,
-        CLIENT
+        PRIMARY=1,
+        SECONDARY
     }
 }
