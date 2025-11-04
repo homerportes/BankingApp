@@ -16,6 +16,6 @@ namespace BankingApp.Core.Domain.Entities
         public required  string ClientId { get; set; }    
         public Decimal Balance { get; set; }
         public AccountType Type { get; set; }
-
+        public ICollection<Transaction>? Transactions { get; set; }
     }
 }

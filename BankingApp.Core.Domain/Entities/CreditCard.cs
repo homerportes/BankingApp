@@ -32,7 +32,7 @@ namespace BankingApp.Core.Domain.Entities
         public required string AdminId { get; set; }
 
 
-        public ICollection<Purchase>? Transactions { get; set; }
+        public ICollection<Purchase>? Purchases { get; set; }
 
     }
 }
