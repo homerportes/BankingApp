@@ -6,9 +6,6 @@ namespace BankingApi.Controllers
     [ApiController]
     public class BaseApiController : Controller
     {
-        public IActionResult Index()
-        {
-            return View();
-        }
+       
     }
 }

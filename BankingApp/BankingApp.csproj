@@ -11,7 +11,6 @@
     <Folder Include="Areas\Accounts\Views\" />
     <Folder Include="Areas\Admin\Controllers\" />
     <Folder Include="Areas\Admin\Views\" />
-    <Folder Include="Areas\Api\Controllers\" />
     <Folder Include="Areas\Customer\Controllers\" />
     <Folder Include="Areas\Customer\Views\" />
     <Folder Include="Areas\Teller\Controllers\" />

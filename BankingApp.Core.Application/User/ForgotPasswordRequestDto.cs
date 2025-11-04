@@ -9,6 +9,6 @@ namespace BankingApp.Core.Application.User
     public class ForgotPasswordRequestDto
     {
         public required string Username {  get; set; }
-        public required string Origin { get; set; }
+        public  string ?Origin { get; set; }
     }
 }

@@ -1,6 +1,7 @@
 using BankingApp.Core.Application.LayerConfigurations;
 using BankingApp.Infraestructure.Identity.LayerConfigurations;
 using BankingApp.Infraestructure.Persistence.LayerConfigurations;
+using BankingApp.Infraestructure.Shared.LayerConfigurations;
 
 var builder = WebApplication.CreateBuilder(args);
 

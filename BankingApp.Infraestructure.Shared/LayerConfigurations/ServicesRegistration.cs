@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BankingApp.Core.Application.LayerConfigurations
+namespace BankingApp.Infraestructure.Shared.LayerConfigurations
 {
     public static class ServicesRegistration
     {

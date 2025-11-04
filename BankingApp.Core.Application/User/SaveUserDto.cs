@@ -23,7 +23,6 @@ namespace BankingApp.Core.Application.User
         public required string PhoneNumber { get; set; }
         public required string LastName { get; set; }
 
-        public required string ProfileImageUrl { get; set; }
 
 
     }

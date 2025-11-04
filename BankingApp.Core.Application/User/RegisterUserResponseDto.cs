@@ -15,13 +15,10 @@ namespace BankingApp.Core.Application.User
 
         public required string Email { get; set; }
 
-        public required string Role { get; set; }
         public bool IsVerified { get; set; }
         public required string Name { get; set; }
 
-        public required string PhoneNumber { get; set; }
         public required string LastName { get; set; }
-        public required string ProfileImageUrl { get; set; }
-
+        public  List<string>? Roles { get; set; }
     }
 }

@@ -16,5 +16,7 @@ namespace BankingApp.Core.Application.Dtos.Login
         public bool IsVerified { get; set; }
         public bool HasError { get; set; }
         public string ? Error {  get; set; }
+        public string? Token { get; set; }
+
     }
 }

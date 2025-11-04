@@ -6,11 +6,10 @@ using System.Threading.Tasks;
 
 namespace BankingApp.Core.Application.User
 {
-    public class UserResponseDto
+    public class JwtResponseDto
     {
         public bool HasError { get; set; }
-        public List<string>? Errors { get; set; }
-        public string Message { get; set; }
+        public string? Error { get; set; }
 
     }
 }
