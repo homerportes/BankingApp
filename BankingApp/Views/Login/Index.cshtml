@@ -1,7 +1,71 @@
-﻿
+
+@model BankingApp.Core.Application.ViewModels.User.LoginViewModel
+
 @{
+    ViewData["Title"] = "Iniciar Sesión";
+    Layout = "_LayoutAnonymous";
+}
 
-    Layout = "_AdminLayout";
+<div class="container d-flex align-items-center justify-content-center min-vh-100">
+    <div class="col-12 col-sm-10 col-md-6 col-lg-5 col-xl-4">
+        <div class="card shadow-lg border-0 rounded-4">
+            <div class="card-header bg-primary text-white text-center py-3 rounded-top-4">
+                <h5 class="mb-0">🏦 Iniciar Sesión</h5>
+            </div>
+            <div class="card-body p-4">
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        @TempData["Success"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
 
+                @if (Model?.HasError == true)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        @Model.Error
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
 
+                <form asp-controller="Login" asp-action="Index" method="post">
+                    <div class="mb-3">
+                        <label asp-for="UserName" class="form-label">Nombre de Usuario</label>
+                        <input asp-for="UserName" class="form-control" placeholder="Ingresa tu usuario" />
+                        <span asp-validation-for="UserName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label">Contraseña</label>
+                        <input asp-for="Password" type="password" class="form-control" placeholder="Ingresa tu contraseña" />
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                    </div>
+
+                    <div class="text-end mb-3">
+                        <a asp-controller="Login" asp-action="ForgotPassword" class="text-decoration-none small">
+                            ¿Olvidaste tu contraseña?
+                        </a>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-2">Iniciar Sesión</button>
+                </form>
+
+                <hr class="my-4" />
+
+                <div class="text-center">
+                    <p class="mb-0">
+                        ¿No tienes una cuenta?
+                        <a asp-controller="Login" asp-action="Register" class="text-decoration-none fw-bold">
+                            Regístrate aquí
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
 }

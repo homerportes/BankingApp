@@ -1,4 +1,4 @@
-﻿using BankingApp.Core.Application.User;
+﻿using BankingApp.Core.Application.Dtos.User;
 
 namespace BankingApp.Core.Application.Interfaces
 {
