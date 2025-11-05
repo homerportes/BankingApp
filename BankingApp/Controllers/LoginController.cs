@@ -223,7 +223,7 @@ namespace BankingApp.Controllers
             UserResponseDto returnUser = await _accountServiceForWebApp.ResetPasswordAsync(dto);
 
             if (returnUser.HasError)
-            {
+        {
                 vm.HasError = true;
                 vm.Error = string.Join(", ", returnUser.Errors ?? new List<string>());
                 vm.Password = "";
