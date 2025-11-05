@@ -8,12 +8,14 @@
 
   <ItemGroup>
     <Content Remove="Areas\Shared\_AdminLayout.cshtml" />
+    <Content Remove="Areas\Shared\_ATMLayout.cshtml" />
     <Content Remove="Areas\Shared\_ClientLayout.cshtml" />
     <Content Remove="Areas\Shared\_FormLayout.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Include="Areas\Shared\_AdminLayout.cshtml" />
+    <Compile Include="Areas\Shared\_ATMLayout.cshtml" />
     <Compile Include="Areas\Shared\_ClientLayout.cshtml" />
     <Compile Include="Areas\Shared\_FormLayout.cshtml" />
   </ItemGroup>
