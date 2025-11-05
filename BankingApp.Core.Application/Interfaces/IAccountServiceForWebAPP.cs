@@ -1,6 +1,5 @@
 ﻿using BankingApp.Core.Application.Dtos.Email;
 using BankingApp.Core.Application.Dtos.Login;
-using BankingApp.Core.Application.User;
 
 namespace BankingApp.Core.Application.Interfaces
 {

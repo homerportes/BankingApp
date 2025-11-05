@@ -1,4 +1,5 @@
-﻿using BankingApp.Core.Application.Interfaces;
+﻿using BankingApp.Core.Application.Dtos.User;
+using BankingApp.Core.Application.Interfaces;
 using BankingApp.Core.Domain.Settings;
 using BankingApp.Infraestructure.Identity.Contexts;
 using BankingApp.Infraestructure.Identity.Entities;
