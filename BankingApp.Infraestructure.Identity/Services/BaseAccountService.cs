@@ -1,8 +1,7 @@
 ﻿using BankingApp.Core.Application.Dtos.Email;
+using BankingApp.Core.Application.Dtos.User;
 using BankingApp.Core.Application.Interfaces;
-using BankingApp.Core.Application.User;
 using BankingApp.Infraestructure.Identity.Entities;
-using BankingApp.Infraestructure.Identity.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +28,9 @@ namespace InvestmentApp.Infrastructure.Identity.Services
                 LastName = "",
                 Name = "",
                 UserName = "",
+                IsVerified = false,
+                Roles = [],
+                DocumentIdNumber = "",
                 HasError = false,
                 Errors = []
             };
@@ -56,26 +58,53 @@ namespace InvestmentApp.Infrastructure.Identity.Services
                 Email = saveDto.Email,
                 UserName = saveDto.UserName,
                 EmailConfirmed = false,
-                PhoneNumber = saveDto.PhoneNumber
+                DocumentIdNumber = saveDto.DocumentIdNumber,
             };
 
             var result = await _userManager.CreateAsync(user, saveDto.Password);
             if (result.Succeeded)
             {
                 await _userManager.AddToRoleAsync(user, saveDto.Role);
+                
                 if (isApi != null && !isApi.Value)
                 {
                     string verificationUri = await GetVerificationEmailUri(user, origin ?? "");
+                    
+                    string emailBody = $@"
+                        <html>
+                        <body style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>
+                            <div style='max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa; border-radius: 10px;'>
+                                <div style='background-color: #003d82; color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0;'>
+                                    <h1 style='margin: 0;'>Banking App</h1>
+                                </div>
+                                <div style='background-color: white; padding: 30px; border-radius: 0 0 10px 10px;'>
+                                    <h2 style='color: #003d82;'>¡Bienvenido {user.Name}!</h2>
+                                    <p>Gracias por registrarte en Banking App. Para completar tu registro y activar tu cuenta, por favor confirma tu dirección de correo electrónico.</p>
+                                    <div style='text-align: center; margin: 30px 0;'>
+                                        <a href='{verificationUri}' style='background-color: #2c9fa3; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;'>
+                                            Confirmar mi cuenta
+                                        </a>
+                                    </div>
+                                    <p style='color: #666; font-size: 14px;'>Si el botón no funciona, copia y pega este enlace en tu navegador:</p>
+                                    <p style='background-color: #f8f9fa; padding: 10px; border-radius: 5px; word-break: break-all; font-size: 12px;'>{verificationUri}</p>
+                                    <hr style='border: none; border-top: 1px solid #ddd; margin: 30px 0;'>
+                                    <p style='color: #999; font-size: 12px; text-align: center;'>Si no solicitaste esta cuenta, por favor ignora este correo.</p>
+                                </div>
+                            </div>
+                        </body>
+                        </html>";
+                    
                     await _emailService.SendAsync(new EmailRequestDto()
                     {
                         To = saveDto.Email,
-                        BodyHtml = $"Please confirm your account visiting this URL {verificationUri}",
-                        Subject = "Confirm registration"
+                        BodyHtml = emailBody,
+                        Subject = "Confirma tu cuenta - Banking App"
                     });
                 }
                 else
                 {
                     string? verificationToken = await GetVerificationEmailToken(user);
+                    
                     await _emailService.SendAsync(new EmailRequestDto()
                     {
                         To = saveDto.Email,
@@ -114,7 +143,7 @@ namespace InvestmentApp.Infrastructure.Identity.Services
                 Name = "",
                 UserName = "",
                 HasError = false,
-                PhoneNumber = "",
+                DocumentIdNumber = "",
                 IsVerified = true,
                 Errors = []
             };
@@ -149,7 +178,8 @@ namespace InvestmentApp.Infrastructure.Identity.Services
             user.UserName = saveDto.UserName;
             user.EmailConfirmed = user.EmailConfirmed && user.Email == saveDto.Email;
             user.Email = saveDto.Email;
-            user.PhoneNumber = saveDto.PhoneNumber;
+            user.DocumentIdNumber = saveDto.DocumentIdNumber;
+            
 
             if (!string.IsNullOrWhiteSpace(saveDto.Password) && isNotcreated)
             {
@@ -236,11 +266,37 @@ namespace InvestmentApp.Infrastructure.Identity.Services
             if (isApi != null && !isApi.Value)
             {
                 var resetUri = await GetResetPasswordUri(user, request.Origin ?? "");
+                
+                string emailBody = $@"
+                    <html>
+                    <body style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>
+                        <div style='max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa; border-radius: 10px;'>
+                            <div style='background-color: #003d82; color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0;'>
+                                <h1 style='margin: 0;'>Banking App</h1>
+                            </div>
+                            <div style='background-color: white; padding: 30px; border-radius: 0 0 10px 10px;'>
+                                <h2 style='color: #003d82;'>Recuperación de Contraseña</h2>
+                                <p>Hola {user.Name},</p>
+                                <p>Recibimos una solicitud para restablecer la contraseña de tu cuenta. Si no realizaste esta solicitud, puedes ignorar este correo.</p>
+                                <div style='text-align: center; margin: 30px 0;'>
+                                    <a href='{resetUri}' style='background-color: #2c9fa3; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;'>
+                                        Restablecer mi contraseña
+                                    </a>
+                                </div>
+                                <p style='color: #666; font-size: 14px;'>Si el botón no funciona, copia y pega este enlace en tu navegador:</p>
+                                <p style='background-color: #f8f9fa; padding: 10px; border-radius: 5px; word-break: break-all; font-size: 12px;'>{resetUri}</p>
+                                <hr style='border: none; border-top: 1px solid #ddd; margin: 30px 0;'>
+                                <p style='color: #999; font-size: 12px; text-align: center;'>Este enlace expirará en 24 horas por seguridad.</p>
+                            </div>
+                        </div>
+                    </body>
+                    </html>";
+                
                 await _emailService.SendAsync(new EmailRequestDto()
                 {
                     To = user.Email,
-                    BodyHtml = $"Please reset your password account visiting this URL {resetUri}",
-                    Subject = "Reset password"
+                    BodyHtml = emailBody,
+                    Subject = "Restablecer contraseña - Banking App"
                 });
             }
             else
@@ -318,7 +374,7 @@ namespace InvestmentApp.Infrastructure.Identity.Services
                 LastName = user.LastName,
                 Name = user.Name,
                 UserName = user.UserName ?? "",
-                PhoneNumber = user.PhoneNumber,
+                DocumentIdNumber = user.DocumentIdNumber,
                 IsVerified = user.EmailConfirmed,
                 Role = rolesList.FirstOrDefault() ?? ""
             };
@@ -343,7 +399,7 @@ namespace InvestmentApp.Infrastructure.Identity.Services
                 LastName = user.LastName,
                 Name = user.Name,
                 UserName = user.UserName ?? "",
-                PhoneNumber = user.PhoneNumber,
+                DocumentIdNumber = user.DocumentIdNumber,
                 IsVerified = user.EmailConfirmed,
                 Role = rolesList.FirstOrDefault() ?? ""
             };
@@ -368,7 +424,7 @@ namespace InvestmentApp.Infrastructure.Identity.Services
                 LastName = user.LastName,
                 Name = user.Name,
                 UserName = user.UserName ?? "",
-                PhoneNumber = user.PhoneNumber,
+                DocumentIdNumber = user.DocumentIdNumber,
                 IsVerified = user.EmailConfirmed,
                 Role = rolesList.FirstOrDefault() ?? ""
             };
@@ -399,7 +455,7 @@ namespace InvestmentApp.Infrastructure.Identity.Services
                     LastName = item.LastName,
                     Name = item.Name,
                     UserName = item.UserName ?? "",
-                    PhoneNumber = item.PhoneNumber,
+                    DocumentIdNumber = item.DocumentIdNumber,
                     IsVerified = item.EmailConfirmed,
                     Role = roleList.FirstOrDefault() ?? ""
                 });
