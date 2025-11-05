@@ -7,14 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Areas\Accounts\Controllers\" />
-    <Folder Include="Areas\Accounts\Views\" />
-    <Folder Include="Areas\Admin\Controllers\" />
-    <Folder Include="Areas\Admin\Views\" />
-    <Folder Include="Areas\Customer\Controllers\" />
-    <Folder Include="Areas\Customer\Views\" />
-    <Folder Include="Areas\Teller\Controllers\" />
-    <Folder Include="Areas\Teller\Views\" />
+    <Content Remove="Areas\Shared\_AdminLayout.cshtml" />
+    <Content Remove="Areas\Shared\_ClientLayout.cshtml" />
+    <Content Remove="Areas\Shared\_FormLayout.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="Areas\Shared\_AdminLayout.cshtml" />
+    <Compile Include="Areas\Shared\_ClientLayout.cshtml" />
+    <Compile Include="Areas\Shared\_FormLayout.cshtml" />
   </ItemGroup>
 
   <ItemGroup>

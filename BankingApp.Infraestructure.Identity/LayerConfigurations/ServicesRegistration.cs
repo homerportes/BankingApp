@@ -1,5 +1,5 @@
-﻿using BankingApp.Core.Application.Interfaces;
-using BankingApp.Core.Application.User;
+﻿using BankingApp.Core.Application.Dtos.User;
+using BankingApp.Core.Application.Interfaces;
 using BankingApp.Core.Domain.Settings;
 using BankingApp.Infraestructure.Identity.Contexts;
 using BankingApp.Infraestructure.Identity.Entities;
@@ -20,7 +20,6 @@ namespace BankingApp.Infraestructure.Identity.LayerConfigurations
 {
     public static class ServicesRegistration
     {
-
         public static void AddIdentityLayerIocForWebApp(this IServiceCollection services, IConfiguration config)
         {
 
@@ -71,13 +70,6 @@ namespace BankingApp.Infraestructure.Identity.LayerConfigurations
                 opt.SlidingExpiration = true;
 
             });
-
-
-
-
-
-
-
             #endregion
 
 
@@ -184,12 +176,6 @@ namespace BankingApp.Infraestructure.Identity.LayerConfigurations
 
             });
 
-
-
-
-
-
-
             #endregion
 
 
@@ -220,8 +206,6 @@ namespace BankingApp.Infraestructure.Identity.LayerConfigurations
                     },
                     contextLifetime: ServiceLifetime.Scoped,
                     optionsLifetime: ServiceLifetime.Scoped
-
-
                     );
             }
         }

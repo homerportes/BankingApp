@@ -9,7 +9,7 @@ namespace BankingApp.Core.Domain.Common.Enums
     public enum AppRoles
     {
         ADMIN =1,
-        CLIENT,
-        TELLER
+        TELLER,
+        CLIENT
     }
 }

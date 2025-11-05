@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - BankingApp</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <style>
+        :root {
+            --primary-blue: #003d82;
+            --secondary-teal: #2c9fa3;
+            --accent-peach: #f4a261;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .navbar-brand {
+            font-weight: 600;
+            color: var(--primary-blue) !important;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-blue);
+            border-color: var(--primary-blue);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-teal);
+            border-color: var(--secondary-teal);
+        }
+
+        .card {
+            border: none;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        .card-header {
+            background-color: var(--primary-blue) !important;
+            border-radius: 10px 10px 0 0 !important;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem 1rem;
+            min-height: calc(100vh - 200px);
+        }
+        
+        main .container {
+            width: 100%;
+            max-width: 1400px;
+        }
+        
+        .form-control {
+            padding: 0.65rem 0.75rem;
+            font-size: 1rem;
+        }
+        
+        .form-label {
+            margin-bottom: 0.6rem;
+            font-size: 0.95rem;
+        }
+        
+        .card {
+            margin-bottom: 2rem;
+        }
+        
+        .card-body {
+            padding: 2rem !important;
+        }
+        
+        .btn {
+            padding: 0.65rem 1rem;
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container">
+                <a class="navbar-brand" asp-controller="Login" asp-action="Index">🏦 BankingApp</a>
+            </div>
+        </nav>
+    </header>
+    <main class="container">
+        @RenderBody()
+    </main>
+
+    <footer class="border-top footer text-muted mt-auto">
+        <div class="container text-center py-3">
+            &copy; 2025 - BankingApp
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
