@@ -11,7 +11,7 @@ namespace BankingApp.Infraestructure.Identity.Seeds
             await roleManager.CreateAsync(new IdentityRole(AppRoles.ADMIN.ToString()));
             await roleManager.CreateAsync(new IdentityRole(AppRoles.CLIENT.ToString()));
             await roleManager.CreateAsync(new IdentityRole(AppRoles.TELLER.ToString()));
-            await roleManager.CreateAsync(new IdentityRole(ApiRoles.COMMERCE.ToString()));
+            await roleManager.CreateAsync(new IdentityRole(AppRoles.COMMERCE.ToString()));
 
         }
     }

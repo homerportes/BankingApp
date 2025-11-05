@@ -10,6 +10,8 @@ namespace BankingApp.Core.Domain.Common.Enums
     {
         ADMIN =1,
         TELLER,
-        CLIENT
+        CLIENT,
+        COMMERCE
+
     }
 }

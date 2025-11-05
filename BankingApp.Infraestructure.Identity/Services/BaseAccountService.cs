@@ -1,6 +1,6 @@
 ﻿using BankingApp.Core.Application.Dtos.Email;
+using BankingApp.Core.Application.Dtos.User;
 using BankingApp.Core.Application.Interfaces;
-using BankingApp.Core.Application.User;
 using BankingApp.Infraestructure.Identity.Entities;
 using BankingApp.Infraestructure.Identity.Services;
 using Microsoft.AspNetCore.Identity;
@@ -51,6 +51,8 @@ namespace InvestmentApp.Infrastructure.Identity.Services
 
             AppUser user = new AppUser()
             {
+                Id="",
+                DocumentIdNumber="",
                 Name = saveDto.Name,
                 LastName = saveDto.LastName,
                 Email = saveDto.Email,

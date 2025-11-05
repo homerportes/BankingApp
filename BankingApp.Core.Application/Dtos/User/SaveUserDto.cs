@@ -1,6 +1,4 @@
-﻿
-
-namespace BankingApp.Core.Application.User
+﻿namespace BankingApp.Core.Application.Dtos.User
 {
     public class SaveUserDto
     {

@@ -1,5 +1,4 @@
 ﻿using BankingApp.Core.Application.Interfaces;
-using BankingApp.Core.Application.User;
 using BankingApp.Core.Domain.Settings;
 using BankingApp.Infraestructure.Identity.Contexts;
 using BankingApp.Infraestructure.Identity.Entities;
@@ -83,6 +82,8 @@ namespace BankingApp.Infraestructure.Identity.LayerConfigurations
 
             #region Services
             services.AddScoped<IAccountServiceForWebAPP, AccountServiceForWebAPP>();
+            services.AddScoped<IUserService, IdentityUserService>();
+
             #endregion
 
         }
@@ -195,6 +196,8 @@ namespace BankingApp.Infraestructure.Identity.LayerConfigurations
 
             #region Services
             services.AddScoped<IAccountServiceForWebApi, AccountServiceForWebApi>();
+            services.AddScoped<IUserService, IdentityUserService>();
+
             #endregion
 
         }

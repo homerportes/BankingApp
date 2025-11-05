@@ -11,6 +11,6 @@ namespace BankingApp.Infraestructure.Identity.Entities
         public required string DocumentIdNumber { get; set; }
 
         public bool IsActive { get; set; }
-
+        public AppRoles Role {  get; set; }
     }
 }

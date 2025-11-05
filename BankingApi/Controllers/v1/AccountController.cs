@@ -1,5 +1,6 @@
 ﻿using Asp.Versioning;
 using BankingApp.Core.Application.Dtos.Login;
+using BankingApp.Core.Application.Dtos.User;
 using BankingApp.Core.Application.Interfaces;
 using BankingApp.Core.Application.User;
 using Microsoft.AspNetCore.Authorization;
