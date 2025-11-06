@@ -1,0 +1,93 @@
+﻿
+
+
+
+/*Variables de colores*/
+:root {
+    --color-azul-oscuro: #154D71;
+    --color-azul-medio: #1C6EA4;
+    --color-azul-claro: #33A1E0;
+    --color-azul-intenso: #0046FF;
+    --color-body-bg: #FDFAF6;
+    --color-texto: #212529;
+    --color-texto-claro: #ffffff;
+}
+
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* body */
+body {
+    background-color: var(--color-body-bg);
+    color: var(--color-texto);
+    font-family: 'Segoe UI', Roboto, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+
+.custom-navbar {
+    background: linear-gradient(90deg, var(--color-azul-oscuro), var(--color-azul-medio), var(--color-azul-claro));
+}
+
+
+/*nav*/
+.navbar-brand {
+    font-weight: 600;
+    font-size: 1.2rem;
+    color: var(--color-texto-claro) !important;
+    letter-spacing: 0.5px;
+}
+
+.nav-link {
+    color: var(--color-texto-claro) !important;
+    margin-left: 1rem;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+    .nav-link:hover {
+        color: var(--color-azul-intenso) !important;
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 6px;
+        transform: translateY(-1px);
+    }
+
+
+.container main, main.container {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    padding: 2rem;
+}
+
+/* footer */
+.custom-footer {
+    background: linear-gradient(90deg, var(--color-azul-medio), var(--color-azul-oscuro));
+    color: var(--color-texto-claro);
+    letter-spacing: 0.5px;
+    box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.15);
+}
+
+    .custom-footer strong {
+        color: var(--color-azul-claro);
+    }
+
+footer a {
+    color: var(--color-azul-claro);
+    text-decoration: none;
+}
+
+    footer a:hover {
+        text-decoration: underline;
+    }
+
+
+.navbar, .custom-footer {
+    transition: background 0.3s ease;
+}

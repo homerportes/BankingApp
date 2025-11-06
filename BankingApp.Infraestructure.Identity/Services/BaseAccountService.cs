@@ -58,7 +58,11 @@ namespace InvestmentApp.Infrastructure.Identity.Services
                 Email = saveDto.Email,
                 UserName = saveDto.UserName,
                 EmailConfirmed = false,
+
+                PhoneNumber = saveDto.PhoneNumber,
+             
                 DocumentIdNumber = saveDto.DocumentIdNumber,
+
             };
 
             var result = await _userManager.CreateAsync(user, saveDto.Password);
