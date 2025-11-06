@@ -24,6 +24,8 @@ namespace BankingApp.Infraestructure.Shared.Services.Email
         {
            try
             {
+                Logger.LogInformation($"Enviando email a {request.To} - Asunto: {request.Subject}");
+                
                 request.ToRange?.Add(request.To ?? "");
                 MimeMessage email = new MimeMessage()
                 {
@@ -40,17 +42,25 @@ namespace BankingApp.Infraestructure.Shared.Services.Email
                 };
 
                 email.Body = builder.ToMessageBody();
+                
                 using MailKit.Net.Smtp.SmtpClient smtpClient = new ();
                 await smtpClient.ConnectAsync(_settings.SmptHost, _settings.SmtpPort, MailKit.Security.SecureSocketOptions.StartTls);
                 await smtpClient.AuthenticateAsync(_settings.SmtpUser, _settings.SmtpPass);
                 await smtpClient.SendAsync(email);
                 await smtpClient.DisconnectAsync(true);
+                
+                Logger.LogInformation($"Email enviado exitosamente a {request.To}");
             
             }
 
             catch (Exception ex)
             {
-                Logger.LogError(message: ex.Message);
+                Logger.LogError($"Error al enviar email a {request.To}: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Logger.LogError($"Detalle: {ex.InnerException.Message}");
+                }
+                throw; // Re-lanzar la excepción para que se propague
 
             }
         }

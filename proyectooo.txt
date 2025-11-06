@@ -1,0 +1,1676 @@
+Índice
+Objetivo general 3
+Funcionalidades generales 3
+Login 3
+Seguridad 4
+Funcionalidades Administrador 4
+Dashboard(Home) 4
+Gestión de usuarios 5
+Gestión de préstamos 7
+Gestión de tarjetas de crédito 11
+Gestión de cuentas de ahorro 15
+Funcionalidades cliente 18
+Home(Listado de productos) 18
+Funcionalidad de Beneficiarios 21
+Funcionalidad de transacciones 22
+Funcionalidad de Avances de efectivo 27
+Funcionalidad de Transferencia entre cuenta 28
+Funcionalidades Cajero 29
+Home 29
+Depósito 29
+Retiro 30
+Pago a tarjeta de crédito 31
+Pago a préstamo 33
+Transacciones a cuentas de terceros 35
+Funcionalidades del API 37
+Seguridad 37
+Módulo: Login y Account controller 38
+Módulo: Gestión de Usuarios 42
+Módulo: Gestión de Préstamos 49
+Módulo: Gestión de Tarjetas de crédito 53
+Módulo: Gestión de cuentas de ahorro 57
+Módulo: Gestión de comercios 60
+Módulo: Procesador de pago (Hermes pay) 63
+Requerimientos técnico para el web app 68
+Requerimientos técnico para el web api 68
+2
+Objetivo general
+Desarrollar una plataforma de banca en línea sobre ASP.NET Core MVC (versión 8 o 9) que
+permita gestionar de manera integral los préstamos, administrar tarjetas de crédito, operar
+cuentas de ahorro, procesar pagos de préstamos y tarjetas, así como realizar provisión de
+fondos y transferencias entre cuentas, todo ello dentro de un marco seguro y basado en
+roles para administrador, cajero y cliente.
+Funcionalidades generales
+Login
+El sistema en su pantalla inicial te presentará la pantalla para poder acceder al
+sistema(Login), aquí hay que agregar una advertencia y es que si el usuario ya se
+encuentra logueado e intenta ingresar a la pantalla de login debe redireccionarlo
+automatimaticame al Home del rol que este logueado.
+La pantalla de login tendrá un formulario que solicita el usuario y contraseña y un botón
+para enviar eso datos y poder acceder al sistema, si los datos son correctos debe enviarlo
+a la pantalla de inicio(Home) correspondiente al rol del usuario logueado, pero si la
+contraseña o el usuario es incorrecto debe mostrarle un mensaje indicando que los datos
+de accesos son incorrectos y de igual manera si el usuario intenta iniciar sesión y su cuenta
+aún no ha sido activada, el sistema debe rechazar el inicio de sesión y mostrar un mensaje
+claro indicando que su cuenta está inactiva.
+El mensaje debe informar que es necesario activar la cuenta mediante el enlace enviado al
+correo electrónico registrado para poder acceder al sistema.
+En la pantalla de login también tendremos un botón más, uno para restablecer contraseña,
+para el restablecer contraseña lo haremos de la siguiente manera , al pulsar sobre esta
+opción debe enviarme a una pantalla nueva o mostrarme un modal con formulario donde
+pueda colocar el nombre de usuario, si el nombre de usuario existe se debe buscar ese
+usuario y desactivarlo, luego debemos generar un token y asociarlo a ese usuario y
+enviarle un correo con un enlace que contenga ese token como parámetro, de manera que
+al usuario al hacer clic sea enviado de nuevo al app a una pantalla con un formulario con
+dos campos el de contraseña y confirmar contraseña y un botón para enviar los datos, este
+formulario debe tener las siguientes validaciones como que todos los campos son
+3
+requeridos y que los campos de contraseña y confirmar contraseña coincidan, si todo los
+valores del formulario son correctos se debe colocar la nueva contraseña al usuario y
+volver a activarlo y redireccionarlo a la pantalla de login para que pueda iniciar sesión.
+Seguridad
+Si un usuario no está autenticado —ni como administrador, ni como cliente, ni como
+cajero— no podrá acceder a ninguna funcionalidad. Al intentar entrar a esas rutas sin
+sesión activa, deberá redirigirse al login y mostrarse el mensaje:“No tiene permiso para
+acceder a esta sección”. Asimismo, debe validarse que cada rol solo acceda a sus
+propias opciones:
+● Un cliente no podrá entrar a las áreas de administrador ni de cajero.
+● Un administrador no podrá acceder a las funciones de cliente ni de cajero.
+● Un cajero no podrá ingresar a las secciones de administrador ni de cliente.
+Si un usuario intenta acceder a una sección no autorizada, deberá redirigirse a una
+pantalla de “Acceso denegado”, donde habrá un enlace para regresar a su Home
+correspondiente. Todas estas restricciones se implementarán mediante los filtros
+[Authorize] de ASP.NET Identity. Además, con el seeding de datos se crearán tres
+usuarios por defecto: uno de tipo “admin”, otro de tipo “cajero” y otro de tipo “cliente”.
+Funcionalidades Administrador
+Dashboard(Home)
+En la pantalla inicial del administrador se mostrará un menú con las siguientes
+opciones:
+● Home
+● Gestión de usuarios
+● Gestión de Préstamos
+● Gestión de Tarjetas de crédito
+● Gestión de Cuentas de ahorro
+● Cerrar sesión (Al hacer click se elimina la sesión y se redirige al login)
+Además del menú, se presentarán los siguientes indicadores:
+4
+● Número total de transacciones realizadas en el sistema, incluyendo todas las
+operaciones registradas desde el inicio, así como el número de transacciones
+efectuadas en el día actual.
+● Cantidad de pagos procesados durante el día y total acumulado de pagos
+realizados en todo el historial del sistema.
+● Número de clientes activos e inactivos, permitiendo evaluar la participación actual
+de los usuarios dentro de la plataforma.
+● Total de productos financieros asignados a clientes, lo que incluye la suma de
+cuentas de ahorro, préstamos y tarjetas de crédito vinculados a cada cliente.
+● Cantidad de préstamos vigentes actualmente asignados a clientes.
+● Número de tarjetas de crédito emitidas, activas y asociadas a usuarios.
+● Número total de cuentas de ahorro abiertas, correspondientes a clientes del
+sistema.
+● Monto promedio de deuda por cliente, calculado tomando en cuenta la deuda total
+entre todos los clientes activos y dividiéndola equitativamente.
+Gestión de usuarios
+En esta pantalla se presenta un listado con todos los usuarios registrados en el
+sistema(menos lo que tenga el rol comercio), ordenado desde el más reciente hasta el
+más antiguo. El listado debe estar paginado para mostrar un máximo de 20 usuarios
+por página, y debajo se incluirá un componente de navegación que permita cambiar de
+página para visualizar el resto de los usuarios. En cada fila del listado se deben mostrar
+las siguientes informaciones de cada usuario: nombre de usuario, cédula, nombre y
+apellido del usuario, correo y se debe distinguir claramente el tipo de usuario
+(administrador, cajero o cliente), así como su estado (activo o inactivo).
+En la parte superior del listado se incluirá un botón para crear nuevos usuarios. Al hacer
+clic en este botón, se abrirá una nueva pantalla o un modal con un formulario que
+contendrá los siguientes campos: Nombre, Apellido, Cédula, Correo, Usuario,
+Contraseña, Confirmar contraseña y Tipo de usuario (con un selector que permite elegir
+entre administrador, cajero o cliente). Si se selecciona el tipo de usuario “cliente”, se
+mostrará un campo adicional llamado “Monto inicial”. Todos los campos del formulario
+son obligatorios, a excepción del monto inicial, el cual podrá tener un valor de cero. Este
+valor representará el saldo inicial que se asignará automáticamente a la cuenta de
+ahorro principal del cliente al momento de su creación.
+5
+Si el usuario a crear es de tipo administrador o cajero, se validará que no exista otro con
+el mismo nombre de usuario o correo electrónico antes de enviarlo al servidor y
+registrarlo en el sistema. En el caso de usuarios de tipo cliente, además de la validación
+de usuario y correo únicos, una vez creado el registro, el sistema deberá asignarle
+automáticamente un producto de tipo cuenta de ahorro donde balance inicial de la
+misma será el valor colocado en el campo monto inicial. Esta cuenta contará con un
+identificador único de nueve dígitos, que no debe estar previamente registrado en el
+sistema (ni como número de cuenta de ahorro ni como número de préstamo), y se
+marcará como su cuenta principal,una vez creado el usuario independientemente del rol
+el mismo se crea inactivo y se le envía un correo para que el usuario puede activarse, el
+correo contendrá un enlace para que el usuario al hacer click sobre el mismo se active
+su usuario.
+Adicionalmente, en la parte superior del listado se incluirá un filtro de tipo select que
+permitirá visualizar únicamente los usuarios que correspondan al rol seleccionado
+(administrador, cajero o cliente), facilitando la búsqueda y segmentación.
+Dentro del listado, se podrán activar o inactivar usuarios mediante un botón específico.
+Al pulsar dicho botón, se mostrará una confirmación para validar la acción. Si el usuario
+confirma, se procederá con el cambio de estado; de lo contrario, no se ejecutará ninguna
+modificación. Es importante señalar que el administrador actualmente autenticado no
+podrá editar ni modificar el estado de su propia cuenta. Si un usuario se encuentra
+inactivo, el botón correspondiente permitirá activarlo nuevamente, también mediante
+confirmación previa.
+Finalmente, el listado ofrecerá la funcionalidad de edición de usuarios. Para
+administradores y cajeros, podrán editarse los campos Nombre, Apellido, Cédula,
+Correo, Usuario y Contraseña (requiriendo confirmación de contraseña), sin posibilidad
+de modificar el tipo de usuario. Para usuarios de tipo cliente, se podrán modificar los
+mismos campos, y además se habilitará un campo llamado “Monto adicional”, cuyo
+valor se sumará al saldo actual de la cuenta de ahorro principal. Por ejemplo, si el
+cliente tiene RD$5,000 en su cuenta y se añade RD$12,000 a través de este campo, su
+nuevo balance será RD$17,000 una vez aplicada la actualización.
+6
+Gestión de préstamos
+En esta pantalla se presenta un listado con todos los préstamos activos registrados en
+el sistema, ordenados del más reciente al más antiguo. El listado debe estar paginado,
+mostrando un máximo de 20 préstamos por página, y en la parte inferior debe incluirse
+un componente de navegación que permita cambiar de página para visualizar el resto
+de los registros. Cada fila del listado debe mostrar la siguiente información: número
+identificador del préstamo, nombre y apellido del cliente al que está asignado, monto
+total del capital prestado, cantidad total de cuotas del préstamo, cantidad de cuotas ya
+pagadas, monto pendiente por pagar, tasa de interés aplicada, plazo del préstamo
+expresado en meses, y un indicador que refleje si el cliente se encuentra al día o en
+mora. Además, cada préstamo debe contar con dos botones: uno para visualizar el
+detalle del préstamo y otro para editarlo.
+En la parte superior del listado deben colocarse herramientas de búsqueda y filtrado.
+Se incluirá un campo de búsqueda que permita ingresar la cédula de un ciudadano para
+visualizar todos los préstamos asociados a dicho usuario, tanto los activos como los ya
+completados. En estos casos, el listado debe mostrar primero los préstamos activos y
+luego los completados, siempre ordenados del más reciente al más antiguo. Junto al
+buscador, debe haber un selector que permite filtrar los préstamos por estado (activos o
+completados), funcionalidad que debe estar disponible tanto cuando se visualizan todos
+los préstamos como cuando se filtra por un usuario específico.
+También en la parte superior del listado se incluirá un botón con el texto “Asignar
+préstamo”, el cual al hacer click en el mismo se redirigirá a una nueva pantalla con un
+listado de todos los clientes activos que no tengan actualmente un préstamo activo (los
+clientes solo pueden tener un préstamo activo a la vez). En la parte superior de esta
+pantalla debe mostrarse el valor actual de la deuda promedio de todos los clientes del
+sistema, junto a un campo de búsqueda para localizar clientes por su cédula.
+El listado de clientes mostrará la siguiente información: cédula del cliente, nombre y
+apellido, correo electrónico y monto total de deuda que tiene actualmente. Cada cliente
+tendrá asociado un campo tipo radio para su selección, permitiendo seleccionar
+únicamente un cliente a la vez. Una vez seleccionado un cliente ,debajo del listado de
+cliente habrá un botón con un texto que dice “siguiente paso” que al hacer click sobre el
+mismo se validará que haya un cliente seleccionado y si lo hay se podrá avanzar al
+siguiente paso, donde se mostrará un formulario para configurar el préstamo a asignar y
+habrá un botón de volver atrás que permite volver al listado de préstamos.
+7
+Una vez seleccionado un cliente y pudiendo avanzar al siguiente paso , se enviará al
+usuario a una pantalla con un formulario, con los siguientes campos: un campo tipo
+selector para establecer el plazo del préstamo. Las opciones deben seguir un patrón fijo
+de intervalos de 6 meses: es decir, los préstamos sólo pueden ser a 6, 12, 18, 24, 30,
+36, 42, 48, 54 o 60 meses (máximo 5 años, mínimo 6 meses). Además, el formulario
+incluirá campos para especificar el monto a prestar y la tasa de interés anual
+correspondiente. Al final del formulario deben colocarse dos botones: uno para regresar
+al listado de clientes y seleccionar otro cliente, y otro para confirmar la asignación del
+préstamo.
+Al hacer clic en el botón para asignar el préstamo, se deben realizar primero las
+validaciones necesarias para asegurar que todos los campos hayan sido completados.
+Una vez validados los datos, se realizará un control adicional para evaluar el nivel de
+riesgo del cliente. Si el monto actual de la deuda del cliente es superior a la deuda
+promedio del sistema, o si al sumar el nuevo préstamo(capital préstamo + intereses a
+generar) el total de su deuda supera ese promedio, se deberá redirigir al usuario a una
+pantalla de advertencia, más sin embargo, si la deuda se mantiene por debajo o igual
+promedio se procederá a asignar el préstamo.
+En la pantalla de advertencia, si el cliente ya tiene una deuda por encima del promedio,
+se mostrará el mensaje: “Este cliente se considera de alto riesgo, ya que su deuda
+actual supera el promedio del sistema”. En caso de que sea el nuevo préstamo el que
+provoque que la deuda total supere el promedio, el mensaje será: “Asignar este
+préstamo convertirá al cliente en un cliente de alto riesgo, ya que su deuda superará el
+umbral promedio del sistema”. En ambos escenarios, se solicitará confirmación final
+para continuar con la asignación. Si el usuario confirma, se procederá a registrar el
+préstamo; si cancela, será redirigido nuevamente a la pantalla principal de préstamos.
+Una vez validados todos los detalles del préstamo y en caso de cliente de alto riesgo
+aprobada su asignación, se debe proceder a guardar la siguiente información del
+préstamo: el cliente al que se le asigna el préstamo, el monto aprobado, la duración del
+préstamo en meses, la tasa de interés anual aplicada, el usuario administrador
+responsable de la asignación y se debe crear en estado activo el préstamo.
+Una vez registrados estos datos, se debe generar automáticamente la tabla de
+amortización correspondiente al préstamo. Para ello, se utilizará el sistema francés de
+amortización, también conocido como sistema de cuota fija o sistema de amortización
+constante, el cual se caracteriza por mantener una cuota mensual constante a lo largo
+8
+del plazo, aunque la proporción entre intereses y amortización de capital varía en cada
+periodo.
+La fórmula de este sistema es la siguiente:
+C = cuota constante (lo que paga el cliente cada mes)
+P = monto del préstamo (capital)
+r = tasa de interés periódica (mensual si las cuotas son mensuales)(para obtener esto es
+dividir la tasa anualizada de interés entre 12)
+n = número total de pagos (duración en meses del préstamo)
+Ejemplo simple
+Monto del préstamo: RD$100,000
+Tasa de interés anual: 12% → mensual: 1% (0.01)
+Plazo: 12 meses
+Calculamos la cuota:
+Una vez calculada la cuota fija del préstamo, se debe generar automáticamente la tabla
+de amortización correspondiente. Este proceso funcionará de la siguiente manera:
+La primera cuota tendrá como fecha de pago el mismo día del mes siguiente a la fecha
+en que fue creado el préstamo. Por ejemplo, si el préstamo se registra el 5 de julio de
+2025, la primera cuota tendrá como fecha de vencimiento el 5 de agosto de 2025, la
+segunda el 5 de septiembre de 2025, y así sucesivamente hasta completar el plazo
+acordado(el plazo seleccionado al momento de crear el préstamo).
+9
+La tabla de amortización estará compuesta por los siguientes datos por cada cuota:
+● Fecha de pago
+● Préstamo al que pertenece la cuota de la amortización creada
+● Valor de la cuota a pagar(calculada con la fórmula anteriormente descrita)
+● Estado de pago (indica si la cuota fue pagada o no)
+● Indicador de atraso (marca la cuota como atrasada si la fecha de pago ha pasado y
+aún no ha sido saldada)
+Para el control automático del indicador de atraso, se puede utilizar Azure Functions o
+Hangfire o Quartz.NET, configurado para ejecutar diariamente un proceso que revise
+todas las cuotas y validar si la misma está atrasada o no(si paso la fecha de pago y la
+misma aún no fue pagada) y actualice su estado a “atrasada” en caso de no haberse
+registrado el pago correspondiente. Este monitoreo será continuo hasta que todas las
+cuotas hayan sido pagadas(una vez pagada la misma se debe marca como no atrasada).
+Una vez creado el préstamo y generada su respectiva tabla de amortización, el monto
+aprobado (por ejemplo, RD$100,000) se sumará automáticamente al saldo actual de la
+cuenta de ahorro principal del cliente al que se le asignó el préstamo. Por ejemplo, si el
+cliente tenía RD$5,000 en su cuenta de ahorro principal, su nuevo balance será de
+RD$105,000.
+Además, el sistema enviará un correo electrónico al cliente notificando que su préstamo
+ha sido aprobado. El correo debe incluir los siguientes detalles: el monto aprobado, el
+plazo del préstamo, la tasa de interés aplicada y el valor de la cuota mensual que
+deberá pagar.
+Finalmente, una vez completado el proceso, el sistema debe redirigir al usuario
+administrador a la pantalla principal donde se listan todos los préstamos registrados.
+Volviendo al listado de préstamos, cada préstamo consta de dos botones: "Ver detalles"
+y "Editar". Al hacer clic en el botón "Ver detalles", el usuario será redirigido a una
+pantalla donde se mostrará la tabla de amortización correspondiente a ese préstamo.
+Por cada cuota en la tabla de amortización, se deberá visualizar la siguiente
+información:
+10
+● Fecha de pago
+● Valor de la cuota a pagar
+● Estado de pago (indica si la cuota ha sido pagada o no)
+● Indicador de atraso (marca la cuota como atrasada si la fecha de vencimiento ha
+pasado y aún no ha sido saldada)
+Además de la tabla, esta pantalla debe incluir un botón para volver atrás, que permitirá
+regresar al listado general de préstamos.
+Finalmente, al hacer clic en el botón "Editar", el usuario será redirigido a una pantalla
+con un formulario que contiene un único campo: tasa de interés anual. Este campo será
+obligatorio y deberá mostrar, de forma predeterminada, el valor actual registrado para
+ese préstamo. al final del formulario dos botones uno de volver atrás que devuelve a la
+pantalla del listado de préstamos y otro para modificar la tasa, Al modificar la tasa de
+interés, el sistema deberá recalcular todas las cuotas de la tabla de amortización cuya
+fecha de pago sea posterior a la fecha actual. Las cuotas vencidas o ya pagadas no
+deben ser modificadas, ya que el cambio solo aplica a los pagos futuros.
+Una vez aplicada la nueva tasa y recalculadas las cuotas correspondientes, se deberá
+enviar un correo electrónico al cliente, notificando que su tasa de interés ha sido
+actualizada. En dicho correo se debe incluir el nuevo porcentaje de interés, así como el
+monto actualizado de la cuota que deberá pagar a partir de la próxima fecha de
+vencimiento.
+Gestión de tarjetas de crédito
+En esta pantalla se presenta un listado con todas las tarjetas de crédito activas
+registradas en el sistema, ordenadas de la más reciente a la más antigua. El listado
+debe estar paginado, mostrando un máximo de 20 tarjetas por página, y en la parte
+inferior del listado debe incluirse un componente de navegación que permita cambiar de
+página para visualizar el resto de los registros disponibles.
+Cada fila del listado debe mostrar la siguiente información:
+● Número identificador de la tarjeta
+● Nombre y apellido del cliente al que está asignada
+● Monto del límite de crédito de la tarjeta
+● Fecha de expiración en formato mes/año (por ejemplo: 03/26)
+● Monto total adeudado en la tarjeta
+11
+Además, cada tarjeta debe incluir tres botones de acción: uno para ver los detalles de la
+tarjeta, otro para editarla y otro para cancelarla.
+En la parte superior del listado deben incluirse herramientas de búsqueda y filtrado. Se
+habilitará un campo de búsqueda que permita ingresar la cédula de un ciudadano para
+visualizar todas las tarjetas de crédito asociadas a dicho usuario, tanto activas como
+canceladas. En estos casos, el listado debe mostrar primero las tarjetas activas y luego
+las canceladas, ordenadas siempre del registro más reciente al más antiguo. Junto al
+buscador, se incorpora un selector que permite filtrar las tarjetas por estado (activas o
+canceladas), el cual debe funcionar tanto en el listado general como cuando se ha
+filtrado por un usuario específico.
+También en la parte superior se incluirá un botón con el texto "Asignar tarjeta de
+crédito", que al hacer clic redirigirá al usuario a una nueva pantalla con un listado de
+todos los clientes activos del sistema. En la parte superior de esta pantalla se mostrará
+el valor actual de la deuda promedio de todos los clientes, junto a un campo de
+búsqueda que permitirá localizar clientes por su cédula.
+El listado de clientes mostrará la siguiente información: cédula, nombre y apellido,
+correo electrónico, y monto total de deuda acumulada. Cada cliente tendrá asociado un
+campo de selección tipo radio, permitiendo seleccionar solo un cliente a la vez. Una vez
+seleccionado un cliente, debajo del listado aparecerá un botón con el texto "Siguiente
+paso". Al hacer clic en este botón se validará que efectivamente se haya seleccionado
+un cliente; si es así, el usuario avanzará a la siguiente etapa, donde se mostrará el
+formulario para configurar la tarjeta de crédito. Esta pantalla también incluirá un botón
+para regresar al listado de tarjeta.
+En la pantalla siguiente, el formulario para asignar la tarjeta contendrá un único campo
+numérico para especificar el límite de crédito de la tarjeta. Al final del formulario se
+presentarán dos botones: uno para regresar al listado de clientes y poder seleccionar
+otro si se desea y otro para confirmar la asignación de la tarjeta.
+Al hacer clic en el botón “Asignar”, el sistema deberá validar que todos los campos del
+formulario hayan sido completados correctamente. Una vez superadas las validaciones,
+se procederá a registrar la nueva tarjeta de crédito, almacenando la siguiente
+información:
+12
+● El cliente al que se le asigna la tarjeta.
+● El límite de crédito aprobado.
+● La fecha de expiración, la cual se calculará automáticamente sumando tres años a la
+fecha actual y se almacenará en formato mes/año (MM/AA).
+● El número identificador único de la tarjeta, compuesto por 16 dígitos que no deben
+coincidir con ninguna otra tarjeta registrada previamente en el sistema.
+● Un código CVC de 3 dígitos, el cual será generado automáticamente. Este valor deberá
+ser cifrado utilizando el algoritmo SHA-256 antes de almacenarlo en la base de datos.
+● El usuario administrador responsable de la asignación.
+Este proceso garantiza la integridad, unicidad y seguridad de los datos registrados en el
+sistema para cada nueva tarjeta emitida.
+Finalmente, con todos estos datos, se deberá crear y registrar la tarjeta en el sistema
+con estado activo y se regresa al usuario al listado de tarjetas.
+Volviendo al listado de tarjetas, cada registro contará con tres botones: "Ver detalles",
+"Editar" y "Cancelar".
+Al hacer clic en el botón "Ver detalles", el usuario será redirigido a una pantalla donde
+se mostrará un listado con todos los consumos registrados para esa tarjeta,
+organizados del más reciente al más antiguo.
+Para cada consumo en el listado, se debe mostrar la siguiente información:
+● Fecha del consumo
+● Monto consumido
+● Comercio (nombre del comercio donde se realizó el consumo; si se trata de un avance
+de efectivo, en lugar del nombre del comercio debe aparecer el texto "AVANCE")
+● Estado del consumo:
+● APROBADO si el monto fue autorizado porque la tarjeta tenía fondos
+suficientes.
+● RECHAZADO si el intento de consumo fue denegado por falta de fondos
+disponibles.
+Además, esta pantalla debe incluir un botón "Volver atrás", que redirige nuevamente al
+listado general de tarjetas de crédito.
+13
+En cuanto al botón "Editar", al hacer clic sobre él el usuario será redirigido a una
+pantalla con un formulario que contiene un único campo: Límite de la tarjeta. Este
+campo será obligatorio y debe precargarse con el valor actual registrado para dicha
+tarjeta. Al final del formulario deben incluirse dos botones: uno para volver al listado de
+tarjetas y otro para guardar los cambios.
+Antes de permitir la modificación del límite, el sistema deberá validar que el nuevo
+límite no sea inferior al monto actual de la deuda de la tarjeta. Si la nueva cifra supera o
+iguala la deuda existente, se permitirá aplicar el cambio, ya sea para aumentar o
+disminuir el límite, según las políticas de la entidad bancaria.
+Una vez actualizado el límite, se deberá enviar automáticamente un correo electrónico
+al cliente, informando que el límite de su tarjeta [incluir aquí los 4 últimos dígitos de la
+tarjeta] ha sido modificado. El mensaje debe incluir el nuevo límite aprobado y hacer
+referencia a los últimos cuatro dígitos del número de tarjeta para que el cliente pueda
+identificarla fácilmente.
+Finalmente, con respecto al botón "Cancelar", al hacer clic sobre él, el usuario será
+redirigido a una pantalla de confirmación con el siguiente mensaje:
+"¿Está seguro que desea cancelar la tarjeta [XXXX]?", donde [XXXX] corresponde a los
+últimos cuatro dígitos del número de la tarjeta.
+Debajo del mensaje se mostrarán dos botones:
+● "Cancelar", que permite regresar al listado de tarjetas sin realizar ninguna acción.
+● "Aceptar", que procederá a validar si la tarjeta puede ser cancelada.
+Al presionar "Aceptar", el sistema verificará si el cliente tiene alguna deuda pendiente
+en esa tarjeta. Si el saldo adeudado es mayor a cero, incluso por un mínimo valor, se
+mostrará un mensaje indicando:"Para cancelar esta tarjeta, el cliente debe saldar la
+totalidad de la deuda pendiente."
+En caso de que no exista ninguna deuda, se procederá a actualizar el estado de la
+tarjeta al estado de cancelada. A partir de ese momento:
+● Cualquier intento de consumo o pago con dicha tarjeta será automáticamente
+rechazado.
+● La tarjeta no aparecerá más en el listado de productos del cliente.
+14
+Este proceso garantiza que solo puedan ser canceladas aquellas tarjetas que no tengan
+obligaciones financieras activas.
+Gestión de cuentas de ahorro
+En esta pantalla se presenta un listado con todas las cuentas de ahorros activas
+registradas en el sistema(tanto las principales como las secundarias), ordenadas de la
+más reciente a la más antigua. El listado debe estar paginado, mostrando un máximo de
+20 cuentas por página, y en la parte inferior del listado debe incluirse un componente
+de navegación que permita cambiar de página para visualizar el resto de los registros
+disponibles.
+Cada fila del listado debe mostrar la siguiente información:
+● Número identificador de la cuenta
+● Nombre y apellido del cliente al que está asignada
+● Balance que tiene esa cuenta
+● El tipo de cuenta que es principal o secundaria
+Además, cada cuenta debe incluir dos botones de acción: uno para ver los detalles de la
+cuenta y otro para cancelarla(solo si es una cuenta secundaria, las cuentas principales
+no se pueden cancelar).
+En la parte superior del listado deben incluirse herramientas de búsqueda y filtrado. Se
+habilitará un campo de búsqueda que permita ingresar la cédula de un ciudadano para
+visualizar todas las cuentas de ahorro asociadas a dicho usuario, tanto activas como
+canceladas. En estos casos, el listado debe mostrar primero las cuentas activas y luego
+las canceladas, ordenadas siempre del registro más reciente al más antiguo. Junto al
+buscador, se incorpora un selector que permite filtrar las cuentas por estado (activas o
+canceladas) y por tipo (principal o secundaria), el cual debe funcionar tanto en el listado
+general como cuando se ha filtrado por un usuario específico.
+También en la parte superior se incluirá un botón con el texto "Asignar cuenta de
+ahorro", que al hacer clic redirigirá al usuario a una nueva pantalla con un listado de
+todos los clientes activos del sistema. En la parte superior de esta pantalla se mostrará
+un campo de búsqueda que permitirá localizar clientes por su cédula.
+15
+El listado de clientes mostrará la siguiente información: cédula, nombre y apellido,
+correo electrónico, y monto total de deuda acumulada. Cada cliente tendrá asociado un
+campo de selección tipo radio, permitiendo seleccionar solo un cliente a la vez. Una vez
+seleccionado un cliente, debajo del listado aparecerá un botón con el texto "Siguiente
+paso". Al hacer clic en este botón se validará que efectivamente se haya seleccionado
+un cliente; si es así, el usuario avanzará a la siguiente etapa, donde se mostrará el
+formulario para configurar la cuenta de ahorro secundaria. Esta pantalla también
+incluirá un botón para regresar al listado de cuentas.
+En la pantalla siguiente, el formulario para asignar la cuenta de ahorro secundaria
+contendrá un único campo numérico para especificar el balance inicial de la cuenta que
+puede ser 0 ese valor. Al final del formulario se presentarán dos botones: uno para
+regresar al listado de clientes y poder seleccionar otro si se desea y otro para confirmar
+la asignación de la cuenta.
+Al hacer clic en el botón para asignar, primero se deben validar todos los campos del
+formulario tienen datos. Una vez completadas las validaciones, se procederá a guardar
+la información de la nueva cuenta, incluyendo: el cliente al que se le asigna, el balance
+inicial de la misma, la fecha de creación, el número identificador único de la cuenta (un
+número de 9 dígitos que no puede repetirse en el sistema, ni en préstamo ni en otras
+cuentas), y el usuario administrador responsable de la asignación.
+Finalmente, con todos estos datos, se deberá crear y registrar la cuenta en el sistema
+con estado activo y de tipo secundaria y se regresa al usuario al listado de cuentas.
+Volviendo al listado de tarjetas, cada registro contará con dos botones: "Ver detalles" y
+"Cancelar".
+Al hacer clic en el botón "Ver detalles", el usuario será redirigido a una pantalla donde
+se mostrará un listado con todos las transacciones registradas para esa cuenta,
+organizados de la más reciente a la más antigua.
+Para cada transacción en el listado, se debe mostrar la siguiente información:
+● Fecha de la transacción
+● Monto de la transacción
+● Tipo de transacción: indica la naturaleza del movimiento realizado. Se utilizará el
+valor DÉBITO cuando la transacción represente una salida o pérdida de dinero desde
+16
+la cuenta del cliente, y el valor CRÉDITO cuando la transacción represente un ingreso
+o aumento de fondos en la cuenta.
+● Beneficiario: se refiere al destino de la transacción. En el caso de una transferencia a
+cuenta de ahorro(sea una transacción express o a un beneficiario), se debe mostrar el
+número de cuenta del beneficiario, si es un retiro por cajero poner el texto retiro. Si se
+trata de una transacción a tarjeta de crédito, se deben mostrar los últimos 4 dígitos de
+la tarjeta a la que se aplicó el pago. En el caso de una transacción de préstamo, se
+debe mostrar el número identificador del préstamo al que fue destinado el pago.
+● Origen: este campo indica la fuente desde la cual se generó la transacción. En el caso
+de una transferencia a cuenta de ahorro, ya sea a través de una transacción exprés o
+mediante un pago a beneficiario, se debe mostrar el número de cuenta desde la cual
+se descontaron los fondos o si se trata de un retiro por cajero el origen será el número
+de cuenta de la cual se hizo el retiro. Si la transacción corresponde a un avance de
+efectivo realizado desde una tarjeta de crédito, se deben mostrar los últimos cuatro
+dígitos de la tarjeta utilizada. En el caso de un depósito correspondiente al
+desembolso de un préstamo, se debe mostrar el número identificador del préstamo
+como origen de la transacción, en el caso de un depósito por cajero el texto del origen
+será deposito.
+● Estado de la transacción:
+● APROBADA si el monto fue autorizado porque la cuenta tenía fondos
+suficientes.
+● RECHAZADO si el intento de transacción fue denegado por falta de fondos
+disponibles.
+Además, esta pantalla debe incluir un botón "Volver atrás", que redirige nuevamente al
+listado general de cuentas de ahorro.
+Finalmente, con respecto al botón "Cancelar", al hacer clic sobre él, el usuario será
+redirigido a una pantalla de confirmación con el siguiente mensaje:
+"¿Está seguro que desea cancelar la cuenta[XXXX]?", donde [XXXX] corresponde a los 9
+dígitos identificadores de la cuenta.
+Debajo del mensaje se mostrarán dos botones:
+● "Cancelar", que permite regresar al listado de tarjetas sin realizar ninguna acción.
+● "Aceptar", que procederá a cancelar la cuenta de ahorro.
+17
+Al presionar "Aceptar", el sistema verificará si la cuenta de ahorro que se desea
+cancelar tiene algún balance disponible. En caso de que la cuenta tenga fondos, dicho
+monto será automáticamente transferido a la cuenta de ahorro principal del cliente,
+dejando el saldo de la cuenta a cancelar en cero. Una vez realizada la transferencia, la
+cuenta será actualizada a estado "cancelada". A partir de ese momento:
+● Cualquier intento de transacción o pago con dicha tarjeta será automáticamente
+rechazado.
+● La cuenta no aparecerá más en el listado de productos del cliente.
+Funcionalidades cliente
+Home(Listado de productos)
+En la pantalla de inicio del cliente ya logueado le aparece un menú con las siguiente
+estructuctura de opciones:
+* Home
+* Transacciones
+-Express
+-Tarjeta de crédito
+-Préstamo
+-Beneficiarios
+* Beneficiario
+* Avance de efectivo
+* Transferencia
+* Cerrar sesión (Al hacer click se elimina la sesión y se redirige al login)
+Aparte del menú principal, se debe mostrar un listado con todos los productos
+financieros activos que posee el cliente logueado. Para esto, se presentarán hasta tres
+18
+secciones: un listado con todas las cuentas de ahorro activas, otro con los préstamos
+activos (este listado no se mostrará si el cliente no tiene préstamos activos), y otro con
+las tarjetas de crédito activas (que igualmente no se mostrará si el cliente no posee
+tarjetas de crédito activas).
+A continuación, se describe el contenido del primer listado:
+Listado de cuentas de ahorro: en este listado se deben mostrar todas las cuentas de
+ahorro activas del cliente logueado. Para cada cuenta se deben presentar las siguientes
+informaciones: número identificador de la cuenta, balance actual y tipo de cuenta
+(indicando si es principal o secundaria). La cuenta principal debe aparecer siempre en
+primer lugar, seguida de las cuentas secundarias, las cuales deben estar ordenadas en
+orden descendente según su balance. Además, cada cuenta debe incluir un botón que
+permita visualizar los detalles de la cuenta.
+Al hacer clic en el botón "Ver detalles", el usuario será redirigido a una pantalla donde
+se mostrará un listado con todos las transacciones registradas para esa cuenta,
+organizados de la más reciente a la más antigua.
+Para cada transacción en el listado, se debe mostrar la siguiente información:
+● Fecha de la transacción
+● Monto de la transacción
+● Tipo de transacción: indica la naturaleza del movimiento realizado. Se utilizará el
+valor DÉBITO cuando la transacción represente una salida o pérdida de dinero desde
+la cuenta del cliente, y el valor CRÉDITO cuando la transacción represente un ingreso
+o aumento de fondos en la cuenta.
+● Beneficiario: se refiere al destino de la transacción. En el caso de una transferencia a
+cuenta de ahorro(sea una transacción express o a un beneficiario), se debe mostrar el
+número de cuenta del beneficiario. Si se trata de una transacción a tarjeta de crédito,
+se deben mostrar los últimos 4 dígitos de la tarjeta a la que se aplicó el pago. En el
+caso de una transacción de préstamo, se debe mostrar el número identificador del
+préstamo al que fue destinado el pago.
+● Origen: este campo indica la fuente desde la cual se generó la transacción. En el caso
+de una transferencia a cuenta de ahorro, ya sea a través de una transacción exprés o
+mediante un pago a beneficiario, se debe mostrar el número de cuenta desde la cual
+se descontaron los fondos o si se trata de un retiro por cajero el origen será el número
+de cuenta de la cual se hizo el retiro. Si la transacción corresponde a un avance de
+19
+efectivo realizado desde una tarjeta de crédito, se deben mostrar los últimos cuatro
+dígitos de la tarjeta utilizada. En el caso de un depósito correspondiente al
+desembolso de un préstamo, se debe mostrar el número identificador del préstamo
+como origen de la transacción, en el caso de un depósito por cajero el texto del origen
+será deposito.
+● Estado de la transacción:
+● APROBADA si el monto fue autorizado porque la cuenta tenía fondos
+suficientes.
+● RECHAZADO si el intento de transacción fue denegado por falta de fondos
+disponibles.
+Además, esta pantalla debe incluir un botón "Volver atrás", que redirige nuevamente al
+home del cliente.
+Hablemos del próximo listado, el listado de préstamos, en este se deben mostrar todos
+los préstamos activos del cliente logueado. De cada préstamo se deben presentar las
+siguientes informaciones: número identificador del préstamo, monto total del capital
+prestado, cantidad total de cuotas del préstamo, cantidad de cuotas ya pagadas, monto
+pendiente por pagar, tasa de interés aplicada, plazo del préstamo expresado en meses,
+y un indicador que refleje si el cliente se encuentra al día o en mora. Además, cada
+préstamo debe contar con un botón para poder visualizar el detalle del préstamo.
+Al hacer clic en el botón "Ver detalles", el usuario será redirigido a una pantalla donde
+se mostrará la tabla de amortización correspondiente a ese préstamo.
+Por cada cuota en la tabla de amortización, se deberá visualizar la siguiente
+información:
+● Fecha de pago
+● Valor de la cuota a pagar
+● Estado de pago (indica si la cuota ha sido pagada o no)
+● Indicador de atraso (marca la cuota como atrasada si la fecha de vencimiento ha
+pasado y aún no ha sido saldada)
+Además de la tabla, esta pantalla debe incluir un botón para volver atrás, que permitirá
+regresar al home del cliente.
+Hablemos del último listado, el listado de tarjetas de créditos, en este se deben mostrar
+20
+todas las tarjetas de créditos activas del cliente logueado. De cada tarjeta se deben
+presentar las siguientes informaciones: Número identificador de la tarjeta, Monto del
+límite de crédito de la tarjeta, fecha de expiración en formato mes/año (por ejemplo:
+03/26) y monto total adeudado en la tarjeta, cada tarjeta debe contar con un botón para
+poder visualizar el detalle de la misma.
+Al hacer clic en el botón "Ver detalles", el usuario será redirigido a una pantalla donde
+se mostrará un listado con todos los consumos registrados para esa tarjeta,
+organizados del más reciente al más antiguo.
+Para cada consumo en el listado, se debe mostrar la siguiente información:
+● Fecha del consumo
+● Monto consumido
+● Comercio (nombre del comercio donde se realizó el consumo; si se trata de un avance
+de efectivo, en lugar del nombre del comercio debe aparecer el texto "AVANCE")
+● Estado del consumo:
+● APROBADO si el monto fue autorizado porque la tarjeta tenía fondos
+suficientes.
+● RECHAZADO si el intento de consumo fue denegado por falta de fondos
+disponibles.
+Además, esta pantalla debe incluir un botón "Volver atrás", que redirige nuevamente al
+home del cliente.
+Funcionalidad de Beneficiarios
+En esta pantalla se mostrará un listado con todos los beneficiarios que el cliente tiene
+registrados. Cada beneficiario corresponde a una cuenta de ahorro a la que el cliente
+transfiere fondos con frecuencia, con el fin de evitar tener que ingresar el número de
+cuenta manualmente en cada transacción. Por cada beneficiario, se debe mostrar su
+nombre, apellido y número de cuenta.
+En la parte superior del listado habrá un botón con el texto "Agregar beneficiario". Al
+hacer clic en este botón, se abrirá un modal con un formulario que contiene un único
+campo: número de cuenta. Este campo es obligatorio. El cliente deberá ingresar el
+número de cuenta que desea registrar como beneficiario. Al enviar el formulario, el
+sistema validará que el número de cuenta ingresado exista.
+21
+● Si la cuenta existe, se agrega al listado de beneficiarios del cliente.
+● Si no existe, se mostrará un mensaje indicando que el número ingresado no
+corresponde a ninguna cuenta válida.
+Además, el cliente podrá eliminar beneficiarios previamente registrados. Para ello, cada
+registro del listado contará con un botón de eliminación, el cual, al ser pulsado,
+mostrará un mensaje de confirmación preguntando si está seguro de realizar la acción
+antes de proceder.
+Funcionalidad de transacciones
+Existen cuatro pantallas de transacciones dentro del sistema, y la primera en describirse
+es la correspondiente a la Transacción Express.
+En esta pantalla, el cliente debe completar un formulario con los siguientes campos:
+● Número de cuenta destino (campo de texto donde se ingresa la cuenta a la que
+desea realizar el pago)
+● Monto a transferir (input number)
+● Cuenta de origen (un selector desplegable que muestra todas las cuentas de ahorro
+activas asociadas al cliente autenticado)
+Todos los campos son obligatorios. Al enviar el formulario, el sistema debe realizar las
+siguientes validaciones:
+1. Verificar que la cuenta destino exista.
+● Si la cuenta no existe o si está inactiva, se cancelará la transacción y se mostrará
+un mensaje indicando que el número de cuenta ingresado no es válido.
+2. Verificar que la cuenta de origen seleccionada tenga fondos suficientes para cubrir
+el monto indicado.
+● Si no hay saldo suficiente, la transacción será cancelada y se notificará al cliente
+que el monto excede el saldo disponible.
+Si ambas validaciones son exitosas, el sistema redirigirá al usuario a una pantalla de
+confirmación donde se mostrará el nombre y apellido del titular de la cuenta destino. En
+esta pantalla se preguntará si el cliente está seguro de realizar la transacción.
+22
+Si el cliente confirma la operación, el sistema descontará el monto de la cuenta de
+origen seleccionada y acreditará el mismo valor a la cuenta destino. Además, se deberá
+registrar esta transacción en la cuenta de ahorro de origen como un débito y en la
+cuenta de destino como un crédito.
+El sistema aparte del registro del historial de transacciones después de confirmada la
+transacción debe enviar dos correos, El primer correo será enviado al cliente que
+efectuó la transacción, notificando que se ha realizado un envío de dinero a otra cuenta.
+El asunto del correo debe ser: "Transacción realizada a la cuenta [XXXX]", donde
+[XXXX] corresponde a los últimos cuatro dígitos del número de cuenta destino. En el
+cuerpo del mensaje, se debe incluir el monto transferido, así como la fecha y la hora
+exacta en que se efectuó la operación.
+El segundo correo será enviado al cliente receptor de los fondos, informando que ha
+recibido una transacción desde otra cuenta. El asunto del correo debe ser: "Transacción
+enviada desde la cuenta [XXXX]", donde [XXXX] corresponde a los últimos cuatro
+dígitos del número de cuenta origen. En el cuerpo del mensaje, se debe detallar el
+monto recibido, junto con la fecha y la hora exacta de la transacción. Finalmente, el
+sistema debe redirigir al cliente a su pantalla principal (Home del cliente) una vez
+completada la operación.
+Si el cliente cancela la operación, la transacción no se ejecutará y el sistema lo redirigirá
+a la pantalla principal(Home del cliente).
+La segunda pantalla corresponde a la Transacción hacía tarjeta de crédito(Pago). En
+esta vista, el cliente debe completar un formulario con los siguientes campos:
+● Tarjeta de crédito destino: un selector desplegable que muestra todas las tarjetas
+de crédito activas asociadas al usuario autenticado.
+● Cuenta de origen: un selector con las cuentas de ahorro activa del cliente desde
+donde desea realizar el pago.
+● Monto a pagar: campo numérico para ingresar el valor del pago.
+Todos los campos son obligatorios. Al enviar el formulario, el sistema debe validar que
+la cuenta seleccionada tenga fondos suficientes para cubrir el monto especificado.
+23
+● Si el saldo es insuficiente, la transacción será cancelada y se mostrará un mensaje
+informando que no dispone del monto requerido.
+Además, si el monto ingresado excede la deuda actual de la tarjeta, solo se debitará el
+valor correspondiente a la deuda. El excedente no será utilizado ni descontado de la
+cuenta del cliente, evitando así pagos innecesarios,un ejemplo si solo se debe 500
+pesos a la tarjeta y se hace un pago de 1000, de la cuenta de ahorro solo se debitan
+500 pesos, no se le puede pagar demás a una tarjeta de crédito.
+Una vez realizado el pago, se deberá actualizar el saldo de la deuda de la tarjeta de
+crédito reduciendo el total adeudado con el monto pagado y el sistema también
+descontará el monto pagado a la tarjeta de la cuenta de origen seleccionada. Además,
+se deberá registrar esta transacción en la cuenta de ahorro de origen como un crédito.
+Una vez procesado el pago y registrado el historial, el sistema enviará automáticamente
+un correo electrónico al cliente notificando que se ha realizado un pago a una tarjeta de
+crédito. El asunto del correo debe indicar: "Pago realizado a la tarjeta [XXXX]", donde
+[XXXX] corresponde a los últimos cuatro dígitos del número de la tarjeta a la que se
+aplicó el pago. En el cuerpo del mensaje se debe incluir el monto que fue pagado, los
+últimos cuatro dígitos de la cuenta desde la cual se realizó el pago, así como la fecha y
+la hora exacta de la transacción. Finalmente, una vez completada la operación, el
+sistema debe redirigir al cliente a su pantalla principal (Home del cliente).
+La siguiente opción corresponde al transacción a un préstamo(pago). En esta pantalla,
+el cliente debe completar un formulario con los siguientes campos:
+● Préstamo a pagar: selector que muestra todos los préstamos activos del usuario
+autenticado.
+● Cuenta de origen: selector con las cuentas de ahorro activas del cliente logueado
+desde las cuales se realizará el pago.
+● Monto a pagar: cantidad que desea abonar al préstamo.
+Todos los campos son obligatorios. Al enviar el formulario, el sistema deberá validar
+que la cuenta seleccionada tenga fondos suficientes para cubrir el monto ingresado.
+● Si el saldo es insuficiente, la transacción será cancelada y se mostrará un mensaje
+informando que no dispone del monto requerido.
+24
+Una vez validado que todos los campos han sido completados correctamente y que la
+cuenta de origen dispone de los fondos necesarios, se procederá a aplicar el pago al
+préstamo.
+El pago se aplicará siguiendo el siguiente criterio: el sistema buscará en la tabla de
+amortización del préstamo la primera cuota pendiente (es decir, la más cercana en fecha
+que aún no haya sido pagada o que tenga saldo pendiente, aunque sea parcial).
+● El monto abonado se utilizará para pagar esa cuota en su totalidad o parcialmente,
+según corresponda.
+● Si, después de cubrir esa cuota, aún queda saldo disponible del pago realizado, el
+sistema continuará aplicando el excedente a la siguiente cuota pendiente,
+repitiendo este proceso de forma secuencial.
+● El procedimiento continuará hasta que el monto pagado se agote o no haya más
+cuotas pendientes por cubrir, si al pagar toda la cuota queda dinero aun el mismo
+se debe regresar a la cuenta de ahorro de origen.
+Este mecanismo garantiza que el pago se aplique de forma lógica y ordenada,
+respetando la secuencia de la amortización del préstamo.
+Además, se deberá registrar esta transacción en la cuenta de ahorro de origen como un
+crédito.
+Una vez procesado el pago y registrado el historial, el sistema enviará automáticamente
+un correo electrónico al cliente notificando que se ha realizado un pago a un préstamo.
+El asunto del correo debe indicar: "Pago realizado al préstamo [XXXX]", donde [XXXX]
+corresponde a los nueve dígitos del número identificador del préstamo al que se aplicó
+el pago. En el cuerpo del mensaje se debe incluir el monto pagado, los últimos cuatro
+dígitos de la cuenta desde la cual se realizó el pago, así como la fecha y la hora exacta
+en que se efectuó la transacción. Finalmente, una vez completada la operación, el
+sistema debe redirigir al cliente a su pantalla principal (Home del cliente).
+La última opción corresponde a la funcionalidad de transacción a beneficiarios. En
+esta pantalla, el cliente deberá completar un formulario con los siguientes campos:
+● Beneficiario: un selector que muestra todos los beneficiarios previamente
+registrados por el usuario autenticado, se debe mostrar el número de cuenta y
+nombre del beneficiario en el select.
+25
+● Monto a pagar: valor que desea transferir al beneficiario.
+● Cuenta de origen: selector con las cuentas de ahorro activas del cliente
+logueado desde las cuales puede realizar el pago.
+Todos los campos son obligatorios. Al enviar el formulario, el sistema deberá validar
+que la cuenta de origen seleccionada tenga fondos suficientes para cubrir el monto
+ingresado.
+● Si el saldo es insuficiente, la transacción será cancelada y se mostrará un
+mensaje informando que no dispone de fondos suficientes para realizar el pago.
+Si la validación es exitosa, el sistema redirigirá al cliente a una pantalla de confirmación
+donde se mostrará el nombre y apellido del titular de la cuenta del beneficiario. Allí se
+le preguntará si está seguro de realizar la transacción.
+● Si el cliente confirma la operación, se debitará el monto de la cuenta
+seleccionada y se acreditará a la cuenta del beneficiario. Además, la transacción
+será registrada en el histórico de transacciones en la cuenta de origen
+seleccionada como débito y en la cuenta de ahorro del beneficiario se registrará
+como un crédito.
+● Si el cliente cancela, la transacción no se llevará a cabo y será redirigido
+nuevamente a la pantalla principal (Home del cliente).
+El sistema aparte del registro del historial de transacciones después de confirmada la
+transacción debe enviar dos correos, El primer correo será enviado al cliente que
+efectuó la transacción, notificando que se ha realizado un envío de dinero a otra cuenta.
+El asunto del correo debe ser: "Transacción realizada a la cuenta [XXXX]", donde
+[XXXX] corresponde a los últimos cuatro dígitos del número de cuenta destino(cuenta
+de beneficiario). En el cuerpo del mensaje, se debe incluir el monto transferido, así como
+la fecha y la hora exacta en que se efectuó la operación.
+El segundo correo será enviado al cliente receptor de los fondos (El beneficiario),
+informando que ha recibido una transacción desde otra cuenta. El asunto del correo
+debe ser: "Transacción enviada desde la cuenta [XXXX]", donde [XXXX] corresponde a
+los últimos cuatro dígitos del número de cuenta origen. En el cuerpo del mensaje, se
+debe detallar el monto recibido, junto con la fecha y la hora exacta de la transacción.
+Finalmente, el sistema debe redirigir al cliente a su pantalla principal (Home del cliente)
+una vez completada la operación.
+26
+Funcionalidad de Avances de efectivo
+En esta pantalla, el cliente podrá realizar un avance de efectivo desde una de sus
+tarjetas de crédito. Para ello, deberá completar un formulario con los siguientes tres
+campos obligatorios:
+● Tarjeta de crédito origen: selector que muestra todas las tarjetas asignadas y
+activas del usuario autenticado.
+● Cuenta de ahorro destino: selector con las cuentas de ahorro activas del cliente
+logueado donde desea recibir el avance de efectivo.
+● Monto del avance de efectivo: valor a transferir desde la tarjeta hacia la cuenta
+seleccionada.
+Una vez completados todos los campos del formulario, los datos deberán ser enviados
+al servidor, donde el sistema realizará una validación estricta para asegurar que el
+monto solicitado como avance de efectivo no exceda el límite de crédito disponible de la
+tarjeta seleccionada.
+La validación no debe considerar únicamente el límite total asignado a la tarjeta, sino
+también la deuda actual acumulada. Por ejemplo, si una tarjeta tiene un límite de
+RD$500 y ya posee una deuda de RD$300, entonces solo estarán disponibles RD$200
+para nuevas operaciones. En ese caso, un intento de avance por RD$201 deberá ser
+rechazado automáticamente, ya que superaría el crédito disponible.
+Esta lógica garantiza que no se pueda procesar un avance de efectivo que comprometa
+un monto superior al autorizado por el límite de crédito restante de la tarjeta.
+Si los datos son válidos, el sistema ejecutará la operación con la siguiente lógica:
+● El monto del avance se sumará al saldo de la cuenta de ahorro destino
+seleccionada.
+● Ese mismo monto se agregará como deuda a la tarjeta de crédito desde la cual se
+tomó el dinero.
+● Además, se aplicará automáticamente un interés del 6.25 % sobre el monto del
+avance, que también se sumará a la deuda.
+● Por ejemplo, si el cliente realiza un avance de RD$100, su tarjeta refleja una
+deuda total de RD$106.25.
+27
+Esta operación debe registrarse adecuadamente en el historial de transacciones tanto
+de la cuenta de ahorro como un crédito y en la tarjeta de crédito como un consumo.
+Una vez procesado el avance de efectivo, el sistema enviará automáticamente un correo
+electrónico al cliente notificando que se ha realizado un avance desde una de sus
+tarjetas de crédito. El asunto del correo debe indicar: "Avance de efectivo desde la
+tarjeta [XXXX]", donde [XXXX] corresponde a los últimos cuatro dígitos del número de
+la tarjeta utilizada para el avance. En el cuerpo del mensaje se debe incluir el monto del
+avance realizado, los últimos cuatro dígitos de la cuenta de ahorro en la que fue
+depositado el dinero, así como la fecha y hora exacta en que se efectuó la transacción.
+Finalmente, una vez completada la operación, el sistema debe redirigir al cliente a su
+pantalla principal (Home del cliente).
+Funcionalidad de Transferencia entre cuenta
+En esta pantalla, el usuario puede realizar transferencias entre sus propias cuentas.
+Para ello, debe completar un formulario con los siguientes campos:
+● Cuenta de origen: selector que muestra todas las cuentas de ahorro activas y
+asociadas al usuario autenticado, desde la cual se desea transferir el dinero.
+● Cuenta de destino: selector con las cuentas de ahorro activas del mismo usuario, a la
+cual se enviará el monto.
+● Monto a transferir: cantidad que desea mover entre sus cuentas.
+Todos los campos son obligatorios. Al enviar el formulario, el sistema debe validar que
+la cuenta de origen y destino no sean la misma y que tenga fondos suficientes para
+cubrir el monto indicado.
+● Si no cuenta con saldo suficiente, se cancelará la operación y se mostrará un mensaje
+informando que no dispone del monto requerido.
+● Si la validación es exitosa, el monto será descontado de la cuenta de origen y
+acreditado a la cuenta de destino, completando así la transferencia entre cuentas del
+mismo cliente.
+En la cuenta de origen, la transacción debe registrarse en el historial como un
+movimiento de tipo DÉBITO, ya que representa una salida de fondos.
+28
+Por su parte, en la cuenta de destino, la transacción debe registrarse en el historial
+como un movimiento de tipo CRÉDITO, al tratarse de una entrada de dinero.
+Funcionalidades Cajero
+Home
+En la pantalla inicial del cajero se mostrará un menú con las siguientes opciones:
+● Home
+● Depósito
+● Retiro
+● Pago a tarjeta de crédito
+● Pago a préstamo
+● Transacciones a cuentas de terceros
+● Cerrar sesión (Al hacer click se elimina la sesión y se redirige
+al login)
+Además del menú, se presentarán los siguientes indicadores:
+● Número total de transacciones realizadas en el sistema por el cajero que está
+logueado en ese dia
+● Número de pagos(pagos de TC y Préstamos) realizados por el cajero que está
+logueado en ese día.
+● Número de depósitos realizados por el cajero que está logueado en ese día
+● Número de retiro realizados por el cajero que está logueado en ese día
+Depósito
+En esta pantalla, el cajero debe completar un formulario con los siguientes campos:
+● Número de cuenta destino (campo de texto donde se ingresa la cuenta a la que
+desea realizar el depósito)
+● Monto a depositar (input number)
+Todos los campos son obligatorios. Al enviar el formulario, el sistema debe realizar las
+siguientes validaciones
+29
+1. Verificar que la cuenta destino exista.
+● Si la cuenta no existe o si está inactiva, se cancelará la transacción y se mostrará
+un mensaje indicando que el número de cuenta ingresado no es válido.
+Si las validaciones son exitosas, el sistema redirigirá al usuario a una pantalla de
+confirmación donde se mostrará el nombre y apellido del titular de la cuenta destino. En
+esta pantalla se preguntará si el cliente está seguro de realizar la transacción.
+Si el cliente confirma la operación, el sistema procederá a acreditar el monto indicado a
+la cuenta de ahorro destino. Esta transacción deberá registrarse en el historial de dicha
+cuenta como un movimiento de tipo crédito, y en el campo "Origen" debe colocarse el
+texto "DEPÓSITO" y en el campo beneficiario el número de la cuenta destino de este
+depósito.
+Una vez procesado el depósito, el sistema enviará automáticamente un correo
+electrónico al cliente notificando que se ha realizado un depósito a su cuenta. El asunto
+del correo debe indicar: "Depósito realizado a su cuenta [XXXX]", donde [XXXX]
+corresponde a los últimos 4 dígitos del número de cuenta. En el cuerpo del mensaje se
+debe incluir el monto depositado, la fecha y la hora exacta de la transacción.
+Finalmente, el sistema debe redirigir al cliente a su pantalla principal (Home del cajero)
+una vez completada la operación.
+Si el cliente cancela la operación, la transacción no se ejecutará y el sistema lo redirigirá
+a la pantalla principal(Home del cajero).
+Retiro
+En esta pantalla, el cajero debe completar un formulario con los siguientes campos:
+● Número de cuenta origen(campo de texto donde se ingresa el numero de cuenta de
+donde se quiere retirar el dinero)
+● Monto a retirar (input number)
+Todos los campos son obligatorios. Al enviar el formulario, el sistema debe realizar las
+siguientes validaciones:
+1. Verificar que la cuenta origen exista.
+● Si la cuenta no existe o si está inactiva, se cancelará la transacción y se mostrará
+un mensaje indicando que el número de cuenta ingresado no es válido.
+30
+2. Verificar que la cuenta de origen seleccionada tenga fondos suficientes para cubrir
+el monto indicado.
+● Si no hay saldo suficiente, la transacción será cancelada y se notificará al cliente
+que el monto excede el saldo disponible.
+Si las validaciones se completan exitosamente, el sistema redirigirá al usuario a una
+pantalla de confirmación, en la cual se mostrará el nombre y apellido del titular de la
+cuenta de origen. En esta pantalla se le preguntará al cliente si está seguro de realizar
+la transacción.
+Si el cliente confirma la operación, el sistema procederá a debitar el monto especificado
+de la cuenta de ahorro de origen. Esta transacción deberá registrarse en el historial de
+dicha cuenta como un movimiento de tipo débito. En el campo "Origen" se deberá
+reflejar el número de cuenta desde la cual se realizó el retiro, y en el campo
+"Beneficiario" se deberá colocar el texto "RETIRO".
+Una vez procesado el retiro, el sistema enviará automáticamente un correo electrónico
+al cliente notificando que se ha realizado un retiro de su cuenta. El asunto del correo
+debe indicar: "Retiro realizado a su cuenta [XXXX]", donde [XXXX] corresponde a los
+últimos 4 dígitos del número de cuenta. En el cuerpo del mensaje se debe incluir el
+monto retirado, la fecha y la hora exacta de la transacción. Finalmente, el sistema debe
+redirigir al cliente a su pantalla principal (Home del cajero) una vez completada la
+operación.
+Si el cliente cancela la operación, la transacción no se ejecutará y el sistema lo redirigirá
+a la pantalla principal(Home del cajero).
+Pago a tarjeta de crédito
+En esta pantalla, el cajero debe completar un formulario con los siguientes campos:
+● Número de cuenta origen: campo de texto donde el usuario debe ingresar el número
+de cuenta desde la cual se desea tomar el dinero para realizar el pago a la tarjeta de
+crédito.
+● Monto a pagar: campo numérico en el que se especifica la cantidad que se desea
+abonar.
+31
+● Número de la tarjeta de crédito: campo de texto donde se deben ingresar los 16
+dígitos correspondientes al número identificador de la tarjeta a la que se desea
+aplicar el pago.
+Todos los campos son obligatorios. Al enviar el formulario, el sistema debe realizar las
+siguientes validaciones:
+1. Verificar que la cuenta origen exista.
+● Si la cuenta no existe o si está inactiva, se cancelará la transacción y se mostrará
+un mensaje indicando que el número de cuenta ingresado no es válido.
+2. Verificar que la tarjeta de crédito exista.
+● Si la tarjeta de crédito no existe o si está inactiva, se cancelará la transacción y se
+mostrará un mensaje indicando que el número de tarjeta ingresado no es válido.
+3. Verificar que la cuenta de origen seleccionada tenga fondos suficientes para cubrir
+el monto indicado.
+● Si no hay saldo suficiente, la transacción será cancelada y se notificará al cliente
+que el monto excede el saldo disponible.
+Si las validaciones se completan exitosamente, el sistema redirigirá al usuario a una
+pantalla de confirmación, en la cual se mostrará el nombre y apellido del titular de la
+tarjeta. En esta pantalla se le preguntará al cliente si está seguro de realizar la
+transacción.
+Si el cliente confirma la operación, se valida que si el monto ingresado excede la deuda
+actual de la tarjeta, solo se debitará el valor correspondiente a la deuda.
+El excedente no será utilizado ni descontado de la cuenta del cliente, evitando así pagos
+innecesarios,un ejemplo si solo se debe 500 pesos a la tarjeta y se hace un pago de
+1000, de la cuenta de ahorro solo se debitan 500 pesos, no se le puede pagar demás a
+una tarjeta de crédito.
+Una vez realizado el pago, se deberá actualizar el saldo de la deuda de la tarjeta de
+crédito reduciendo el total adeudado con el monto pagado y el sistema también
+procederá a debitar el monto especificado de la cuenta de ahorro de origen. Esta
+transacción deberá registrarse en el historial de dicha cuenta como un movimiento de
+tipo débito. En el campo "Origen" se deberá reflejar el número de cuenta desde la cual
+se tomó el dinero para el pago, y en el campo "Beneficiario" se deberá colocar los 16
+dígitos correspondientes al número identificador de la tarjeta a la cual se le hizo el
+32
+pago.
+Una vez procesado el pago, el sistema enviará automáticamente un correo electrónico
+al cliente notificando que se ha realizado un pago a una tarjeta de crédito. El asunto del
+correo debe indicar: "Pago realizado a la tarjeta [XXXX]", donde [XXXX] corresponde a
+los últimos cuatro dígitos del número de la tarjeta a la que se aplicó el pago. En el
+cuerpo del mensaje se debe incluir el monto que fue retirado, los últimos cuatro dígitos
+de la cuenta desde la cual se realizó el pago, así como la fecha y la hora exacta de la
+transacción. Finalmente, una vez completada la operación, el sistema debe redirigir al
+cliente a su pantalla principal (Home del cajero).
+Si el cliente cancela la operación, la transacción no se ejecutará y el sistema lo redirigirá
+a la pantalla principal(Home del cajero).
+Pago a préstamo
+En esta pantalla, el cajero debe completar un formulario con los siguientes campos:
+● Número de cuenta origen: campo de texto donde el usuario debe ingresar el número
+de cuenta desde la cual se desea tomar el dinero para realizar el pago al préstamo.
+● Monto a pagar: campo numérico en el que se especifica la cantidad que se desea
+abonar.
+● Número del préstamo: campo de texto donde se deben ingresar los 9 dígitos
+correspondientes al número identificador del préstamo a la que se desea aplicar el
+pago.
+Todos los campos son obligatorios. Al enviar el formulario, el sistema debe realizar las
+siguientes validaciones:
+1. Verificar que la cuenta origen exista.
+● Si la cuenta no existe o si está inactiva, se cancelará la transacción y se mostrará
+un mensaje indicando que el número de cuenta ingresado no es válido.
+2. Verificar que el préstamo exista.
+● Si el préstamo no existe o si está completado, se cancelará la transacción y se
+mostrará un mensaje indicando que el número de préstamo ingresado no es
+válido.
+3. Verificar que la cuenta de origen seleccionada tenga fondos suficientes para cubrir
+el monto indicado.
+33
+● Si no hay saldo suficiente, la transacción será cancelada y se notificará al cliente
+que el monto excede el saldo disponible.
+Si las validaciones se completan exitosamente, el sistema redirigirá al usuario a una
+pantalla de confirmación, en la cual se mostrará el nombre y apellido del titular del
+préstamo. En esta pantalla se le preguntará al cliente si está seguro de realizar la
+transacción.
+Si el cliente confirma la operación, se procederá a aplicar el pago al préstamo.
+El pago se aplicará siguiendo el siguiente criterio: el sistema buscará en la tabla de
+amortización del préstamo la primera cuota pendiente (es decir, la más cercana en fecha
+que aún no haya sido pagada o que tenga saldo pendiente, aunque sea parcial).
+● El monto abonado se utilizará para pagar esa cuota en su totalidad o parcialmente,
+según corresponda.
+● Si, después de cubrir esa cuota, aún queda saldo disponible del pago realizado, el
+sistema continuará aplicando el excedente a la siguiente cuota pendiente,
+repitiendo este proceso de forma secuencial.
+● El procedimiento continuará hasta que el monto pagado se agote o no haya más
+cuotas pendientes por cubrir, si al pagar toda la cuota queda dinero aun el mismo
+se debe regresar a la cuenta de ahorro de origen.
+Este mecanismo garantiza que el pago se aplique de forma lógica y ordenada,
+respetando la secuencia de la amortización del préstamo.
+El sistema también procederá a debitar el monto especificado de la cuenta de ahorro
+de origen. Esta transacción deberá registrarse en el historial de dicha cuenta como un
+movimiento de tipo débito. En el campo "Origen" se deberá reflejar el número de cuenta
+desde la cual se tomó el dinero para el pago, y en el campo "Beneficiario" se deberá
+colocar los 9 dígitos correspondientes al número identificador del préstamo al cual se le
+hizo el pago.
+Una vez procesado el pago, el sistema enviará automáticamente un correo electrónico
+al cliente notificando que se ha realizado un pago a un préstamo. El asunto del correo
+debe indicar: "Pago realizado al préstamo [XXXX]", donde [XXXX] corresponde a los
+nueve dígitos del número identificador del préstamo al que se aplicó el pago. En el
+cuerpo del mensaje se debe incluir el monto pagado, los últimos cuatro dígitos de la
+34
+cuenta desde la cual se realizó el pago, así como la fecha y la hora exacta en que se
+efectuó la transacción. Finalmente, una vez completada la operación, el sistema debe
+redirigir al cliente a su pantalla principal (Home del cajero).
+Si el cliente cancela la operación, la transacción no se ejecutará y el sistema lo redirigirá
+a la pantalla principal (Home del cajero).
+Transacciones a cuentas de terceros
+En esta pantalla, el cajero debe completar un formulario con los siguientes campos:
+● Número de cuenta origen(campo de texto donde se ingresa el numero de cuenta de
+donde se quiere retirar el dinero)
+● Monto de la transacción (input number)
+● Número de cuenta destino(campo de texto donde se ingresa el numero de cuenta a
+la cual se quiere depositar el dinero)
+Todos los campos son obligatorios. Al enviar el formulario, el sistema debe realizar las
+siguientes validaciones:
+1. Verificar que la cuenta origen exista.
+● Si la cuenta no existe o si está inactiva, se cancelará la transacción y se mostrará
+un mensaje indicando que el número de cuenta origen ingresado no es válido.
+2. Verificar que la cuenta de origen seleccionada tenga fondos suficientes para cubrir
+el monto indicado.
+● Si no hay saldo suficiente, la transacción será cancelada y se notificará al cliente
+que el monto excede el saldo disponible.
+3. Verificar que la cuenta de destino exista.
+● Si la cuenta no existe o si está inactiva, se cancelará la transacción y se mostrará
+un mensaje indicando que el número de cuenta destino ingresado no es válido.
+Si las validaciones se completan exitosamente, el sistema redirigirá al usuario a una
+pantalla de confirmación, en la cual se mostrará el nombre y apellido del titular de la
+cuenta de destino. En esta pantalla se le preguntará al cliente si está seguro de realizar
+la transacción.
+Si el cliente confirma la operación, el sistema procederá a debitar el monto especificado
+de la cuenta de ahorro de origen y a acreditar ese mismo monto en la cuenta de destino.
+35
+Esta transacción deberá registrarse en el historial de ambas cuentas, reflejando
+adecuadamente el tipo de movimiento y los datos relacionados.
+En el historial de la cuenta de origen, la transacción se registrará como un movimiento
+de tipo débito. En el campo "Origen" se debe mostrar el número de la cuenta desde la
+cual se realizó el retiro, y en el campo "Beneficiario" se debe indicar el número de la
+cuenta destino a la que se transfirió el dinero.
+De igual forma, en el historial de la cuenta de destino, la transacción se registrará como
+un movimiento de tipo crédito. En este caso, en el campo "Origen" se debe reflejar el
+número de la cuenta desde la cual se recibió el dinero, y en el campo "Beneficiario" se
+debe mostrar el número de la cuenta que recibió el depósito.
+Este registro cruzado garantiza la trazabilidad y transparencia de la operación entre
+ambas cuentas.
+Una vez procesada la transacción, el sistema enviará automáticamente dos correos
+electrónicos: uno al cliente que realizó la operación y otro al cliente que recibió los
+fondos.
+El primer correo será enviado al cliente que efectuó la transacción, notificando que se ha
+realizado un envío de dinero a otra cuenta. El asunto del correo debe ser: "Transacción
+realizada a la cuenta [XXXX]", donde [XXXX] corresponde a los últimos cuatro dígitos
+del número de cuenta destino. En el cuerpo del mensaje, se debe incluir el monto
+transferido, así como la fecha y la hora exacta en que se efectuó la operación.
+El segundo correo será enviado al cliente receptor de los fondos, informando que ha
+recibido una transacción desde otra cuenta. El asunto del correo debe ser: "Transacción
+enviada desde la cuenta [XXXX]", donde [XXXX] corresponde a los últimos cuatro
+dígitos del número de cuenta origen. En el cuerpo del mensaje, se debe detallar el
+monto recibido, junto con la fecha y la hora exacta de la transacción. Finalmente, el
+sistema debe redirigir al cliente a su pantalla principal (Home del cajero) una vez
+completada la operación.
+Si el cliente cancela la operación, la transacción no se ejecutará y el sistema lo redirigirá
+a la pantalla principal(Home del cajero).
+36
+Funcionalidades del API
+Seguridad
+Este sistema tendrá dos roles un rol administrador y un rol comercio, la seguridad en los
+endpoints del api deben de validarse a través del uso de JWT
+El sistema debe crear por defectos estos roles y crear un usuario con el rol
+administrador, otro con el rol comercio.
+Los usuarios se crean inactivos por lo cual hay que hacer un proceso de confirmación de
+cuenta. Si un usuario no está logueado no puede acceder a las funcionalidades
+(endpoints) ni del administrador y ni del comercio. Cuando intente utilizar esos endpoint
+y no esté logueado debe mostrarle un mensaje de que no tiene autorización y el status
+code de la respuesta debe ser 401.
+También se debe validar que si el usuario logueado es un comercio no puede ingresar a
+las opciones del administrador y viceversa que si un administrador está logueado no
+pueda entrar a las funcionalidades de los comercios, si intenta usar un endpoint para el
+que no estás autorizado a usar debe retornar una respuesta con el mensaje de acceso
+denegado y status code debe ser 403.
+Todas estas validaciones deben realizarse usando los filtros de authorize que
+implementa identity con el uso de JWT.
+37
+Módulo: Login y Account controller
+Seguridad
+Todos los endpoints de este módulo(menos el de login) requieren autenticación JWT.
+Se debe incluir el siguiente encabezado en cada solicitud:
+Authorization: Bearer {token_jwt}
+Acceso restringido: Ambos roles tienen permiso a estos endpoints tanto comercio
+como administradores.
+Listados de endpoint de este módulo
+1. Login
+POST /account/login
+Descripción: Permite autenticarse y obtener el token JWT para poder usar los demás
+endpoints de la aplicación.
+Body:
+{
+“userName”: “admin”,
+“password”:”123P@$$word!”
+}
+Respuestas:
+● 200 OK: Token jwt.
+● 400 Bad request: Faltan uno o más parámetros requeridos en la solicitud (por
+ejemplo, usuario o contraseña vacíos).
+● 401 Unauthorized: Usuario o contraseña incorrectos.
+38
+Respuesta 200:
+{
+“Jwt”:
+“eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIi
+wibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.dyt0CoTl4WoVjA
+HI9Q_CwSKhl6d_9rhM3NrXuJttkao”
+}
+2. Confirmar cuenta
+POST /account/confirm
+Descripción: Permite confirmar un usuario mediante un token el mismo recibe por
+correo.
+Body:
+{
+“token”: “eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9”,
+}
+Respuestas:
+● 204 No content: Se activa el usuario
+● 400 Bad request: Faltan uno o más parámetros requeridos en la solicitud (por
+ejemplo, token vacío o el token es invalido).
+● 401 Unauthorized: Bearer token jwt ausente o inválido.
+39
+3. Obtener token para el reseteo de password
+POST /account/get-reset-token
+Descripción: Permite obtener el token para resetear la contraseña de un usuario
+Body:
+{
+“userName”: “admin”,
+}
+Reglas:
+● Todos los campos obligatorios.
+● Validar que el usuario que se colocó existe
+● Si el usuario es válido se debe inactivar el usuario y generar el reset token
+● Una vez creado el token de reset se debe enviar un correo, pero cuando se envía el
+correo desde el api no debe ser un enlace con el token, si no se que se debe mandar el
+token en el cuerpo del correo, para poder tomar el token del correo y usarlo para
+resetear la contraseña del usuario.
+Respuestas:
+● 204 No content: Se genero el reset token y se envió el correo
+● 400 Bad request: Faltan uno o más parámetros requeridos en la solicitud (por
+ejemplo, usuario vacío o el usuario es invalido).
+● 401 Unauthorized: Bearer token jwt ausente o inválido.
+40
+4. Reseteo de password
+POST /account/reset-password
+Descripción: Cambia la contraseña del usuario mediante un token para validar el reseteo
+Body:
+{
+“userId”: “1”,
+“token”: “eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9”,
+“password”: “123P@$$word!”,
+“confirmPassword”: “123P@$$word!”,
+}
+Reglas:
+● Todos los campos obligatorios.
+● Validar que el usuario que se colocó existe
+● Si el usuario es válido se debe inactivar el usuario y generar el reset token
+● Una vez creado el token de reset se debe enviar un correo, pero cuando se envía el
+correo desde el api no debe ser un enlace con el token, si no se que se debe mandar el
+token en el cuerpo del correo, para poder tomar el token del correo y usarlo para
+resetear la contraseña del usuario.
+Respuestas:
+● 204 No content: Se cambio la contraseña del usuario
+● 400 Bad request: Faltan uno o más parámetros requeridos en la solicitud (por
+ejemplo, token o usuario vacío o el usuario es inválido o el token, las contraseñas no
+coinciden).
+● 401 Unauthorized: Bearer token jwt ausente o inválido.
+41
+Módulo: Gestión de Usuarios
+Seguridad
+Todos los endpoints de este módulo requieren autenticación JWT. Se debe incluir el
+siguiente encabezado en cada solicitud:
+Authorization: Bearer {token_jwt}
+Acceso restringido: Solo los usuarios con rol Administrador pueden consumir estos
+endpoints. Cualquier otro rol debe recibir HTTP 403 Forbidden.
+Listados de endpoint de este módulo
+1. Obtener listado de usuarios
+GET /api/users
+Descripción: Obtiene un listado paginado de los usuarios registrados menos lo que tiene
+el rol comercio, ordenado del más reciente al más antiguo.
+Parámetros de consulta:
+● page (int): Número de página (default: 1)
+● pageSize (int): Tamaño de página (default: 20)
+● rol (string): (opcional) Filtro por tipo de usuario (administrador, cajero, cliente)
+Respuestas:
+● 200 OK: Listado retornado exitosamente.
+● 401 Unauthorized: Token ausente o inválido.
+● 403 Forbidden: Usuario sin permisos de administrador.
+42
+Respuesta 200:
+2. Obtener listado de usuarios con rol comercio
+GET /api/users/commerce
+Descripción: Obtiene un listado paginado de los usuarios registrados con el rol
+comercio, ordenado del más reciente al más antiguo.
+Parámetros de consulta:
+● page (int): Número de página (default: 1)
+● pageSize (int): Tamaño de página (default: 20)
+● rol (string): (opcional) Filtro por tipo de usuario (administrador, cajero, cliente)
+Respuestas:
+● 200 OK: Listado retornado exitosamente.
+● 401 Unauthorized: Token ausente o inválido.
+● 403 Forbidden: Usuario sin permisos de administrador.
+43
+Respuesta 200:
+3. Crear nuevo usuario
+POST /api/users
+Descripción: Crea un nuevo usuario (administrador, cajero o cliente).
+Body:
+44
+Reglas:
+● Todos los campos obligatorios excepto montoInicial.
+● Validación de unicidad para usuario y correo.
+● Una vez creado el usuario se debe enviar un correo, pero cuando se enviar el correo
+desde el api no debe ser un enlace con el token, si no se que se debe mandar el token en
+el cuerpo del correo, para poder tomar el token del correo y usarlo para activar el usuario.
+● Si es cliente, generar cuenta de ahorro con:
+○ Número de cuenta único de 9 dígitos
+○ Balance inicial(lo colocado en la propiedad montoInicial)
+○ Marcada como cuenta principal
+Respuestas:
+● 201 Created: Usuario creado exitosamente.
+● 400 Bad Request: Datos faltantes o inválidos.
+● 409 Conflict: Usuario o correo ya registrado.
+● 401 Unauthorized, 403 Forbidden como en el resto.
+4. Crear nuevo usuario de comercio
+POST /api/users/commerce/{commerceId}
+Descripción: Crea un nuevo usuario en el sistema con el rol de comercio, el id que se
+para en la url como parámetro commerceId representa el id del comercio al que será
+asociado ese usuario, los comercios sólo pueden tener un usuario asociado a la vez.
+Body (application/json):
+45
+Reglas:
+● Todos los campos obligatorios.
+● Validación de unicidad para usuario y correo.
+● Validar que el id del comercio al que se le quiere asociar un usuario ya no tenga
+uno asociado (Los comercios sólo pueden tener un único usuario).
+● Una vez creado el usuario se debe enviar un correo, pero cuando se enviar el
+correo desde el api no debe ser un enlace con el token, si no se que se debe mandar
+el token en el cuerpo del correo, para poder tomar el token del correo y usarlo para
+activar el usuario.
+● Se debe generar una cuenta de ahorro asociado a ese usuario del rol comercio
+la misma tiene que cumplir con estas características:
+○ Número de cuenta único de 9 dígitos
+○ Balance inicial
+○ Marcada como cuenta principal
+Respuesta exitosa (201 Created)
+Errores:
+● 400 Bad Request: Datos faltantes o inválidos.
+● 401 Unauthorized
+● 403 Forbidden
+5. Actualizar usuario
+PUT /api/users/{id}
+Descripción: Modifica los datos del usuario especificado.
+Body:
+46
+Reglas:
+● No se puede modificar el tipo de usuario.
+● Si es cliente, montoAdicional se suma al balance actual de la cuenta principal.
+Respuestas:
+● 204 No content: Usuario actualizado.
+● 400 Bad Request: Errores de validación.
+● 404 Not Found: Usuario no existe.
+● 409 Conflict: Correo o usuario duplicado.
+6. Cambiar estado de usuario (activar/inactivar)
+PATCH /api/users/{id}/status
+Descripción: Activa o inactiva un usuario según el valor enviado.
+Body:
+{
+"status": true
+}
+Reglas:
+● El administrador autenticado no puede modificar su propio estado.
+Respuestas:
+● 204 No content: Estado cambiado correctamente.
+● 400 Bad Request: Estructura inválida.
+● 403 Forbidden: Intento de auto-modificación o no tiene el rol administrador.
+● 404 Not Found: Usuario no encontrado.
+7. Obtener detalle de usuario
+GET /api/users/{id}
+Descripción: Recupera la información detallada de un usuario específico.
+47
+Respuestas:
+● 200 OK: Detalle retornado.
+● 404 Not Found: Usuario no encontrado.
+Respuesta 200:
+Módulo: Gestión de Préstamos
+Seguridad
+Todos los endpoints de este módulo requieren autenticación JWT. Se debe incluir el
+siguiente encabezado en cada solicitud:
+Authorization: Bearer {token_jwt}
+Acceso restringido: Solo los usuarios con rol Administrador pueden consumir estos
+endpoints. Cualquier otro rol debe recibir HTTP 403 Forbidden.
+48
+Listados de endpoint de este módulo
+1. Obtener listado de préstamos
+GET /api/loan
+Parámetros de consulta:
+● página: int (opcional, por defecto 1)
+● estado: string ("activos" | "completados") (opcional)
+● cedula: string (opcional, para buscar por cliente)
+Respuestas:
+● 200 OK: Listado retornado exitosamente.
+● 401 Unauthorized: Token ausente o inválido.
+● 403 Forbidden: Usuario sin permisos de administrador.
+Ejemplo de respuesta:
+49
+2. Asignar préstamo a cliente
+POST /api/loan
+Body:
+Validaciones:
+● Todos los campos son requeridos.
+● Validar que el cliente no tenga préstamo activo.
+● Verificar si el cliente se convierte en cliente de alto riesgo.
+Respuestas:
+● 201 Created: Préstamo creado y tabla de amortización generada.
+● 400 Bad Request: Datos incompletos o cliente ya tiene préstamo activo.
+● 409 Conflict: Si el cliente es o se convierte en un cliente de alto riesgo
+● 401 Unauthorized: Token ausente o inválido.
+● 403 Forbidden: Usuario sin permisos de administrador.
+Notas adicionales:
+● El sistema debe enviar notificaciones por correo automáticamente luego de la
+creación del préstamo.
+● Al crearse el préstamo, el monto se acredita a la cuenta principal del cliente y se
+registra una transacción de tipo crédito.
+3. Obtener detalle de préstamo y tabla de amortización
+GET /api/loan/{id}
+Parámetros de ruta:
+● id: string (identificador del préstamo)
+50
+Respuestas:
+● 200 OK: Devuelve la tabla de amortización
+● 404 Not Found: Préstamo no encontrado
+● 401 Unauthorized: Token ausente o inválido.
+● 403 Forbidden: Usuario sin permisos de administrador.
+Ejemplo de respuesta:
+4. Editar tasa de interés de préstamo
+PATCH /api/loan/{id}/rate
+Body:
+Respuestas:
+● 204 No content: Tasa actualizada y cuotas recalculadas
+● 400 Bad Request: Tasa no proporcionada o no válida
+● 404 Not Found: Préstamo no encontrado
+● 401 Unauthorized: Token ausente o inválido.
+51
+● 403 Forbidden: Usuario sin permisos de administrador.
+Módulo: Gestión de Tarjetas de crédito
+Seguridad
+Todos los endpoints de este módulo requieren autenticación JWT. Se debe incluir el
+siguiente encabezado en cada solicitud:
+Authorization: Bearer {token_jwt}
+Acceso restringido: Solo los usuarios con rol Administrador pueden consumir estos
+endpoints. Cualquier otro rol debe recibir HTTP 403 Forbidden.
+Listados de endpoint de este módulo
+1. Obtener tarjetas de crédito
+GET /api/credit-card
+Descripción: Retorna una lista paginada de las tarjetas de crédito registradas en
+el sistema.
+Parámetros opcionales de consulta:
+● cédula: para filtrar tarjetas por cédula de un cliente.
+● estado: "activa" o "cancelada".
+● página: número de página (por defecto 1).
+Respuestas posibles:
+● 200 OK: Lista de tarjetas paginadas.
+● 401 Unauthorized: Token inválido o ausente.
+● 403 Forbidden: El rol del usuario no tiene permiso.
+52
+Respuesta ejemplo:
+2. Asignar tarjeta de crédito
+POST /api/credit-card
+Descripción: Asigna una nueva tarjeta de crédito a un cliente activo.
+Body:
+Respuestas posibles:
+● 201 Created: Tarjeta asignada correctamente.
+● 400 Bad Request: Datos inválidos o campos faltantes.
+● 409 Conflict: Número de tarjeta ya existe.
+● 401 Unauthorized o 403 Forbidden
+53
+3. Ver detalles de una tarjeta
+GET /api/credit-card/{id}
+Descripción: Retorna los consumos asociados a la tarjeta indicada.
+Parámetros de ruta:
+● id: identificador único de la tarjeta.
+Respuestas posibles:
+● 200 OK: Lista de consumos.
+● 404 Not Found: Tarjeta no encontrada.
+● 401 / 403
+Respuesta ejemplo:
+54
+4. Editar límite de una tarjeta
+PATCH /api/credit-card/{id}/limit
+Descripción: Permite modificar el límite de crédito de una tarjeta, siempre y
+cuando no sea inferior a la deuda actual.
+Body:
+Respuestas posibles:
+● 204 No content: Límite actualizado.
+● 400 Bad Request: Nuevo límite menor a la deuda.
+● 404 Not Found: Tarjeta no encontrada.
+● 401 / 403
+5. Cancelar tarjeta de crédito
+PATCH /api/credit-card/{id}/cancel
+Descripción: Cancela una tarjeta si el cliente no tiene deuda pendiente en ella.
+Respuestas posibles:
+● 204 no content: Tarjeta cancelada.
+● 400 Bad Request: El cliente aún tiene deudas.
+● 404 Not Found: Tarjeta no encontrada.
+● 401 / 403
+55
+Módulo: Gestión de cuentas de ahorro
+Seguridad
+Todos los endpoints de este módulo requieren autenticación JWT. Se debe incluir el
+siguiente encabezado en cada solicitud:
+Authorization: Bearer {token_jwt}
+Acceso restringido: Solo los usuarios con rol Administrador pueden consumir estos
+endpoints. Cualquier otro rol debe recibir HTTP 403 Forbidden.
+Listados de endpoint de este módulo
+1. Obtener listado de cuentas de ahorro
+GET /api/savings-account
+Parámetros de consulta:
+● cédula: Filtra cuentas por cédula del cliente.
+● estado: activo | cancelado
+● tipo: principal | secundaria
+● página: Número de página (default: 1)
+Respuesta exitosa (200 OK):
+56
+Errores posibles:
+● 401 Unauthorized: Token inválido o ausente.
+● 403 Forbidden: Usuario no autorizado.
+2. Asignar cuenta de ahorro secundaria a cliente
+POST /api/savings-account
+Request Body:
+Respuestas posibles:
+● 201 Created: Tarjeta asignada correctamente.
+● 400 Bad Request: Datos inválidos o campos faltantes.
+● 409 Conflict: Número de tarjeta ya existe.
+● 401 Unauthorized o 403 Forbidden
+57
+3. Obtener detalles de transacciones por cuenta
+GET /api/savings-account/{accountNumber}/transactions
+Path Param:
+● accountNumber: Número identificador de la cuenta.
+Respuesta exitosa (200 OK):
+Errores posibles:
+● 404 Not Found: Cuenta no encontrada.
+● 401/403: Problemas de autorización.
+58
+Módulo: Gestión de comercios
+Seguridad
+Todos los endpoints de este módulo requieren autenticación JWT. Se debe incluir el
+siguiente encabezado en cada solicitud:
+Authorization: Bearer {token_jwt}
+Acceso restringido: Solo los usuarios con rol Administrador pueden consumir estos
+endpoints. Cualquier otro rol debe recibir HTTP 403 Forbidden.
+Listados de endpoint de este módulo
+1. Obtener todos los comercios (paginado)
+GET /api/commerce?page=1&pageSize=20
+Descripción: Devuelve un listado paginado de comercios ordenado del más
+reciente al más antiguo, sino se pasa los parámetros de paginación debe
+devolver el listado completo de comercios que haya creados y activos en el
+sistema.
+Parámetros de consulta:
+● page: número de página.
+● pageSize: cantidad de registros por página.
+Respuesta exitosa (200 OK):
+59
+Errores:
+● 401 Unauthorized: Token JWT no enviado o inválido.
+● 403 Forbidden: Usuario no autorizado.
+2. Obtener comercio por ID
+GET /api/commerce/{id}
+Descripción: Devuelve los detalles de un comercio según su identificador.
+Respuesta exitosa (200 OK):
+Errores:
+● 401 Unauthorized
+● 403 Forbidden
+● 404 Not Found: Comercio no encontrado.
+3. Crear nuevo comercio
+POST /api/commerce
+Descripción: Crea un nuevo comercio en el sistema.
+Body (application/json):
+60
+Respuesta exitosa (201 Created)
+Errores:
+● 400 Bad Request: Datos faltantes o inválidos.
+● 401 Unauthorized
+● 403 Forbidden
+4. Actualizar comercio existente
+PUT /api/commerce/{id}
+Descripción: Actualiza los datos de un comercio existente.
+Body (application/json):
+Respuesta exitosa (204 No content)
+Errores:
+● 400 Bad Request
+● 401 Unauthorized
+● 403 Forbidden
+● 404 Not Found: Comercio no encontrado.
+61
+5. Cambiar estado de un comercio
+PATCH /api/commerce/{id}
+Descripción: desactiva o activa un comercio por su identificador, cuando se
+desactiva un comercio todos los usuarios asociado a ese comercio se deben
+desactivar y en caso de que se vuelva a reactivar un comercio los usuario igual
+permanecerán inactivos y deberán hacer el proceso de reseteo de contraseña
+para ser activados.
+Body (application/json):
+{
+“status”: true
+}
+Respuesta exitosa (204 No Content): Sin contenido.
+Errores:
+● 401 Unauthorized
+● 403 Forbidden
+● 404 Not Found: Comercio no encontrado.
+Módulo: Procesador de pago (Hermes pay)
+Seguridad
+Todos los endpoints de este módulo requieren autenticación JWT. Se debe incluir el
+siguiente encabezado en cada solicitud:
+Authorization: Bearer {token_jwt}
+Acceso restringido: Solo los usuarios con rol Administrador o Comercio pueden
+consumir estos endpoints. Cualquier otro rol debe recibir HTTP 403 Forbidden.
+62
+1. Obtener transacciones de un comercios (paginado)
+GET /pay/get-transactions/{commerceId}
+Descripción: Obtiene un listado paginado de las transacciones registradas para un
+comercio. Estas transacciones corresponden a los pagos recibidos en la cuenta de ahorro
+principal del usuario del comercio.
+El comportamiento varía según el rol del usuario autenticado:
+● Si el rol del usuario es comercio, el identificador del comercio se obtiene directamente
+del token JWT, ignorando cualquier commerceId enviado en la URL.
+● Si el rol del usuario es administrador, el identificador del comercio debe ser
+proporcionado explícitamente a través de la URL como parámetro.
+Parámetros de consulta:
+● page (int): Número de página (default: 1)
+● pageSize (int): Tamaño de página (default: 20)
+● commerceId (int): id del comercio del cual se quiere obtener las transacciones
+Respuestas:
+● 200 OK: Listado retornado exitosamente.
+● 401 Unauthorized: Token ausente o inválido.
+Ejemplo de respuesta
+63
+2. Procesar pago de un comercio
+POST /pay/process-payment/{commerceId}
+Descripción: Recibe los datos de un pago para ser procesado.
+El comportamiento varía según el rol del usuario autenticado:
+● Si el rol del usuario es comercio, el identificador del comercio se obtiene directamente
+del token JWT, ignorando cualquier commerceId enviado en la URL.
+● Si el rol del usuario es administrador, el identificador del comercio debe ser
+proporcionado explícitamente a través de la URL como parámetro.
+Body:
+{
+“cardNumber”: “1589963258467598”,
+“monthExpirationCard”: “02”,
+“yearExpirationCard”: “2028”,
+“CVC”: “859”,
+“transactionAmount”: “689.25”,
+}
+Reglas de validación:
+● Todos los campos del formulario son obligatorios.
+● Validación de datos de tarjeta: Se debe verificar que los datos ingresados de la
+tarjeta de crédito sean válidos y correspondan a una tarjeta registrada en el sistema.
+Esto incluye:
+○ Número de tarjeta (16 dígitos)
+○ Fecha de expiración (en formato válido y no vencida)
+○ Código de seguridad (CVC de 3 dígitos)
+64
+● Validación del comercio: Se debe validar que el commerceId enviado
+corresponda a un comercio existente en la base de datos. Si no existe, se debe rechazar
+la solicitud.
+● Validación del límite de crédito:
+○ Se debe validar que el monto especificado en la transacción no exceda
+el límite de crédito disponible de la tarjeta.
+○ Para ello, se debe considerar el monto ya adeudado en la tarjeta y
+verificar que la suma de la deuda actual más el nuevo consumo no supere el
+límite total aprobado de la tarjeta.
+Si todos los datos ingresados son válidos y superan las validaciones definidas, el
+sistema deberá realizar las siguientes acciones:
+● Acreditar el monto del pago a la cuenta de ahorro principal del comercio asociado
+al identificador recibido en la solicitud.
+● Registrar el consumo en la tarjeta de crédito utilizada para realizar el pago. Este
+consumo deberá asociarse al comercio correspondiente y reflejar:
+○ El monto procesado
+○ La fecha y hora de la transacción
+○ El nombre del comercio
+○ El estado del consumo como “APROBADO”
+Una vez procesado el pago, el sistema enviará automáticamente un correo electrónico al
+cliente notificando que se ha realizado un consumo con su tarjeta de crédito.
+El asunto del correo debe indicar: "Consumo realizado con la tarjeta [XXXX]", donde
+[XXXX] corresponde a los 4 últimos dígitos del número identificador de la tarjeta
+utilizada.
+En el cuerpo del mensaje se debe incluir la siguiente información:
+● El monto pagado
+● Los últimos cuatro dígitos de la tarjeta
+● El nombre del comercio donde se realizó el consumo
+● La fecha y la hora exacta de la transacción
+65
+Esta notificación garantiza que el cliente esté informado de cada movimiento realizado
+con su tarjeta, fortaleciendo la seguridad y confianza en el sistema.
+Una vez procesado el pago, el sistema enviará automáticamente un correo electrónico al
+comercio notificando que ha recibido un nuevo pago a través de una tarjeta de crédito.
+El asunto del correo debe indicar: "Pago recibido a través de tarjeta [XXXX]", donde
+[XXXX] corresponde a los 4 últimos dígitos del número identificador de la tarjeta con la
+que se realizó el consumo.
+En el cuerpo del mensaje se debe incluir la siguiente información:
+● El monto recibido
+● Los últimos cuatro dígitos de la tarjeta utilizada para realizar el pago
+● El nombre del comercio receptor del pago
+● La fecha y la hora exacta en que se procesó la transacción
+Este mensaje permitirá al comercio tener constancia inmediata de cada pago recibido,
+ayudando en la conciliación de ingresos y en el seguimiento de operaciones dentro del
+sistema.
+Respuestas:
+● 204 No content: Se procesó el pago
+● 400 Bad request: Faltan uno o más parámetros requeridos en la solicitud o los
+datos de la tarjeta o los comercios eran incorrectos.
+● 401 Unauthorized: Bearer token jwt ausente o inválido.
+66
+Requerimientos técnico para el web app
+● Se deben utilizar ViewModels con sus respectivas validaciones integradas, asegurando
+que toda la lógica de validación se aplique desde el modelo de vista.
+● La persistencia de datos debe implementarse utilizando Entity Framework en enfoque
+Code First, permitiendo una gestión estructurada de las entidades y migraciones de
+base de datos.
+● El proyecto debe contar con una interfaz clara y visualmente comprensible, utilizando
+Bootstrap u otro framework CSS que permita una presentación limpia y responsiva.
+● Para la transferencia de datos entre capas, se deben utilizar DTOs (Data Transfer
+Objects), promoviendo una separación clara entre la lógica de negocio y la presentación.
+● La solución debe seguir estrictamente la arquitectura ONION, implementada
+correctamente en su totalidad. Cualquier desviación o error en su aplicación será
+considerada como una falla grave en el diseño del sistema.
+● Se deben emplear repositorios y servicios genéricos para promover el desacoplamiento
+y la reutilización de lógica común en las operaciones de datos.
+● El sistema debe utilizar ASP.NET Identity para la gestión de usuarios, incluyendo
+autenticación, autorización y control de roles.
+● Se debe implementar AutoMapper para el mapeo entre entidades, ViewModels y DTOs,
+reduciendo la necesidad de transformaciones manuales y mejorando la mantenibilidad
+del código.
+● Todas las operaciones relacionadas con montos de dinero deben manejarse con la
+mayor precisión posible, garantizando que se representen correctamente hasta los
+centavos, dada la sensibilidad del dominio financiero.
+Requerimientos técnico para el web api
+● Todos los requerimientos técnicos del web app, menos lo que tiene que ver con vistas o
+viewmodels
+● El proyecto debe contar con una interfaz clara y visualmente comprensible para ser
+utilizado esto se logra a través de la implementación de swagger,
+● El sistema debe utilizar ASP.NET Identity para la gestión de usuarios, incluyendo
+autenticación, autorización y control de roles que se harán a través del uso de token jwt.

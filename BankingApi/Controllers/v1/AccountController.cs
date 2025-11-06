@@ -4,8 +4,7 @@ using BankingApp.Core.Application.Dtos.User;
 using BankingApp.Core.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Metadata.Conventions;
-using System.Linq.Expressions;
+
 
 namespace BankingApi.Controllers.v1
 {
@@ -63,7 +62,7 @@ namespace BankingApi.Controllers.v1
                     LastName = dto.LastName,
                     Name = dto.Name,
                     Password = dto.Password,
-                    PhoneNumber = dto.PhoneNumber,
+                    DocumentIdNumber = dto.DocumentIdNumber,
                     Role = dto.Role,
                     Id = "",
                 },null, true);
@@ -82,9 +81,5 @@ namespace BankingApi.Controllers.v1
             }
 
         }
-
-
-
-
     }
 }

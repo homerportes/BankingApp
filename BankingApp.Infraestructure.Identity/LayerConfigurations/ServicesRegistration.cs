@@ -20,7 +20,6 @@ namespace BankingApp.Infraestructure.Identity.LayerConfigurations
 {
     public static class ServicesRegistration
     {
-
         public static void AddIdentityLayerIocForWebApp(this IServiceCollection services, IConfiguration config)
         {
 
@@ -71,13 +70,6 @@ namespace BankingApp.Infraestructure.Identity.LayerConfigurations
                 opt.SlidingExpiration = true;
 
             });
-
-
-
-
-
-
-
             #endregion
 
 
@@ -186,12 +178,6 @@ namespace BankingApp.Infraestructure.Identity.LayerConfigurations
 
             });
 
-
-
-
-
-
-
             #endregion
 
 
@@ -224,8 +210,6 @@ namespace BankingApp.Infraestructure.Identity.LayerConfigurations
                     },
                     contextLifetime: ServiceLifetime.Scoped,
                     optionsLifetime: ServiceLifetime.Scoped
-
-
                     );
             }
         }

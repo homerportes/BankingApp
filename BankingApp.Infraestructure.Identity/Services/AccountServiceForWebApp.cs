@@ -1,12 +1,8 @@
-﻿using BankingApp.Core.Application.Dtos.Email;
-using BankingApp.Core.Application.Dtos.Login;
+﻿using BankingApp.Core.Application.Dtos.Login;
 using BankingApp.Core.Application.Interfaces;
 using BankingApp.Infraestructure.Identity.Entities;
 using InvestmentApp.Infrastructure.Identity.Services;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.WebUtilities;
-using System.Text;
-
 
 namespace BankingApp.Infraestructure.Identity.Services
 {

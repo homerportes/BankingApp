@@ -1,5 +1,7 @@
 ﻿using BankingApp.Core.Domain.Interfaces;
+using BankingApp.Infraestructure.Persistence.Contexts;
 using BankingApp.Infraestructure.Persistence.Repositories;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -8,10 +10,26 @@ namespace BankingApp.Infraestructure.Persistence.LayerConfigurations
 {
     public static class ServicesRegistration
     {
-        public static void AddPersistenceLayer(this IServiceCollection services, IConfiguration config  )
+        public static void AddPersistenceLayer(this IServiceCollection services, IConfiguration config)
         {
-            services.AddScoped(typeof(IGenericRepository<>),typeof(GenericRepository<> ));
-        }
+            #region Contexts
+            if (config.GetValue<bool>("UseInMemoryDatabase"))
+            {
+                services.AddDbContext<BankingContext>(options =>
+                    options.UseInMemoryDatabase("BankingDB"));
+            }
+            else
+            {
+                services.AddDbContext<BankingContext>(options =>
+                    options.UseSqlServer(
+                        config.GetConnectionString("DefaultConnection"),
+                        m => m.MigrationsAssembly(typeof(BankingContext).Assembly.FullName)));
+            }
+            #endregion
 
+            #region Repositories
+            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+            #endregion
+        }
     }
 }
