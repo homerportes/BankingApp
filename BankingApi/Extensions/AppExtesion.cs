@@ -5,7 +5,7 @@
 
         public static void UseSwaggerExtension (this IApplicationBuilder app, IEndpointRouteBuilder routeBuilder)
         {
-            app.UseSwagger ();
+            app.UseSwagger();
             app.UseSwaggerUI(opt =>
             {
                 var versionDescriptions = routeBuilder.DescribeApiVersions();

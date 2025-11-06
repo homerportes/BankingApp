@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BankingApp.Infraestructure.Identity.Migrations
 {
     [DbContext(typeof(IdentityContext))]
-    [Migration("20251105013555_InitialIdentityMigration")]
-    partial class InitialIdentityMigration
+    [Migration("20251105212650_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -37,6 +37,9 @@ namespace BankingApp.Infraestructure.Identity.Migrations
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("DocumentIdNumber")
                         .IsRequired()

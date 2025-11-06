@@ -9,6 +9,7 @@ namespace BankingApp.Core.Application.Interfaces
 {
     public interface IUserService
     {
-        Task<UserPaginationResultDto> GetAllExceptCommerce(int page = 1, int pageSize = 20, string? rol = null);
+        Task<ApiUserPaginationResultDto> GetAllExceptCommerce(int page = 1, int pageSize = 20, string? rol = null);
+        Task<ApiUserPaginationResultDto> GetAllOnlyCommerce(int page = 1, int pageSize = 20, string? rol = null);
     }
 }

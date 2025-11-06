@@ -14,11 +14,20 @@ namespace BankingApp.Infraestructure.Identity.Contexts
     
         public class IdentityContext : IdentityDbContext<AppUser>
         {
-            public IdentityContext(DbContextOptions<IdentityContext> options) : base(options)
+       
+
+        public IdentityContext(DbContextOptions<IdentityContext> options) : base(options)
             {
 
             }
-            protected override void OnModelCreating(ModelBuilder builder)
+
+        public new DbSet<AppUser> Users => Set<AppUser>();
+        public new DbSet<IdentityRole> Roles => Set<IdentityRole>();
+        public new DbSet<IdentityUserRole<string>> UserRoles => Set<IdentityUserRole<string>>();
+        public new DbSet<IdentityUserLogin<string>> UserLogins => Set<IdentityUserLogin<string>>();
+
+
+        protected override void OnModelCreating(ModelBuilder builder)
             {
                 base.OnModelCreating(builder);
 

@@ -1,27 +1,41 @@
-<<<<<<<< HEAD:BankingApp.Core.Application/Dtos/User/CreateUserDto.cs
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
+
+
+
+using Newtonsoft.Json;
 
 namespace BankingApp.Core.Application.Dtos.User
-========
-﻿namespace BankingApp.Core.Application.Dtos.User
->>>>>>>> 99c2ec35db993b60848d0c8037dcd81457069c60:BankingApp.Core.Application/Dtos/User/SaveUserDto.cs
 {
-    public class SaveUserDto
+    public class CreateUserDto
     {
-        public string? Id { get; set; }
+        [JsonProperty("usuario")]
         public required string UserName { get; set; }
+
+        [JsonProperty("correo")]
+
         public required string Email { get; set; }
+
+        [JsonProperty("contrasena")]
+
         public required string Password { get; set; }
+        [JsonProperty("ConfirmContrasena")]
+
+        public required string ConfirmPassword { get; set; }
+        [JsonProperty("rol")]
+
         public required string Role { get; set; }
+
+        [JsonProperty("nombre")]
+
         public required string Name { get; set; }
+        [JsonProperty("apellido")]
+
         public required string LastName { get; set; }
-        public required string PhoneNumber { get; set; }
-        public required string Password { get; set; }
+        [JsonProperty("cedula")]
+
         public required string DocumentIdNumber { get; set; }
+        [JsonProperty("montoInicial")]
+
         public decimal? InitialAmount { get; set; } // Monto inicial para clientes
     }
 }

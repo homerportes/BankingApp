@@ -14,11 +14,11 @@ namespace BankingApp.Infraestructure.Persistence.EntitiesConfigurations
         public void Configure(EntityTypeBuilder<Loan> builder)
         {
             builder.HasKey(x => x.Id);
-            builder.Property(x => x.TotalLoanAmount).IsRequired();
+            builder.Property(x => x.TotalLoanAmount).IsRequired().HasPrecision(18, 2);
             builder.Property(x => x.ClientId).IsRequired();
             builder.Property(x => x.TotalInstallmentsCount).IsRequired();
-            builder.Property(x => x.PaidInstallmentsCount).IsRequired();
-            builder.Property(x => x.OutstandingBalance).IsRequired();
+            builder.Property(x => x.PaidInstallmentsCount).IsRequired().HasPrecision(18, 2);
+            builder.Property(x => x.OutstandingBalance).IsRequired().HasPrecision(18, 2);
             builder.Property(x => x.InterestRate).IsRequired();
             builder.Property(x => x.LoanTermInMonths).IsRequired();
             builder.Property(x => x.Status).IsRequired();

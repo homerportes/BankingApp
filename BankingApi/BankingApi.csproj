@@ -16,6 +16,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Newtonsoft" Version="9.0.6" />
     <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="9.0.6" />
     <PackageReference Include="System.Text.Json" Version="9.0.10" />
   </ItemGroup>
@@ -25,6 +26,10 @@
     <ProjectReference Include="..\BankingApp.Infraestructure.Identity\BankingApp.Infraestructure.Identity.csproj" />
     <ProjectReference Include="..\BankingApp.Infraestructure.Persistence\BankingApp.Infraestructure.Persistence.csproj" />
     <ProjectReference Include="..\BankingApp.Infraestructure.Shared\BankingApp.Infraestructure.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Conventions\" />
   </ItemGroup>
 
 </Project>

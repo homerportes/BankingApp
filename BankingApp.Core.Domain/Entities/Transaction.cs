@@ -17,10 +17,10 @@ namespace BankingApp.Core.Domain.Entities
 
         public DateTime DateTime { get; set; } = DateTime.Now;
 
-        public TransactionType Type { get; set; }  
-        
-        public required string AccountId { get; set; }
-        public  Account ?Account { get; set; }
+        public TransactionType Type { get; set; }
+
+        public required string AccountNumber { get; set; }
+        public Account ?Account { get; set; }
 
         public required string   Origin { get; set; }
         public required string Beneficiary { get; set; }

@@ -24,28 +24,42 @@ namespace BankingApp.Infraestructure.Persistence.Migrations
 
             modelBuilder.Entity("BankingApp.Core.Domain.Entities.Account", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<decimal>("Balance")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("ClientId")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<int>("Type")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Number")
+                        .IsUnique();
 
                     b.ToTable("Account");
                 });
 
             modelBuilder.Entity("BankingApp.Core.Domain.Entities.CreditCard", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("AdminId")
                         .IsRequired()
@@ -60,18 +74,27 @@ namespace BankingApp.Infraestructure.Persistence.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("CreditLimitAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("ExpirationDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
                     b.Property<decimal>("TotalAmountOwed")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Number")
+                        .IsUnique();
 
                     b.ToTable("CreditCard");
                 });
@@ -93,9 +116,11 @@ namespace BankingApp.Infraestructure.Persistence.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("OutstandingBalance")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("PaidInstallmentsCount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("int");
 
                     b.Property<int>("Status")
@@ -105,6 +130,7 @@ namespace BankingApp.Infraestructure.Persistence.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("TotalLoanAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
@@ -119,9 +145,11 @@ namespace BankingApp.Infraestructure.Persistence.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("AmountSpent")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<string>("CardId")
+                    b.Property<string>("CardNumber")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("DateTime")
@@ -133,7 +161,7 @@ namespace BankingApp.Infraestructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CardId");
+                    b.HasIndex("CardNumber");
 
                     b.ToTable("Purchase");
                 });
@@ -144,11 +172,12 @@ namespace BankingApp.Infraestructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("AccountId")
+                    b.Property<string>("AccountNumber")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Beneficiary")
@@ -170,7 +199,7 @@ namespace BankingApp.Infraestructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AccountId");
+                    b.HasIndex("AccountNumber");
 
                     b.ToTable("Transaction");
                 });
@@ -179,7 +208,10 @@ namespace BankingApp.Infraestructure.Persistence.Migrations
                 {
                     b.HasOne("BankingApp.Core.Domain.Entities.CreditCard", "CreditCard")
                         .WithMany("Purchases")
-                        .HasForeignKey("CardId");
+                        .HasForeignKey("CardNumber")
+                        .HasPrincipalKey("Number")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("CreditCard");
                 });
@@ -188,7 +220,8 @@ namespace BankingApp.Infraestructure.Persistence.Migrations
                 {
                     b.HasOne("BankingApp.Core.Domain.Entities.Account", "Account")
                         .WithMany("Transactions")
-                        .HasForeignKey("AccountId")
+                        .HasForeignKey("AccountNumber")
+                        .HasPrincipalKey("Number")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

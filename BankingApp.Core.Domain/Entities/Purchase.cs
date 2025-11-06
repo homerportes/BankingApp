@@ -18,7 +18,7 @@ namespace BankingApp.Core.Domain.Entities
 
         //nombre del comercio donde se realizó el consumo; si se trata de un avance de efectivo, en lugar del nombre del comercio debe aparecer el texto "AVANCE
         public required string MerchantName {  get; set; }
-        public string ?CardId { get; set; }
+        public string ?CardNumber { get; set; }
 
         public CreditCard? CreditCard { get; set; }
     }

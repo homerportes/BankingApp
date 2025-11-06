@@ -53,8 +53,6 @@ namespace InvestmentApp.Infrastructure.Identity.Services
 
             AppUser user = new AppUser()
             {
-                Id="",
-                DocumentIdNumber="",
                 Name = saveDto.Name,
                 LastName = saveDto.LastName,
                 Email = saveDto.Email,
@@ -66,7 +64,12 @@ namespace InvestmentApp.Infrastructure.Identity.Services
             var result = await _userManager.CreateAsync(user, saveDto.Password);
             if (result.Succeeded)
             {
-                await _userManager.AddToRoleAsync(user, saveDto.Role);
+
+                foreach (var rol in saveDto.Roles)
+                {
+                    await _userManager.AddToRoleAsync(user, rol);
+
+                }
                 
                 if (isApi != null && !isApi.Value)
                 {
@@ -123,6 +126,7 @@ namespace InvestmentApp.Infrastructure.Identity.Services
                 response.Name = user.Name;
                 response.LastName = user.LastName;
                 response.IsVerified = user.EmailConfirmed;
+                response.DocumentIdNumber = user.DocumentIdNumber;
                 response.Roles = rolesList.ToList();
 
                 return response;
@@ -202,8 +206,11 @@ namespace InvestmentApp.Infrastructure.Identity.Services
                 var rolesList = await _userManager.GetRolesAsync(user);
                 await _userManager.RemoveFromRolesAsync(user, rolesList.ToList());
 
-                await _userManager.AddToRoleAsync(user, saveDto.Role);
+                foreach (var rol in saveDto.Roles)
+                {
+                    await _userManager.AddToRoleAsync(user, rol);
 
+                }
 
                 if (!user.EmailConfirmed && isNotcreated)
                 {

@@ -9,9 +9,9 @@ namespace BankingApp.Core.Domain.Entities
 {
     public class CreditCard
     {
-
+       public required int Id { get; set; }
         //16 UNIQUE DIGITS generated
-       public required string Id { get; set; }
+       public required string Number { get; set; }
        public required string ClientId { get; set; }
 
         public decimal CreditLimitAmount { get; set; }

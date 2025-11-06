@@ -14,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using System.Text;
+using System.Threading.Tasks;
 using IAccountServiceForWebApi = BankingApp.Core.Application.Interfaces.IAccountServiceForWebApi;
 
 namespace BankingApp.Infraestructure.Identity.LayerConfigurations
@@ -158,16 +159,16 @@ namespace BankingApp.Infraestructure.Identity.LayerConfigurations
                     OnChallenge = c =>
                     {
                         c.HandleResponse();
-                        c.Response.StatusCode = 481;
+                        c.Response.StatusCode = 401;
                         c.Response.ContentType = "application/json";
-                        var result = JsonConvert.SerializeObject(new JwtResponseDto() { HasError = true , Error="No estás autorizado"});
+                        var result = JsonConvert.SerializeObject(new JwtResponseDto() { HasError = true , Error= "Token ausente o inválido" });
                         return c.Response.WriteAsync(result);
                     },
                     OnForbidden = c =>
                     {
                         c.Response.StatusCode = 403;
                         c.Response.ContentType = "application/json";
-                        var result = JsonConvert.SerializeObject(new JwtResponseDto() { HasError = true, Error = "No estás autorizado para acceder a este recurso" });
+                        var result = JsonConvert.SerializeObject(new JwtResponseDto() { HasError = true, Error = "Usuario sin permisos" });
                         return c.Response.WriteAsync(result);
                     }
                 };
@@ -189,7 +190,7 @@ namespace BankingApp.Infraestructure.Identity.LayerConfigurations
 
         }
 
-        private static void GeneralConfiguration(IServiceCollection services, IConfiguration config)
+        private static async Task GeneralConfiguration(IServiceCollection services, IConfiguration config)
          {
 
             if (config.GetValue<bool>("UseInMemoryDatabase"))
@@ -212,6 +213,8 @@ namespace BankingApp.Infraestructure.Identity.LayerConfigurations
                     optionsLifetime: ServiceLifetime.Scoped
                     );
             }
+
+           
         }
 
         public static async Task RunIdentitySeedAsync(this IServiceProvider service)

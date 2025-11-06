@@ -11,26 +11,34 @@ namespace BankingApi.Controllers.v1
 
     [Authorize]
     [ApiVersion("1.0")]
-    public class AccountController (IAccountServiceForWebApi accountServiceForWebApi) : BaseApiController
+    public class AccountController(IAccountServiceForWebApi accountServiceForWebApi) : BaseApiController
     {
-        private IAccountServiceForWebApi _accountService= accountServiceForWebApi;
+        private IAccountServiceForWebApi _accountService = accountServiceForWebApi;
 
 
 
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
 
         [HttpPost("login")]
-        public async Task< IActionResult> Login([FromBody] LoginDto loginDto)
+        public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
-            if (!ModelState.IsValid)
+            if (string.IsNullOrEmpty(loginDto.Username)|| string.IsNullOrEmpty(loginDto.Password))
             {
-                return BadRequest();
+                return BadRequest("Faltan uno o más parámetros requeridos en la solicitud");
             }
             try
             {
-                return Ok(await _accountService.AuthenticateAsync(loginDto));
+
+                var result = await _accountService.AuthenticateAsync(loginDto);
+                if(result.HasError)
+                {
+                    return Unauthorized("Usuario o contraseña incorrectos");
+                }
+                var jwt = result.AccessToken;
+                return Ok(new { jwt });
 
             }
             catch (Exception ex)
@@ -41,45 +49,5 @@ namespace BankingApi.Controllers.v1
         }
 
 
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-
-        [HttpPost("Register")]
-        public async Task<IActionResult> Login([FromBody] CreateUserDto  dto)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest();
-            }
-            try
-            {
-                var result = await _accountService.RegisterUser(new SaveUserDto
-                {
-                    UserName = dto.UserName,
-                    Email = dto.Email,
-                    LastName = dto.LastName,
-                    Name = dto.Name,
-                    Password = dto.Password,
-                    DocumentIdNumber = dto.DocumentIdNumber,
-                    Role = dto.Role,
-                    Id = "",
-                },null, true);
-
-                if (result == null)
-                {
-                    return BadRequest(result?.Errors);
-                }
-
-
-                return Created();
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
-
-        }
     }
 }
