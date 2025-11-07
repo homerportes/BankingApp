@@ -36,7 +36,7 @@ namespace BankingApp.Infraestructure.Identity.Services
                 var allRoles = await _identityContext.Roles.ToListAsync();
                 var matchedRole = allRoles.FirstOrDefault(r =>
                     r.Name.Equals(rol, StringComparison.OrdinalIgnoreCase) ||
-                    RoleTranslator.Translate(r.Name).Equals(rol, StringComparison.OrdinalIgnoreCase));
+                    EnumTranslator.Translate(r.Name).Equals(rol, StringComparison.OrdinalIgnoreCase));
 
                 extraRoleId = matchedRole?.Id;
             }
@@ -83,7 +83,7 @@ namespace BankingApp.Infraestructure.Identity.Services
                 Email = u.Email ?? "",
                 Name = u.Name,
                 LastName = u.LastName,
-                Role = RoleTranslator.Translate(roleMap.GetValueOrDefault(u.Id) ?? "") ?? AppRoles.COMMERCE.ToString(),
+                Role = EnumTranslator.Translate(roleMap.GetValueOrDefault(u.Id) ?? "") ?? AppRoles.COMMERCE.ToString(),
                 DocumentIdNumber = u.DocumentIdNumber,
                 UserName = u.UserName ?? "",
                 Status = u.EmailConfirmed ? "activo" : "inactivo"
@@ -111,7 +111,7 @@ namespace BankingApp.Infraestructure.Identity.Services
                 var allRoles = await _identityContext.Roles.ToListAsync();
                 var matchedRole = allRoles.FirstOrDefault(r =>
                     r.Name.Equals(rol, StringComparison.OrdinalIgnoreCase) ||
-                    RoleTranslator.Translate(r.Name).Equals(rol, StringComparison.OrdinalIgnoreCase));
+                    EnumTranslator.Translate(r.Name).Equals(rol, StringComparison.OrdinalIgnoreCase));
 
                 extraRoleId = matchedRole?.Id;
             }
@@ -140,7 +140,7 @@ namespace BankingApp.Infraestructure.Identity.Services
                 Email = x.User.Email ?? "",
                 Name = x.User.Name,
                 LastName = x.User.LastName,
-                Role = RoleTranslator.Translate(x.Role.Name ?? ""),
+                Role = EnumTranslator.Translate(x.Role.Name ?? ""),
                 DocumentIdNumber = x.User.DocumentIdNumber,
                 UserName = x.User.UserName ?? "",
                 Status = x.User.EmailConfirmed ? "activo" : "inactivo"

@@ -59,7 +59,6 @@ namespace InvestmentApp.Infrastructure.Identity.Services
                 UserName = saveDto.UserName,
                 EmailConfirmed = false,
 
-                PhoneNumber = saveDto.PhoneNumber,
              
                 DocumentIdNumber = saveDto.DocumentIdNumber,
 

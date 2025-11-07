@@ -119,7 +119,7 @@ namespace BankingApi.Controllers.v1
               foreach (var role in roles)
             {
                 allRoles.Add(role.ToLower());
-                allRoles.Add(RoleTranslator.Translate(role).ToLower());
+                allRoles.Add(EnumTranslator.Translate(role).ToLower());
             }
             if (!allRoles.Contains(dto.Role.ToLower()))
             {

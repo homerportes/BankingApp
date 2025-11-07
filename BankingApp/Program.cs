@@ -12,6 +12,7 @@ builder.Services.AddSharedLayer(builder.Configuration);
 builder.Services.AddApplicationLayer();
 builder.Services.AddIdentityLayerIocForWebApp(builder.Configuration);
 
+
 var app = builder.Build();
 await app.Services.RunIdentitySeedAsync();
 
