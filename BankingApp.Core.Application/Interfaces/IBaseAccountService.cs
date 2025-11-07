@@ -14,5 +14,6 @@ namespace BankingApp.Core.Application.Interfaces
         Task<UserDto?> GetUserByUserName(string userName);
         Task<RegisterUserResponseDto> RegisterUser(SaveUserDto saveDto, string? origin, bool? isApi = false);
         Task<UserResponseDto> ResetPasswordAsync(ResetPasswordRequestDto request);
+        Task<EditUserResponseDto> UpdateUserStatusAsync(string userId, bool isActive);
     }
 }

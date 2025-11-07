@@ -15,7 +15,9 @@ namespace BankingApp.Infraestructure.Identity.Seeds
                 LastName = "",
                 Name = "",
                 UserName = "superAdmin",
-                Email = "no.repply.bankingapp@gmail.com"
+                Email = "no.repply.bankingapp@gmail.com",
+                EmailConfirmed = true,
+                IsActive = true
 
             });
 
