@@ -16,8 +16,6 @@ namespace BankingApp.Core.Application.Dtos.User
         [JsonProperty("ConfirmContrasena")]
         public string? ConfirmPassword { get; set; }
 
-        [JsonProperty("rol")]
-        public string? Role { get; set; }
 
         [JsonProperty("nombre")]
         public required string Name { get; set; }
@@ -27,5 +25,9 @@ namespace BankingApp.Core.Application.Dtos.User
 
         [JsonProperty("cedula")]
         public required string DocumentIdNumber { get; set; }
+        [JsonProperty("montoAdicional")]
+
+        public required decimal ? AditionalBalance { get; set; }
+
     }
 }

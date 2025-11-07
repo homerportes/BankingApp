@@ -1,7 +1,5 @@
 ﻿using BankingApp.Core.Application.Dtos.User;
 using Newtonsoft.Json;
-;
-
 namespace BankingApp.Core.Application.Dtos.Loan
 {
     public class ApiLoanPaginationResultDto

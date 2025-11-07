@@ -23,7 +23,37 @@ namespace BankingApp.Infraestructure.Identity.Services
             _userManager = userManager;
             _identityContext = identityDbContext;
         }
-        public async Task<ApiUserPaginationResultDto> GetAllOnlyCommerce(int page = 1, int pageSize = 20, string? rol = null)
+
+
+        public async Task<UserDto?> GetByDocumentId(string documentId)
+        {
+            var user = await _userManager.Users.Where(r=>r.DocumentIdNumber==documentId).FirstOrDefaultAsync();
+
+            if (user == null)
+            {
+                return null;
+            }
+
+            var rolesList = await _userManager.GetRolesAsync(user);
+            var role = EnumMapper<AppRoles>.FromString(rolesList.First());
+
+            var userDto = new UserDto()
+            {
+                Id = user.Id,
+                Email = user.Email ?? "",
+                LastName = user.LastName,
+                Name = user.Name,
+                UserName = user.UserName ?? "",
+                DocumentIdNumber = user.DocumentIdNumber,
+                IsVerified = user.EmailConfirmed,
+                Status = user.IsActive ? "Activo" : "Inactivo",
+                IsActive = user.IsActive,
+                Role = EnumMapper<AppRoles>.ToString(role)
+            };
+
+            return userDto;
+        }
+public async Task<ApiUserPaginationResultDto> GetAllOnlyCommerce(int page = 1, int pageSize = 20, string? rol = null)
         {
             var commerceRoleId = await _identityContext.Roles
                 .Where(r => r.Name == AppRoles.COMMERCE.ToString())
@@ -33,12 +63,20 @@ namespace BankingApp.Infraestructure.Identity.Services
             string? extraRoleId = null;
             if (!string.IsNullOrWhiteSpace(rol))
             {
-                var allRoles = await _identityContext.Roles.ToListAsync();
-                var matchedRole = allRoles.FirstOrDefault(r =>
-                    r.Name.Equals(rol, StringComparison.OrdinalIgnoreCase) ||
-                    EnumTranslator.Translate(r.Name).Equals(rol, StringComparison.OrdinalIgnoreCase));
+                try
+                {
+                    var enumValue = EnumMapper<AppRoles>.FromString(rol);
+                    var enumName = enumValue.ToString();
 
-                extraRoleId = matchedRole?.Id;
+                    extraRoleId = await _identityContext.Roles
+                        .Where(r => r.Name.Equals(enumName, StringComparison.OrdinalIgnoreCase))
+                        .Select(r => r.Id)
+                        .FirstOrDefaultAsync();
+                }
+                catch
+                {
+                    extraRoleId = null;
+                }
             }
 
             var commerceUsersQuery = from ur in _identityContext.UserRoles
@@ -46,7 +84,7 @@ namespace BankingApp.Infraestructure.Identity.Services
                                      join u in _identityContext.Users on ur.UserId equals u.Id
                                      select u;
 
-            if (extraRoleId!=null)
+            if (extraRoleId != null)
             {
                 var extraUsers = await _identityContext.UserRoles
                     .Where(ur => ur.RoleId == extraRoleId)
@@ -78,15 +116,31 @@ namespace BankingApp.Infraestructure.Identity.Services
 
             var roleMap = otherRoles.ToDictionary(x => x.UserId, x => x.RoleName);
 
-            var result = pagedUsers.Select(u => new UserDtoForApi
+            var result = pagedUsers.Select(u =>
             {
-                Email = u.Email ?? "",
-                Name = u.Name,
-                LastName = u.LastName,
-                Role = EnumTranslator.Translate(roleMap.GetValueOrDefault(u.Id) ?? "") ?? AppRoles.COMMERCE.ToString(),
-                DocumentIdNumber = u.DocumentIdNumber,
-                UserName = u.UserName ?? "",
-                Status = u.EmailConfirmed ? "activo" : "inactivo"
+                var roleName = roleMap.GetValueOrDefault(u.Id) ?? AppRoles.COMMERCE.ToString();
+                string displayRole;
+
+                try
+                {
+                    var enumValue = EnumMapper<AppRoles>.FromString(roleName);
+                    displayRole = EnumMapper<AppRoles>.ToString(enumValue);
+                }
+                catch
+                {
+                    displayRole = roleName;
+                }
+
+                return new UserDtoForApi
+                {
+                    Email = u.Email ?? "",
+                    Name = u.Name,
+                    LastName = u.LastName,
+                    Role = displayRole,
+                    DocumentIdNumber = u.DocumentIdNumber,
+                    UserName = u.UserName ?? "",
+                    Status = u.EmailConfirmed ? "activo" : "inactivo"
+                };
             }).ToList();
 
             return new ApiUserPaginationResultDto
@@ -106,14 +160,23 @@ namespace BankingApp.Infraestructure.Identity.Services
                 .FirstOrDefaultAsync();
 
             string? extraRoleId = null;
+
             if (!string.IsNullOrWhiteSpace(rol))
             {
-                var allRoles = await _identityContext.Roles.ToListAsync();
-                var matchedRole = allRoles.FirstOrDefault(r =>
-                    r.Name.Equals(rol, StringComparison.OrdinalIgnoreCase) ||
-                    EnumTranslator.Translate(r.Name).Equals(rol, StringComparison.OrdinalIgnoreCase));
+                try
+                {
+                    var enumValue = EnumMapper<AppRoles>.FromString(rol);
+                    var enumName = enumValue.ToString();
 
-                extraRoleId = matchedRole?.Id;
+                    extraRoleId = await _identityContext.Roles
+                        .Where(r => r.Name.Equals(enumName, StringComparison.OrdinalIgnoreCase))
+                        .Select(r => r.Id)
+                        .FirstOrDefaultAsync();
+                }
+                catch
+                {
+                    extraRoleId = null;
+                }
             }
 
             var query = from ur in _identityContext.UserRoles
@@ -133,17 +196,34 @@ namespace BankingApp.Infraestructure.Identity.Services
                 .OrderByDescending(x => x.User.CreatedAt)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .ToListAsync(); 
+                .ToListAsync();
 
-            var result = pagedUsers.Select(x => new UserDtoForApi
+            
+            var result = pagedUsers.Select(x =>
             {
-                Email = x.User.Email ?? "",
-                Name = x.User.Name,
-                LastName = x.User.LastName,
-                Role = EnumTranslator.Translate(x.Role.Name ?? ""),
-                DocumentIdNumber = x.User.DocumentIdNumber,
-                UserName = x.User.UserName ?? "",
-                Status = x.User.EmailConfirmed ? "activo" : "inactivo"
+                var roleName = x.Role.Name ?? "";
+                string displayRole;
+
+                try
+                {
+                    var enumValue = EnumMapper<AppRoles>.FromString(roleName);
+                    displayRole = EnumMapper<AppRoles>.ToString(enumValue);
+                }
+                catch
+                {
+                    displayRole = roleName; 
+                }
+
+                return new UserDtoForApi
+                {
+                    Email = x.User.Email ?? "",
+                    Name = x.User.Name,
+                    LastName = x.User.LastName,
+                    Role = displayRole,
+                    DocumentIdNumber = x.User.DocumentIdNumber,
+                    UserName = x.User.UserName ?? "",
+                    Status = x.User.EmailConfirmed ? "activo" : "inactivo"
+                };
             }).ToList();
 
             return new ApiUserPaginationResultDto
@@ -154,6 +234,7 @@ namespace BankingApp.Infraestructure.Identity.Services
                 TotalCount = totalCount
             };
         }
+
 
     }
 }

@@ -11,5 +11,6 @@ namespace BankingApp.Core.Application.Interfaces
     {
         Task<ApiUserPaginationResultDto> GetAllExceptCommerce(int page = 1, int pageSize = 20, string? rol = null);
         Task<ApiUserPaginationResultDto> GetAllOnlyCommerce(int page = 1, int pageSize = 20, string? rol = null);
+        Task<UserDto?> GetByDocumentId(string documentId);
     }
 }

@@ -20,12 +20,14 @@ namespace BankingApi.Controllers.v1
         private IUserService _userService;
         private readonly IAccountServiceForWebApi _accountService;
         private readonly IBankAccountService _bankAccountService;
+        private readonly ICommerceService _commerceService;
 
-        public UsersController(IUserService userService, IAccountServiceForWebApi accountService, IBankAccountService bankAccountService)
+        public UsersController(IUserService userService, IAccountServiceForWebApi accountService, IBankAccountService bankAccountService, ICommerceService commerceService)
         {
             _userService = userService;
             _accountService = accountService;
             _bankAccountService = bankAccountService;
+            _commerceService = commerceService;
         }
 
         [HttpGet(Name = "ObtenerTodosLosUsuarios")]
@@ -111,13 +113,11 @@ namespace BankingApi.Controllers.v1
                 return BadRequest("La cedula debe contener 11 caracteres numéricos");
 
             }
-            List<string> allRoles = new List<string>();
-            var roles = Enum.GetNames(typeof(AppRoles)).ToList();
-              foreach (var role in roles)
-            {
-                allRoles.Add(role.ToLower());
-                allRoles.Add(EnumTranslator.Translate(role).ToLower());
-            }
+            List<string> allRoles = EnumMapper<AppRoles>.GetAllAliases()
+                .Select(a => a.ToLower())
+                .Distinct()
+                .ToList();
+
             if (!allRoles.Contains(dto.Role.ToLower()))
             {
                 return BadRequest("Rol inválido");
@@ -129,19 +129,10 @@ namespace BankingApi.Controllers.v1
 
 
             {
-                List<string> Roles = new List<string>();
-                if (dto.Role.ToLower() == "cliente" || dto.Role.ToLower() == AppRoles.CLIENT.ToString().ToLower())
-                {
-                    Roles.Add(AppRoles.CLIENT.ToString());
-                }
-                else if (dto.Role.ToLower() == "cajero" || dto.Role.ToLower() == AppRoles.TELLER.ToString().ToLower())
-                {
-                    Roles.Add(AppRoles.TELLER.ToString());
-                }
-                else if (dto.Role.ToLower() == "admin" ||dto.Role.ToLower()=="administrador"|| dto.Role.ToLower() == AppRoles.ADMIN.ToString().ToLower())
-                {
-                    Roles.Add(AppRoles.ADMIN.ToString());
-                }
+
+
+                var enumoption = EnumMapper<AppRoles>.FromString(dto.Role);
+             
 
                 var result = await _accountService.RegisterUser(new SaveUserDto
                 {
@@ -151,7 +142,7 @@ namespace BankingApi.Controllers.v1
                     Name = dto.Name,
                     Password = dto.Password,
                     DocumentIdNumber = dto.DocumentIdNumber,
-                    Roles = Roles,
+                    Roles = new List<string> { enumoption.ToString()},
                 }, null, true);
 
                 
@@ -166,7 +157,8 @@ namespace BankingApi.Controllers.v1
                     return Conflict("Usuario o correo ya registrado");
                 }
 
-                if (dto.Role.ToLower()=="client" || dto.Role.ToLower() == "cliente"){
+                if (enumoption==AppRoles.CLIENT){
+
 
                     var accountNumber = await _bankAccountService.GenerateAccountNumber();
                     await _bankAccountService.AddAsync(new AccountDto
@@ -190,12 +182,12 @@ namespace BankingApi.Controllers.v1
 
         }
 
+
         [HttpPost("commerce/{commerceId}", Name = "CrearUsuarioComercio")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> RegisterCommerce([FromRoute] string commerceId, [FromBody] CreateUserDto dto)
+        public async Task<IActionResult> RegisterCommerce([FromRoute] int ?commerceId, [FromBody] CreateUserDto dto)
         {
             if (!ModelState.IsValid)
             {
@@ -236,28 +228,36 @@ namespace BankingApi.Controllers.v1
                 return BadRequest("La cédula debe contener 11 caracteres numéricos");
             }
 
-            // Verificar que el commerceId sea válido
-            if (string.IsNullOrWhiteSpace(commerceId))
+            if (commerceId==null)
             {
                 return BadRequest("El ID del comercio es requerido");
             }
 
+            List<string> allRoles = EnumMapper<AppRoles>.GetAllAliases()
+            .Select(a => a.ToLower())
+            .Distinct()
+            .ToList();
+
+            if (!allRoles.Contains(dto.Role.ToLower()))
+            {
+                return BadRequest("Rol inválido");
+
+            }
             try
             {
-                // Verificar que el comercio existe
-                var commerce = await _accountService.GetUserById(commerceId);
+
+
+                var commerce = await _commerceService.GetByIdAsync(commerceId??0);
                 if (commerce == null)
                 {
-                    return NotFound("El comercio especificado no existe");
+                    return BadRequest("El comercio especificado no existe");
                 }
 
-                // Verificar que el usuario encontrado tiene rol COMMERCE
-                if (commerce.Role?.ToUpper() != AppRoles.COMMERCE.ToString())
-                {
-                    return BadRequest("El ID proporcionado no corresponde a un comercio");
-                }
+                if (commerce.UserId != null) return BadRequest("El comercio ya tiene un usuario asociado");
 
-                List<string> Roles = new List<string> { AppRoles.COMMERCE.ToString() };
+
+
+                var enumoption = EnumMapper<AppRoles>.FromString(dto.Role);
 
                 var result = await _accountService.RegisterUser(new SaveUserDto
                 {
@@ -267,7 +267,7 @@ namespace BankingApi.Controllers.v1
                     Name = dto.Name,
                     Password = dto.Password,
                     DocumentIdNumber = dto.DocumentIdNumber,
-                    Roles = Roles,
+                    Roles = new List<string> { enumoption.ToString()},
                 }, null, true);
 
                 if (result == null)
@@ -280,15 +280,24 @@ namespace BankingApi.Controllers.v1
                     return Conflict("Usuario o correo ya registrado");
                 }
 
-                return CreatedAtAction(nameof(GetById), new { id = result.Id }, new
+
+                if (enumoption == AppRoles.CLIENT)
                 {
-                    id = result.Id,
-                    usuario = result.UserName,
-                    nombre = result.Name,
-                    apellido = result.LastName,
-                    correo = result.Email,
-                    comercioId = commerceId
-                });
+                   await _commerceService.SetUser(commerceId??0, result.Id);
+
+                    var accountNumber = await _bankAccountService.GenerateAccountNumber();
+                    await _bankAccountService.AddAsync(new AccountDto
+                    {
+                        Id = 0,
+                        ClientId = result.Id,
+                        Number = accountNumber,
+                        Type = AccountType.PRIMARY,
+                        Balance = dto.InitialAmount ?? 0
+                    });
+                }
+
+                return Created();
+
             }
             catch (Exception ex)
             {
@@ -315,12 +324,6 @@ namespace BankingApi.Controllers.v1
 
             try
             {
-                // Verificar que el usuario existe
-                var existingUser = await _accountService.GetUserById(id);
-                if (existingUser == null)
-                {
-                    return NotFound("El usuario especificado no existe");
-                }
 
                 var missingFields = new List<string>();
 
@@ -349,7 +352,6 @@ namespace BankingApi.Controllers.v1
                     return BadRequest("La cédula debe contener 11 caracteres numéricos");
                 }
 
-                // Si se proporciona una nueva contraseña, validarla
                 if (!string.IsNullOrWhiteSpace(dto.Password))
                 {
                     if (string.IsNullOrWhiteSpace(dto.ConfirmPassword) || dto.Password != dto.ConfirmPassword)
@@ -358,36 +360,14 @@ namespace BankingApi.Controllers.v1
                     }
                 }
 
-                List<string> Roles = new List<string>();
-                if (!string.IsNullOrWhiteSpace(dto.Role))
-                {
-                    List<string> allRoles = new List<string>();
-                    var roles = Enum.GetNames(typeof(AppRoles)).ToList();
-                    foreach (var role in roles)
-                    {
-                        allRoles.Add(role.ToLower());
-                        allRoles.Add(RoleTranslator.Translate(role).ToLower());
-                    }
 
-                    if (!allRoles.Contains(dto.Role.ToLower()))
-                    {
-                        return BadRequest("Rol inválido");
-                    }
 
-                    if (dto.Role.ToLower() == "cliente" || dto.Role.ToLower() == AppRoles.CLIENT.ToString().ToLower())
-                        Roles.Add(AppRoles.CLIENT.ToString());
-                    else if (dto.Role.ToLower() == "cajero" || dto.Role.ToLower() == AppRoles.TELLER.ToString().ToLower())
-                        Roles.Add(AppRoles.TELLER.ToString());
-                    else if (dto.Role.ToLower() == "admin" || dto.Role.ToLower() == "administrador" || dto.Role.ToLower() == AppRoles.ADMIN.ToString().ToLower())
-                        Roles.Add(AppRoles.ADMIN.ToString());
-                    else if (dto.Role.ToLower() == "comercio" || dto.Role.ToLower() == AppRoles.COMMERCE.ToString().ToLower())
-                        Roles.Add(AppRoles.COMMERCE.ToString());
-                }
-                else
+                var existingUser = await _accountService.GetUserById(id);
+                if (existingUser == null)
                 {
-                    // Si no se proporciona rol, mantener el actual
-                    Roles.Add(existingUser.Role ?? AppRoles.CLIENT.ToString());
+                    return NotFound("El usuario especificado no existe");
                 }
+
 
                 var result = await _accountService.EditUser(new SaveUserDto
                 {
@@ -397,29 +377,30 @@ namespace BankingApi.Controllers.v1
                     LastName = dto.LastName,
                     Name = dto.Name,
                     Password = dto.Password ?? string.Empty,
-                    DocumentIdNumber = dto.DocumentIdNumber,
-                    Roles = Roles,
+                    DocumentIdNumber = dto.DocumentIdNumber
                 }, null, false, true);
 
                 if (result == null || result.HasError)
                 {
-                    return BadRequest(new
+                    return Conflict(new
                     {
                         mensaje = "Error al actualizar el usuario",
                         errores = result?.Errors
                     });
                 }
 
-                return Ok(new
+                var SavingAccount = await _bankAccountService.GetAccountByClientId(result.Id); 
+               
+                if (SavingAccount!=null)
                 {
-                    id = result.Id,
-                    usuario = result.UserName,
-                    nombre = result.Name,
-                    apellido = result.LastName,
-                    correo = result.Email,
-                    cedula = existingUser.DocumentIdNumber,
-                    verificado = result.IsVerified
-                });
+                    SavingAccount.Balance += dto.AditionalBalance ?? 0;
+                    await  _bankAccountService.UpdateAsync(SavingAccount.Id, SavingAccount);
+
+                }
+
+
+                return NoContent();
+            
             }
             catch (Exception ex)
             {
@@ -432,7 +413,7 @@ namespace BankingApi.Controllers.v1
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UpdateStatus([FromRoute] string id, [FromBody] UpdateUserStatusDto dto)
+        public async Task<IActionResult> UpdateStatus([FromRoute] string id, [FromBody]  bool? status)
         {
             if (!ModelState.IsValid)
             {
@@ -443,15 +424,20 @@ namespace BankingApi.Controllers.v1
             {
                 return BadRequest("El ID del usuario es requerido");
             }
+          
 
+            if (status == null)
+            {
+                return BadRequest("Estructura inválida");
+
+            }
             try
             {
-                // Verificar que el usuario existe y actualizar su estado
-                var updateResult = await _accountService.UpdateUserStatusAsync(id, dto.IsActive);
+                var updateResult = await _accountService.UpdateUserStatusAsync(id, status??false);
                 
                 if (updateResult.HasError)
                 {
-                    if (updateResult.Errors?.Any(e => e.Contains("no existe")) == true)
+                    if (updateResult.Errors!.Any())
                     {
                         return NotFound("El usuario especificado no existe");
                     }
@@ -463,13 +449,7 @@ namespace BankingApi.Controllers.v1
                     });
                 }
 
-                return Ok(new
-                {
-                    id = updateResult.Id,
-                    usuario = updateResult.UserName,
-                    estado = dto.IsActive ? "activo" : "inactivo",
-                    verificado = updateResult.IsVerified
-                });
+                return NoContent();
             }
             catch (Exception ex)
             {
@@ -496,17 +476,9 @@ namespace BankingApi.Controllers.v1
                     return NotFound("El usuario especificado no existe");
                 }
 
-                return Ok(new
-                {
-                    id = user.Id,
-                    usuario = user.UserName,
-                    nombre = user.Name,
-                    apellido = user.LastName,
-                    correo = user.Email,
-                    cedula = user.DocumentIdNumber,
-                    rol = RoleTranslator.Translate(user.Role ?? ""),
-                    verificado = user.IsVerified
-                });
+                return Ok(user);
+
+              
             }
             catch (Exception ex)
             {

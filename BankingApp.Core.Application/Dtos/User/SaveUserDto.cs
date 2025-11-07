@@ -11,7 +11,7 @@
         public required string LastName { get; set; }
         public required string DocumentIdNumber { get; set; }
         public decimal? InitialAmount { get; set; } // Monto inicial para clientes
-        public required List<string> Roles { get; set; }
+        public  List<string> ?Roles { get; set; }
 
 
     }

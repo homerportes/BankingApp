@@ -6,5 +6,6 @@ namespace BankingApp.Core.Application.Interfaces
     public interface IBankAccountService : IGenericService<Account, AccountDto>
     {
         Task<string> GenerateAccountNumber();
+        Task<AccountDto?> GetAccountByClientId(string clientId);
     }
 }
