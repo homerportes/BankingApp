@@ -29,8 +29,7 @@ namespace BankingApp.Infraestructure.Persistence.LayerConfigurations
 
             #region Repositories
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-            services.AddScoped(typeof(IAccountRepository), typeof(AccountRepository));
-
+            services.AddScoped<IAccountRepository, AccountRepository>();
             #endregion
         }
     }

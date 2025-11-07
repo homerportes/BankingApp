@@ -2,9 +2,7 @@
 using BankingApp.Core.Application.Dtos.User;
 using BankingApp.Core.Application.Interfaces;
 using BankingApp.Core.Application.ViewModels.User;
-using BankingApp.Core.Domain.Common.Enums;
 using BankingApp.Infraestructure.Identity.Entities;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -149,7 +147,7 @@ namespace BankingApp.Controllers
                 Email = vm.Email,
                 UserName = vm.UserName,
                 Password = vm.Password,
-                Roles = new List<string> { AppRoles.CLIENT.ToString()} // Rol por defecto para nuevos usuarios
+                Roles = new List<string> { "CLIENT" } // Rol por defecto para nuevos usuarios
             };
 
             string origin = $"{Request.Scheme}://{Request.Host}";
@@ -168,7 +166,6 @@ namespace BankingApp.Controllers
             TempData["Success"] = $"¡Cuenta creada exitosamente! Hemos enviado un correo de confirmación a {vm.Email}. Por favor revisa tu bandeja de entrada y también la carpeta de SPAM.";
             return RedirectToRoute(new { controller = "Login", action = "Index" });
         }
-        [Authorize]
 
         public async Task<IActionResult> ConfirmEmail(string userId, string token)
         {
@@ -176,15 +173,10 @@ namespace BankingApp.Controllers
             return View("ConfirmEmail", response.Message);
         }
 
-        [Authorize]
-
         public IActionResult ForgotPassword()
         {
             return View(new ForgotPasswordViewModel() { UserName = "" });
         }
-
-
-        [Authorize]
 
         [HttpPost]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel vm)
@@ -210,14 +202,12 @@ namespace BankingApp.Controllers
             TempData["Success"] = "Se ha enviado un correo con las instrucciones para restablecer tu contraseña.";
             return RedirectToRoute(new { controller = "Login", action = "Index" });
         }
-        [Authorize]
 
         public IActionResult ResetPassword(string userId, string token)
         {
             return View(new ResetPasswordViewModel() { UserId = userId, Token = token, Password = "", ConfirmPassword = "" });
         }
 
-        [Authorize]
         [HttpPost]
         public async Task<IActionResult> ResetPassword(ResetPasswordViewModel vm)
         {
@@ -233,7 +223,7 @@ namespace BankingApp.Controllers
             UserResponseDto returnUser = await _accountServiceForWebApp.ResetPasswordAsync(dto);
 
             if (returnUser.HasError)
-        {
+            {
                 vm.HasError = true;
                 vm.Error = string.Join(", ", returnUser.Errors ?? new List<string>());
                 vm.Password = "";
@@ -244,8 +234,5 @@ namespace BankingApp.Controllers
             TempData["Success"] = "Tu contraseña ha sido restablecida exitosamente.";
             return RedirectToRoute(new { controller = "Login", action = "Index" });
         }
-
-
-
     }
 }
