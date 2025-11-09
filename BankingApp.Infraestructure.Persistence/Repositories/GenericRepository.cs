@@ -9,35 +9,23 @@ using System.Text;
 using System.Threading.Tasks;
 namespace BankingApp.Infraestructure.Persistence.Repositories
 {
-    public class GenericRepository<Entity> : IGenericRepository<Entity> where Entity : class
+    public class GenericRepository<Entity> : BaseRepository<Entity> ,IGenericRepository<Entity> where Entity : class
     {
         private readonly BankingContext _context;
-        public GenericRepository(BankingContext context)
+
+        public GenericRepository(BankingContext context) :base(context)
         {
             _context = context;
         }
-        public virtual async Task<Entity?> AddAsync(Entity entity)
-        {
 
-            await _context.Set<Entity>().AddAsync(entity);
-            await _context.SaveChangesAsync();
-            return entity;
-        }
+      
         public  async Task AddRangeAsync(List<Entity> entities)
         {
             await _context.Set<Entity>().AddRangeAsync(entities);
             await _context.SaveChangesAsync();
 
         }
-        public virtual async Task DeleteAsync(int id)
-        {
-            var entity = await _context.Set<Entity>().FindAsync(id);
-            if (entity != null)
-            {
-                _context.Set<Entity>().Remove(entity);
-                await _context.SaveChangesAsync();
-            }
-        }
+      
 
         public virtual async Task DeleteRangeAsync(List<Entity> entities)
         {
@@ -45,10 +33,7 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public virtual async Task<List<Entity>?> GetAllList()
-        {
-            return await _context.Set<Entity>().ToListAsync();
-        }
+      
 
         public virtual async Task<List<Entity>?> GetAllListWithInclude(List<string> properties)
         {
@@ -76,10 +61,7 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
             return query;
         }
 
-        public virtual async Task<Entity?> GetByIdAsync(int id)
-        {
-            return await _context.Set<Entity>().FindAsync(id);
-        }
+      
 
         public virtual async Task<Entity?> UpdateAsync(int id, Entity entity)
         {

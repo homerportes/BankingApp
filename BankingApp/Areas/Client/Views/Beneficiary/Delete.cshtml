@@ -1,0 +1,65 @@
+﻿@model DeleteBeneficiaryViewModel
+@{
+    ViewData["Title"] = "Eliminar Beneficiario";
+    Layout = "_LayoutClient";
+}
+
+<div class="container mt-5">
+    <div class="d-flex justify-content-center align-items-center" style="min-height: 75vh;">
+        <div class="card delete-card shadow-lg border-0 rounded-4 overflow-hidden" style="max-width: 520px;">
+            <div class="delete-card-header text-center p-4">
+                <i class="bi bi-exclamation-triangle-fill text-warning fs-1"></i>
+                <h4 class="fw-bold text-white mt-3 mb-1">Confirmar eliminación</h4>
+                <p class="text-light mb-0">
+                    ¿Estás seguro de eliminar a esta persona de tu lista de  beneficiario?
+                </p>
+            </div>
+
+            <div class="card-body text-center bg-white py-4">
+                <form asp-area="Client" asp-controller="Beneficiary" asp-action="Delete" method="post">
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="BeneficiaryId" />
+
+                    <div class="d-flex justify-content-center gap-3 mt-3">
+                        <a asp-area="Client" asp-controller="Beneficiary" asp-action="Index"
+                           class="btn btn-outline-primary px-4 py-2 rounded-pill fw-semibold shadow-sm">
+                            <i class="bi bi-arrow-left-circle me-1"></i> Cancelar
+                        </a>
+
+                        <button type="submit"
+                                class="btn btn-outline-danger px-4 py-2 rounded-pill fw-semibold shadow-sm confirm-btn">
+                            <i class="bi bi-trash3-fill me-1"></i> Confirmar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+  
+    .delete-card-header {
+        background: linear-gradient(135deg, var(--color-azul-oscuro), var(--color-azul-claro));
+        color: var(--color-texto-claro);
+    }
+
+    .delete-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .delete-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(21, 77, 113, 0.25);
+        }
+
+    .confirm-btn {
+        background: linear-gradient(90deg, #ff4b2b, #ff416c);
+        border: none;
+    }
+
+        .confirm-btn:hover {
+            background: linear-gradient(90deg, #ff3a1b, #ff245a);
+        }
+</style>
+
