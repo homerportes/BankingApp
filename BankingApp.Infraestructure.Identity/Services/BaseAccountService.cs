@@ -355,7 +355,7 @@ namespace InvestmentApp.Infrastructure.Identity.Services
             else
             {
                 string? resetToken = await GetResetPasswordToken(user);
-                
+
                 string emailBody = $@"
                     <html>
                     <body style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>
@@ -379,7 +379,7 @@ namespace InvestmentApp.Infrastructure.Identity.Services
                         </div>
                     </body>
                     </html>";
-                
+
                 await _emailService.SendAsync(new EmailRequestDto()
                 {
                     To = user.Email,

@@ -24,7 +24,7 @@ namespace BankingApi.Controllers.v1
         [HttpPost("login", Name = "IniciarSesion")]
         public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
-            if (string.IsNullOrEmpty(loginDto.Username)|| string.IsNullOrEmpty(loginDto.Password))
+            if (string.IsNullOrEmpty(loginDto.Username) || string.IsNullOrEmpty(loginDto.Password))
             {
                 return BadRequest("Faltan uno o más parámetros requeridos en la solicitud");
             }
@@ -32,7 +32,7 @@ namespace BankingApi.Controllers.v1
             {
 
                 var result = await _accountService.AuthenticateAsync(loginDto);
-                if(result.HasError)
+                if (result.HasError)
                 {
                     return Unauthorized("Usuario o contraseña incorrectos");
                 }
@@ -41,8 +41,8 @@ namespace BankingApi.Controllers.v1
 
             }
             catch (Exception ex)
-            { 
-                return StatusCode(StatusCodes. Status500InternalServerError, ex.Message);
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
 
         }

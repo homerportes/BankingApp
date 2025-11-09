@@ -37,7 +37,8 @@ namespace BankingApi.Controllers.v1
                 return Ok(JsonConvert.SerializeObject(result));
 
             }
-            catch {
+            catch
+            {
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
 
@@ -78,12 +79,12 @@ namespace BankingApi.Controllers.v1
             }
             var missingFields = new List<string>();
 
-            if (string.IsNullOrWhiteSpace(dto.UserName) || dto.UserName=="string") missingFields.Add("usuario");
+            if (string.IsNullOrWhiteSpace(dto.UserName) || dto.UserName == "string") missingFields.Add("usuario");
             if (string.IsNullOrWhiteSpace(dto.Email) || dto.Email == "string") missingFields.Add("correo");
             if (string.IsNullOrWhiteSpace(dto.Password) || dto.Password == "string") missingFields.Add("contrasena");
             if (string.IsNullOrWhiteSpace(dto.ConfirmPassword) || dto.ConfirmPassword == "string") missingFields.Add("ConfirmContrasena");
-            if (string.IsNullOrWhiteSpace(dto.Role )|| dto.Role=="string") missingFields.Add("rol");
-            if (string.IsNullOrWhiteSpace(dto.Name)|| dto.Name == "string") missingFields.Add("nombre");
+            if (string.IsNullOrWhiteSpace(dto.Role) || dto.Role == "string") missingFields.Add("rol");
+            if (string.IsNullOrWhiteSpace(dto.Name) || dto.Name == "string") missingFields.Add("nombre");
             if (string.IsNullOrWhiteSpace(dto.LastName) || dto.LastName == "string") missingFields.Add("apellido");
             if (string.IsNullOrWhiteSpace(dto.DocumentIdNumber) || dto.DocumentIdNumber == "string") missingFields.Add("cedula");
 
@@ -101,19 +102,19 @@ namespace BankingApi.Controllers.v1
                 return BadRequest("La contraseñas no coinciden");
 
             }
-            if (!new EmailAddressAttribute().IsValid( dto.Email))
+            if (!new EmailAddressAttribute().IsValid(dto.Email))
             {
                 return BadRequest("Correo con formato incorrecto");
 
             }
-            if (dto.DocumentIdNumber.Length<11 || !dto.DocumentIdNumber.All(char.IsDigit))
+            if (dto.DocumentIdNumber.Length < 11 || !dto.DocumentIdNumber.All(char.IsDigit))
             {
                 return BadRequest("La cedula debe contener 11 caracteres numéricos");
 
             }
             List<string> allRoles = new List<string>();
             var roles = Enum.GetNames(typeof(AppRoles)).ToList();
-              foreach (var role in roles)
+            foreach (var role in roles)
             {
                 allRoles.Add(role.ToLower());
                 allRoles.Add(RoleTranslator.Translate(role).ToLower());
@@ -138,7 +139,7 @@ namespace BankingApi.Controllers.v1
                 {
                     Roles.Add(AppRoles.TELLER.ToString());
                 }
-                else if (dto.Role.ToLower() == "admin" ||dto.Role.ToLower()=="administrador"|| dto.Role.ToLower() == AppRoles.ADMIN.ToString().ToLower())
+                else if (dto.Role.ToLower() == "admin" || dto.Role.ToLower() == "administrador" || dto.Role.ToLower() == AppRoles.ADMIN.ToString().ToLower())
                 {
                     Roles.Add(AppRoles.ADMIN.ToString());
                 }
@@ -154,7 +155,7 @@ namespace BankingApi.Controllers.v1
                     Roles = Roles,
                 }, null, true);
 
-                
+
 
                 if (result == null)
                 {
@@ -166,14 +167,15 @@ namespace BankingApi.Controllers.v1
                     return Conflict("Usuario o correo ya registrado");
                 }
 
-                if (dto.Role.ToLower()=="client" || dto.Role.ToLower() == "cliente"){
+                if (dto.Role.ToLower() == "client" || dto.Role.ToLower() == "cliente")
+                {
 
                     var accountNumber = await _bankAccountService.GenerateAccountNumber();
                     await _bankAccountService.AddAsync(new AccountDto
                     {
                         Id = 0,
                         ClientId = result.Id,
-                        
+
                         Number = accountNumber,
                         Type = AccountType.PRIMARY,
                         Balance = dto.InitialAmount ?? 0
@@ -181,7 +183,7 @@ namespace BankingApi.Controllers.v1
                 }
 
                 return Created();
-               
+
             }
             catch (Exception ex)
             {
@@ -448,14 +450,14 @@ namespace BankingApi.Controllers.v1
             {
                 // Verificar que el usuario existe y actualizar su estado
                 var updateResult = await _accountService.UpdateUserStatusAsync(id, dto.IsActive);
-                
+
                 if (updateResult.HasError)
                 {
                     if (updateResult.Errors?.Any(e => e.Contains("no existe")) == true)
                     {
                         return NotFound("El usuario especificado no existe");
                     }
-                    
+
                     return BadRequest(new
                     {
                         mensaje = "Error al actualizar el estado del usuario",

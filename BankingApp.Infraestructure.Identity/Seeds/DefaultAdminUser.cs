@@ -21,7 +21,7 @@ namespace BankingApp.Infraestructure.Identity.Seeds
 
             });
 
-            var user = await  userManager.FindByNameAsync("superAdmin");
+            var user = await userManager.FindByNameAsync("superAdmin");
             await userManager.AddPasswordAsync(user, "Pa$Word1");
 
             await userManager.AddToRoleAsync(user, AppRoles.ADMIN.ToString());
