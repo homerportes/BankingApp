@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace BankingApp.Core.Application.Services
 {
-    public class BeneficiaryService : BaseService<Beneficiary, CreateBeneficiaryDto> , IBeneficiaryService
+    public class BeneficiaryService : GenericService<Beneficiary, CreateBeneficiaryDto> , IBeneficiaryService
     {
 
         private readonly IMapper _mapper;
@@ -21,7 +21,7 @@ namespace BankingApp.Core.Application.Services
         private IBankAccountService serviceBank;
 
 
-        public BeneficiaryService(IMapper mapper, IBeneficiaryRepository repo, IAccountRepository accountRepository, IAccountServiceForWebAPP serviceForWebApi, IBankAccountService serviceBank) : base(mapper, repo)
+        public BeneficiaryService(IMapper mapper, IBeneficiaryRepository repo, IAccountRepository accountRepository, IAccountServiceForWebAPP serviceForWebApi, IBankAccountService serviceBank) : base(repo,mapper)
         {
 
             this.repo = repo;

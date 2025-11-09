@@ -6,7 +6,7 @@ using System.Security.Principal;
 
 namespace BankingApp.Core.Application.Interfaces
 {
-    public interface IBeneficiaryService : IBaseService<Beneficiary,CreateBeneficiaryDto>
+    public interface IBeneficiaryService : IGenericService<Beneficiary,CreateBeneficiaryDto>
     {
 
 

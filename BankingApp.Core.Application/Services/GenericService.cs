@@ -1,22 +1,64 @@
 ﻿using AutoMapper;
 using BankingApp.Core.Application.Interfaces;
 using BankingApp.Core.Domain.Interfaces;
-using Microsoft.EntityFrameworkCore.Metadata;
+
 
 namespace BankingApp.Core.Application.Services
 {
-    public class GenericService<Entity, EntityDto> : BaseService<Entity,EntityDto>,IGenericService<Entity, EntityDto> where Entity : class where EntityDto : class
+    public class GenericService<Entity, EntityDto> : IGenericService<Entity, EntityDto> where Entity : class where EntityDto : class
     {
         private readonly IMapper _mapper;
         private readonly IGenericRepository<Entity> _repo;
 
-        public GenericService(IGenericRepository<Entity> repo, IMapper mapper) : base(mapper,repo) {
+        public GenericService(IGenericRepository<Entity> repo, IMapper mapper){
             _mapper = mapper;
             _repo = repo;
         }
 
 
-       
+
+        public async Task<EntityDto?> AddAsync(EntityDto entityDto)
+        {
+            try
+            {
+
+                var entity = _mapper.Map<Entity>(entityDto);
+                await _repo.AddAsync(entity);
+                var dto = _mapper.Map<Entity, EntityDto>(entity);
+                return dto;
+            }
+            catch
+            {
+                return default;
+            }
+        }
+
+
+        public async Task DeleteAsync(int id)
+        {
+            try
+            {
+
+                await _repo.DeleteAsync(id);
+            }
+            catch
+            {
+            }
+        }
+
+
+
+
+        public async Task<EntityDto?> GetByIdAsync(int id)
+        {
+            var entity = await _repo.GetByIdAsync(id);
+
+            var dto = _mapper.Map<EntityDto>(entity);
+            return dto;
+        }
+
+
+
 
         public async Task DeleteRangeAsync(List<EntityDto> entityDtos)
         {
@@ -31,6 +73,7 @@ namespace BankingApp.Core.Application.Services
 
             }
         }
+
 
 
         public async Task<List<EntityDto>?> GetAllList()

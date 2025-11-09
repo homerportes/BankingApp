@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BankingApp.Infraestructure.Persistence.Repositories
 {
-    public class BeneficiaryRepository : BaseRepository<Beneficiary>, IBeneficiaryRepository
+    public class BeneficiaryRepository : GenericRepository<Beneficiary>,IBeneficiaryRepository
     {
 
         private readonly BankingContext context;
@@ -16,12 +16,10 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
         public BeneficiaryRepository(BankingContext context) : base(context)
         {
 
-
-
             this.context = context;
 
-
         }
+
 
         public async  Task<List<Beneficiary>> GetBeneficiariesByIdCliente(string IdCliente)
         {

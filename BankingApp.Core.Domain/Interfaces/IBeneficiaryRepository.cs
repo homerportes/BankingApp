@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace BankingApp.Core.Domain.Interfaces
 {
-    public interface IBeneficiaryRepository : IBaseRepository<Beneficiary>
+    public interface IBeneficiaryRepository : IGenericRepository<Beneficiary>
     {
 
 

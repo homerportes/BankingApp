@@ -5,7 +5,7 @@ using BankingApp.Core.Application.ViewModels.User;
 using BankingApp.Infraestructure.Identity.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Data;
+
 
 namespace BankingApp.Controllers
 {

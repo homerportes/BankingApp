@@ -2,10 +2,16 @@
 
 namespace BankingApp.Core.Domain.Interfaces
 {
-    public interface IGenericRepository <Entity> : IBaseRepository<Entity> where Entity : class
+    public interface IGenericRepository <Entity>  where Entity : class
     {
-      
-      
+
+
+
+
+        Task<Entity> AddAsync(Entity entity);
+        public Task<Entity?> GetByIdAsync(int id);
+        Task DeleteAsync(int id);
+        Task<List<Entity>?> GetAllList();
         public Task<List<Entity>?> GetAllListWithInclude(List<string> properties);
         public IQueryable<Entity> GetAllQueryWithInclude(List<string> properties);
         public IQueryable<Entity> GetAllQuery();
