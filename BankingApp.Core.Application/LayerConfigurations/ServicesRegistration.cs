@@ -13,6 +13,7 @@ namespace BankingApp.Core.Application.LayerConfigurations
            services.AddScoped(typeof(IGenericService<,>), typeof(GenericService<,>));
             services.AddScoped<IBankAccountService,BankAccountService>();
             services.AddScoped<ICommerceService,CommerceService> ();
+            services.AddScoped<ILoanService, LoanService>();
 
 
             services.AddAutoMapper(cfg => { }, Assembly.GetExecutingAssembly());

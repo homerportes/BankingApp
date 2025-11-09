@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-
 using JsonIgnoreAttribute = Newtonsoft.Json.JsonIgnoreAttribute;
 
 namespace BankingApp.Core.Application.Dtos.Commerce
@@ -9,10 +8,13 @@ namespace BankingApp.Core.Application.Dtos.Commerce
         
         public int Id { get; set; }
 
-        [JsonIgnore]
+        [JsonIgnoreAttribute]
+
         public string? UserId { get; set; }
 
         [JsonProperty("Estado")]
+
+        [JsonIgnoreAttribute]
         public required string Status { get; set; }
         [JsonProperty("Nombre")]
 
@@ -22,5 +24,8 @@ namespace BankingApp.Core.Application.Dtos.Commerce
         public required string Description { get; set; }
 
         public required string Logo { get; set; }
+        [JsonIgnoreAttribute]
+
+        public bool IsActive { get; set; }
     }
 }

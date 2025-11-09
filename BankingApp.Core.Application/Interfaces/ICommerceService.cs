@@ -10,6 +10,7 @@ namespace BankingApp.Core.Application.Interfaces
 {
     public interface ICommerceService : IGenericService<Commerce, CommerceDto>
     {
+        Task<CommercePaginationDto> GetAllFiltered(int? page, int? pageSize);
         Task SetUser(int CommerceId, string UserId);
     }
 }
