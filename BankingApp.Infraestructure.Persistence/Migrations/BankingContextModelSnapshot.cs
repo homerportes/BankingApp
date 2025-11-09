@@ -53,6 +53,63 @@ namespace BankingApp.Infraestructure.Persistence.Migrations
                     b.ToTable("Account");
                 });
 
+            modelBuilder.Entity("BankingApp.Core.Domain.Entities.Beneficiary", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("BeneficiaryId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ClientId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("Fecha")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Beneficiarys", (string)null);
+                });
+
+            modelBuilder.Entity("BankingApp.Core.Domain.Entities.Commerce", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Logo")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Commerce");
+                });
+
             modelBuilder.Entity("BankingApp.Core.Domain.Entities.CreditCard", b =>
                 {
                     b.Property<int>("Id")
@@ -109,8 +166,14 @@ namespace BankingApp.Infraestructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal>("InterestRate")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("InterestRate")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
 
                     b.Property<int>("LoanTermInMonths")
                         .HasColumnType("int");
@@ -122,6 +185,10 @@ namespace BankingApp.Infraestructure.Persistence.Migrations
                     b.Property<int>("PaidInstallmentsCount")
                         .HasPrecision(18, 2)
                         .HasColumnType("int");
+
+                    b.Property<string>("PublicId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");

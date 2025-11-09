@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace BankingApp.Areas.Teller.Controllers
 {
     [Authorize(Roles = "TELLER")]
-
+    [Area("Teller")]
     public class TellerController : Controller
     {
         public IActionResult Home() { return View(); }

@@ -1,7 +1,5 @@
 ﻿
 
-
-
 /*Variables de colores*/
 :root {
     --color-azul-oscuro: #154D71;
@@ -36,7 +34,7 @@ body {
 }
 
 
-/*nav*/
+/*Diceño del nav*/
 .navbar-brand {
     font-weight: 600;
     font-size: 1.2rem;

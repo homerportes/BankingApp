@@ -1,0 +1,92 @@
+﻿
+
+body {
+    background-color: var(--color-body-bg);
+}
+
+
+h2.fw-bold.text-primary {
+    color: var(--color-azul-oscuro) !important;
+    letter-spacing: 0.5px;
+}
+
+/* Botón Agregar Beneficiario */
+.btn-outline-success {
+    color: var(--color-azul-claro);
+    border-color: var(--color-azul-claro);
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+    .btn-outline-success:hover {
+        background: linear-gradient(90deg, var(--color-azul-oscuro), var(--color-azul-claro));
+        color: var(--color-texto-claro);
+        border: none;
+        box-shadow: 0 4px 10px rgba(28, 110, 164, 0.25);
+    }
+
+
+.card {
+    border-radius: 1rem;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+    .card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 18px rgba(21, 77, 113, 0.25);
+    }
+
+    .card .bi-person-circle {
+        color: var(--color-azul-medio);
+    }
+
+.card-title {
+    color: var(--color-azul-oscuro);
+    font-weight: 600;
+}
+
+
+.btn-outline-danger {
+    border-radius: 30px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+    .btn-outline-danger:hover {
+        background: linear-gradient(90deg, #e63946, #d90429);
+        color: var(--color-texto-claro);
+        border: none;
+    }
+
+
+.alert-info {
+    background: linear-gradient(90deg, var(--color-azul-medio), var(--color-azul-claro));
+    color: var(--color-texto-claro);
+    border: none;
+}
+
+/* Modal */
+.modal-content {
+    border-radius: 1.5rem !important;
+    overflow: hidden;
+}
+
+.modal-header.bg-primary {
+    background: linear-gradient(135deg, var(--color-azul-oscuro), var(--color-azul-claro)) !important;
+}
+
+.modal-title {
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.btn-primary {
+    background: linear-gradient(90deg, var(--color-azul-medio), var(--color-azul-claro));
+    border: none;
+    transition: all 0.3s ease;
+}
+
+    .btn-primary:hover {
+        background: linear-gradient(90deg, var(--color-azul-oscuro), var(--color-azul-medio));
+        box-shadow: 0 4px 10px rgba(21, 77, 113, 0.25);
+    }
