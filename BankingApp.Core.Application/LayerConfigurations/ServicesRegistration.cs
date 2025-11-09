@@ -11,9 +11,12 @@ namespace BankingApp.Core.Application.LayerConfigurations
         public static void AddApplicationLayer(this IServiceCollection services  )
         {
            services.AddScoped(typeof(IGenericService<,>), typeof(GenericService<,>));
-            services.AddScoped(typeof(IBankAccountService), typeof(BankAccountService));
-            services.AddAutoMapper(cfg => { }, Assembly.GetExecutingAssembly());
+            services.AddScoped<IBankAccountService,BankAccountService>();
+            services.AddScoped<ICommerceService,CommerceService> ();
 
+
+            services.AddAutoMapper(cfg => { }, Assembly.GetExecutingAssembly());
+            EnumMappings.Initialize();
         }
 
     }

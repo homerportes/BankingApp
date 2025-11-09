@@ -23,6 +23,7 @@ builder.Services.AddSwaggerExtension();
 builder.Services.AddApiVersioningExtension();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession();
+
 var app = builder.Build();
 await app.Services.RunIdentitySeedAsync();
 // Configure the HTTP request pipeline.

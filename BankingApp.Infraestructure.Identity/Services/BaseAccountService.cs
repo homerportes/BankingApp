@@ -1,10 +1,13 @@
 ﻿using BankingApp.Core.Application.Dtos.Email;
 using BankingApp.Core.Application.Dtos.User;
+using BankingApp.Core.Application.Helpers;
 using BankingApp.Core.Application.Interfaces;
+using BankingApp.Core.Domain.Common.Enums;
 using BankingApp.Infraestructure.Identity.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 using System.Text;
 
 namespace InvestmentApp.Infrastructure.Identity.Services
@@ -58,6 +61,9 @@ namespace InvestmentApp.Infrastructure.Identity.Services
                 Email = saveDto.Email,
                 UserName = saveDto.UserName,
                 EmailConfirmed = false,
+
+             
+             
                 DocumentIdNumber = saveDto.DocumentIdNumber,
             };
 
@@ -444,6 +450,7 @@ namespace InvestmentApp.Infrastructure.Identity.Services
             }
 
             var rolesList = await _userManager.GetRolesAsync(user);
+            var role = EnumMapper<AppRoles>.FromString(rolesList.First());
 
             var userDto = new UserDto()
             {
@@ -454,7 +461,9 @@ namespace InvestmentApp.Infrastructure.Identity.Services
                 UserName = user.UserName ?? "",
                 DocumentIdNumber = user.DocumentIdNumber,
                 IsVerified = user.EmailConfirmed,
-                Role = rolesList.FirstOrDefault() ?? ""
+                Status=user.IsActive? "Activo": "Inactivo",
+                IsActive = user.IsActive,
+                Role = EnumMapper<AppRoles>.ToString(role)
             };
 
             return userDto;
@@ -469,6 +478,7 @@ namespace InvestmentApp.Infrastructure.Identity.Services
             }
 
             var rolesList = await _userManager.GetRolesAsync(user);
+            var role = EnumMapper<AppRoles>.FromString(rolesList.First());
 
             var userDto = new UserDto()
             {
@@ -479,7 +489,9 @@ namespace InvestmentApp.Infrastructure.Identity.Services
                 UserName = user.UserName ?? "",
                 DocumentIdNumber = user.DocumentIdNumber,
                 IsVerified = user.EmailConfirmed,
-                Role = rolesList.FirstOrDefault() ?? ""
+                Status = user.IsActive ? "Activo" : "Inactivo",
+                IsActive = user.IsActive,
+                Role = EnumMapper<AppRoles>.ToString(role)
             };
 
             return userDto;
@@ -494,6 +506,7 @@ namespace InvestmentApp.Infrastructure.Identity.Services
             }
 
             var rolesList = await _userManager.GetRolesAsync(user);
+            var role = EnumMapper<AppRoles>.FromString(rolesList.First());
 
             var userDto = new UserDto()
             {
@@ -504,7 +517,9 @@ namespace InvestmentApp.Infrastructure.Identity.Services
                 UserName = user.UserName ?? "",
                 DocumentIdNumber = user.DocumentIdNumber,
                 IsVerified = user.EmailConfirmed,
-                Role = rolesList.FirstOrDefault() ?? ""
+                Status = user.IsActive ? "Activo" : "Inactivo",
+                IsActive = user.IsActive,
+                Role = EnumMapper<AppRoles>.ToString(role)
             };
 
             return userDto;
@@ -524,7 +539,9 @@ namespace InvestmentApp.Infrastructure.Identity.Services
 
             foreach (var item in listUser)
             {
-                var roleList = await _userManager.GetRolesAsync(item);
+
+                var rolesList = await _userManager.GetRolesAsync(item);
+                var role = EnumMapper<AppRoles>.FromString(rolesList.First());
 
                 listUsersDtos.Add(new UserDto()
                 {
@@ -535,7 +552,9 @@ namespace InvestmentApp.Infrastructure.Identity.Services
                     UserName = item.UserName ?? "",
                     DocumentIdNumber = item.DocumentIdNumber,
                     IsVerified = item.EmailConfirmed,
-                    Role = roleList.FirstOrDefault() ?? ""
+                    Status = item.IsActive ? "Activo" : "Inactivo",
+                    IsActive = item.IsActive,
+                    Role = EnumMapper<AppRoles>.ToString(role)
                 });
             }
 
