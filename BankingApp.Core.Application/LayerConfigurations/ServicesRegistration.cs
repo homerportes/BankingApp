@@ -13,6 +13,8 @@ namespace BankingApp.Core.Application.LayerConfigurations
            services.AddScoped(typeof(IGenericService<,>), typeof(GenericService<,>));
             services.AddScoped<IBankAccountService,BankAccountService>();
             services.AddScoped<ICommerceService,CommerceService> ();
+            services.AddScoped<IBeneficiaryService, BeneficiaryService>();
+
             services.AddScoped<ILoanService, LoanService>();
 
 
@@ -22,3 +24,4 @@ namespace BankingApp.Core.Application.LayerConfigurations
 
     }
 }
+

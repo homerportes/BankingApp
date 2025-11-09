@@ -6,35 +6,46 @@ using BankingApp.Infraestructure.Identity.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
+
 namespace BankingApp.Controllers
 {
     public class LoginController : Controller
     {
         private readonly IAccountServiceForWebAPP _accountServiceForWebApp;
         private readonly UserManager<AppUser> _userManager;
+      
 
-        public LoginController(IAccountServiceForWebAPP accountServiceForWebApp, UserManager<AppUser> userManager)
+        public LoginController(IAccountServiceForWebAPP accountServiceForWebApp, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager)
         {
             _accountServiceForWebApp = accountServiceForWebApp;
             _userManager = userManager;
+         
         }
 
         public async Task<IActionResult> Index()
         {
-            AppUser? userSession = await _userManager.GetUserAsync(User);
-
-            if (userSession != null)
+            if (User.Identity?.IsAuthenticated == true)
             {
-                var user = await _accountServiceForWebApp.GetUserByUserName(userSession.UserName ?? "");
 
-                if (user != null && user.IsVerified == true)
+                AppUser? userSession = await _userManager.GetUserAsync(User);
+
+                if (userSession != null)
                 {
-                    return RedirectToRoute(new { controller = "Home", action = "Index" });
+                    var user = await _accountServiceForWebApp.GetUserByUserName(userSession.UserName ?? "");
+
+                    if (user != null && user.IsVerified)
+                    {
+                        //Redirecciona segun el rol
+
+                        return RedirectByRole(user.Role);
+                    }
+
                 }
             }
 
             return View(new LoginViewModel() { Password = "", UserName = "" });
         }
+
 
         [HttpPost]
         public async Task<IActionResult> Index(LoginViewModel vm)
@@ -47,9 +58,12 @@ namespace BankingApp.Controllers
 
                 if (user != null && user.IsVerified == true)
                 {
-                    return RedirectToRoute(new { controller = "Home", action = "Index" });
+                    //Redirecciona segun el rol
+                  
+                    return RedirectByRole(user.Role);
                 }
             }
+
 
             if (!ModelState.IsValid)
             {
@@ -98,7 +112,17 @@ namespace BankingApp.Controllers
 
             if (userDto != null && !userDto.HasError)
             {
-                return RedirectToRoute(new { controller = "Home", action = "Index" });
+                // agregando Redirecciones especifica segun el rol
+                if (userDto.Roles!.Contains("ADMIN"))
+                    return RedirectToRoute(new { area = "Admin", controller = "Home", action = "Index" });
+
+                if (userDto.Roles.Contains("CLIENT"))
+                    return RedirectToRoute(new { area = "Client", controller = "Home", action = "Index" });
+
+                if (userDto.Roles.Contains("TELLER"))
+                    return RedirectToRoute(new { area = "Teller", controller = "Home", action = "Index" });
+
+                return RedirectToRoute(new { controller = "Login", action = "Index" });
             }
             else
             {
@@ -114,6 +138,7 @@ namespace BankingApp.Controllers
             await _accountServiceForWebApp.SignOutAsync();
             return RedirectToRoute(new { controller = "Login", action = "Index" });
         }
+
 
         public IActionResult Register()
         {
@@ -232,6 +257,24 @@ namespace BankingApp.Controllers
             }
 
             TempData["Success"] = "Tu contraseña ha sido restablecida exitosamente.";
+            return RedirectToRoute(new { controller = "Login", action = "Index" });
+        }
+
+
+
+
+        //metodo privado para redireccionar
+        private IActionResult RedirectByRole(string role)
+        {
+            if (role.Contains("ADMIN"))
+                return RedirectToRoute(new { area = "Admin", controller = "Home", action = "Index" });
+
+            if (role.Contains("CLIENT"))
+                return RedirectToRoute(new { area = "Client", controller = "Home", action = "Index" });
+
+            if (role.Contains("TELLER"))
+                return RedirectToRoute(new { area = "Teller", controller = "Home", action = "Index" });
+
             return RedirectToRoute(new { controller = "Login", action = "Index" });
         }
     }

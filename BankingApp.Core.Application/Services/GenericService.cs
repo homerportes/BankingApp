@@ -1,19 +1,21 @@
 ﻿using AutoMapper;
 using BankingApp.Core.Application.Interfaces;
 using BankingApp.Core.Domain.Interfaces;
-using Microsoft.EntityFrameworkCore.Metadata;
+
 
 namespace BankingApp.Core.Application.Services
 {
-    public class GenericService<Entity, EntityDto> : IGenericService<Entity, EntityDto>
+    public class GenericService<Entity, EntityDto> : IGenericService<Entity, EntityDto> where Entity : class where EntityDto : class
     {
         private readonly IMapper _mapper;
         private readonly IGenericRepository<Entity> _repo;
 
-        public GenericService(IGenericRepository<Entity> repo, IMapper mapper) {
+        public GenericService(IGenericRepository<Entity> repo, IMapper mapper){
             _mapper = mapper;
             _repo = repo;
         }
+
+
 
         public async Task<EntityDto?> AddAsync(EntityDto entityDto)
         {
@@ -31,6 +33,7 @@ namespace BankingApp.Core.Application.Services
             }
         }
 
+
         public async Task DeleteAsync(int id)
         {
             try
@@ -42,6 +45,20 @@ namespace BankingApp.Core.Application.Services
             {
             }
         }
+
+
+
+
+        public async Task<EntityDto?> GetByIdAsync(int id)
+        {
+            var entity = await _repo.GetByIdAsync(id);
+
+            var dto = _mapper.Map<EntityDto>(entity);
+            return dto;
+        }
+
+
+
 
         public async Task DeleteRangeAsync(List<EntityDto> entityDtos)
         {
@@ -57,6 +74,8 @@ namespace BankingApp.Core.Application.Services
             }
         }
 
+
+
         public async Task<List<EntityDto>?> GetAllList()
         {
             var list = await _repo.GetAllList() ?? [];
@@ -71,13 +90,7 @@ namespace BankingApp.Core.Application.Services
             return dtos;
         }
 
-        public async Task<EntityDto?> GetByIdAsync(int id)
-        {
-            var entity = await _repo.GetByIdAsync(id);
-
-            var dto = _mapper.Map<EntityDto>(entity);
-            return dto;
-        }
+        
 
         public async Task<EntityDto?> UpdateAsync(int id, EntityDto entityDto)
         {
@@ -88,6 +101,8 @@ namespace BankingApp.Core.Application.Services
             var dto = _mapper.Map<EntityDto>(entry);
             return dto;
         }
+
+
 
         public async  Task  UpdateRangeAsync(List<EntityDto> entityDtos)
         {
