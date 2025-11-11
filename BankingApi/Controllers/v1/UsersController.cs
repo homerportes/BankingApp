@@ -109,9 +109,9 @@ namespace BankingApi.Controllers.v1
                 return BadRequest("Correo con formato incorrecto");
 
             }
-            if (dto.DocumentIdNumber.Length < 11 || !dto.DocumentIdNumber.All(char.IsDigit))
+            if (dto.DocumentIdNumber.Length != 11 || !dto.DocumentIdNumber.All(char.IsDigit))
             {
-                return BadRequest("La cedula debe contener 11 caracteres numéricos");
+                return BadRequest("La cédula debe contener exactamente 11 dígitos numéricos");
 
             }
             List<string> allRoles = EnumMapper<AppRoles>.GetAllAliases()
@@ -133,7 +133,7 @@ namespace BankingApi.Controllers.v1
 
 
                 var enumoption = EnumMapper<AppRoles>.FromString(dto.Role);
-             
+
 
                 var result = await _accountService.RegisterUser(new SaveUserDto
                 {
@@ -143,7 +143,7 @@ namespace BankingApi.Controllers.v1
                     Name = dto.Name,
                     Password = dto.Password,
                     DocumentIdNumber = dto.DocumentIdNumber,
-                    Roles = new List<string> { enumoption.ToString()},
+                    Roles = new List<string> { enumoption.ToString() },
                 }, null, true);
 
 
@@ -158,7 +158,8 @@ namespace BankingApi.Controllers.v1
                     return Conflict("Usuario o correo ya registrado");
                 }
 
-                if (enumoption==AppRoles.CLIENT){
+                if (enumoption == AppRoles.CLIENT)
+                {
 
 
                     var accountNumber = await _bankAccountService.GenerateAccountNumber();
@@ -188,7 +189,7 @@ namespace BankingApi.Controllers.v1
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> RegisterCommerce([FromRoute] int ?commerceId, [FromBody] CreateUserDto dto)
+        public async Task<IActionResult> RegisterCommerce([FromRoute] int? commerceId, [FromBody] CreateUserDto dto)
         {
             if (!ModelState.IsValid)
             {
@@ -224,12 +225,12 @@ namespace BankingApi.Controllers.v1
                 return BadRequest("Correo con formato incorrecto");
             }
 
-            if (dto.DocumentIdNumber.Length < 11 || !dto.DocumentIdNumber.All(char.IsDigit))
+            if (dto.DocumentIdNumber.Length != 11 || !dto.DocumentIdNumber.All(char.IsDigit))
             {
-                return BadRequest("La cédula debe contener 11 caracteres numéricos");
+                return BadRequest("La cédula debe contener exactamente 11 dígitos numéricos");
             }
 
-            if (commerceId==null)
+            if (commerceId == null)
             {
                 return BadRequest("El ID del comercio es requerido");
             }
@@ -248,7 +249,7 @@ namespace BankingApi.Controllers.v1
             {
 
 
-                var commerce = await _commerceService.GetByIdAsync(commerceId??0);
+                var commerce = await _commerceService.GetByIdAsync(commerceId ?? 0);
                 if (commerce == null)
                 {
                     return BadRequest("El comercio especificado no existe");
@@ -268,7 +269,7 @@ namespace BankingApi.Controllers.v1
                     Name = dto.Name,
                     Password = dto.Password,
                     DocumentIdNumber = dto.DocumentIdNumber,
-                    Roles = new List<string> { enumoption.ToString()},
+                    Roles = new List<string> { enumoption.ToString() },
                 }, null, true);
 
                 if (result == null)
@@ -284,7 +285,7 @@ namespace BankingApi.Controllers.v1
 
                 if (enumoption == AppRoles.CLIENT)
                 {
-                   await _commerceService.SetUser(commerceId??0, result.Id);
+                    await _commerceService.SetUser(commerceId ?? 0, result.Id);
 
                     var accountNumber = await _bankAccountService.GenerateAccountNumber();
                     await _bankAccountService.AddAsync(new AccountDto
@@ -348,9 +349,9 @@ namespace BankingApi.Controllers.v1
                     return BadRequest("Correo con formato incorrecto");
                 }
 
-                if (dto.DocumentIdNumber.Length < 11 || !dto.DocumentIdNumber.All(char.IsDigit))
+                if (dto.DocumentIdNumber.Length != 11 || !dto.DocumentIdNumber.All(char.IsDigit))
                 {
-                    return BadRequest("La cédula debe contener 11 caracteres numéricos");
+                    return BadRequest("La cédula debe contener exactamente 11 dígitos numéricos");
                 }
 
                 if (!string.IsNullOrWhiteSpace(dto.Password))
@@ -390,18 +391,18 @@ namespace BankingApi.Controllers.v1
                     });
                 }
 
-                var SavingAccount = await _bankAccountService.GetAccountByClientId(result.Id); 
-               
-                if (SavingAccount!=null)
+                var SavingAccount = await _bankAccountService.GetAccountByClientId(result.Id);
+
+                if (SavingAccount != null)
                 {
                     SavingAccount.Balance += dto.AditionalBalance ?? 0;
-                    await  _bankAccountService.UpdateAsync(SavingAccount.Id, SavingAccount);
+                    await _bankAccountService.UpdateAsync(SavingAccount.Id, SavingAccount);
 
                 }
 
 
                 return NoContent();
-            
+
             }
             catch (Exception ex)
             {
@@ -414,7 +415,7 @@ namespace BankingApi.Controllers.v1
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UpdateStatus([FromRoute] string id, [FromBody]  bool? status)
+        public async Task<IActionResult> UpdateStatus([FromRoute] string id, [FromBody] bool? status)
         {
             if (!ModelState.IsValid)
             {
@@ -425,7 +426,7 @@ namespace BankingApi.Controllers.v1
             {
                 return BadRequest("El ID del usuario es requerido");
             }
-          
+
 
             if (status == null)
             {
@@ -434,8 +435,8 @@ namespace BankingApi.Controllers.v1
             }
             try
             {
-                var updateResult = await _accountService.UpdateUserStatusAsync(id, status??false);
-                
+                var updateResult = await _accountService.UpdateUserStatusAsync(id, status ?? false);
+
                 if (updateResult.HasError)
                 {
                     if (updateResult.Errors!.Any())
@@ -477,9 +478,34 @@ namespace BankingApi.Controllers.v1
                     return NotFound("El usuario especificado no existe");
                 }
 
-                return Ok(user);
+                // Obtener cuenta principal si el usuario es cliente
+                PrimaryAccountDto? primaryAccount = null;
+                if (user.Role.ToUpper() == "CLIENT" || user.Role.ToUpper() == "CLIENTE")
+                {
+                    var account = await _bankAccountService.GetAccountByClientId(user.Id);
+                    if (account != null && account.Type == AccountType.PRIMARY)
+                    {
+                        primaryAccount = new PrimaryAccountDto
+                        {
+                            AccountNumber = account.Number,
+                            Balance = account.Balance
+                        };
+                    }
+                }
 
-              
+                var userDetail = new UserDetailDto
+                {
+                    UserName = user.UserName,
+                    Name = user.Name,
+                    LastName = user.LastName,
+                    DocumentIdNumber = user.DocumentIdNumber,
+                    Email = user.Email,
+                    Role = user.Role,
+                    Status = user.Status,
+                    PrimaryAccount = primaryAccount
+                };
+
+                return Ok(JsonConvert.SerializeObject(userDetail));
             }
             catch (Exception ex)
             {

@@ -12,7 +12,7 @@ using System.Data;
 
 namespace BankingApp.Infraestructure.Identity.Services
 {
-    public class IdentityUserService:  IUserService
+    public class IdentityUserService : IUserService
     {
 
         private UserManager<AppUser> _userManager;
@@ -27,7 +27,13 @@ namespace BankingApp.Infraestructure.Identity.Services
 
         public async Task<UserDto?> GetByDocumentId(string documentId)
         {
-            var user = await _userManager.Users.Where(r=>r.DocumentIdNumber==documentId).FirstOrDefaultAsync();
+            // Limpiar espacios en blanco y normalizar (eliminar guiones y espacios)
+            var cleanDocumentId = documentId?.Trim().Replace("-", "").Replace(" ", "") ?? "";
+
+            // Buscar con diferentes formatos posibles
+            var user = await _userManager.Users
+                .Where(r => r.DocumentIdNumber.Replace("-", "").Replace(" ", "") == cleanDocumentId)
+                .FirstOrDefaultAsync();
 
             if (user == null)
             {
@@ -53,7 +59,37 @@ namespace BankingApp.Infraestructure.Identity.Services
 
             return userDto;
         }
-public async Task<ApiUserPaginationResultDto> GetAllOnlyCommerce(int page = 1, int pageSize = 20, string? rol = null)
+
+        public async Task<UserDto?> GetUserById(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+            {
+                return null;
+            }
+
+            var rolesList = await _userManager.GetRolesAsync(user);
+            var role = EnumMapper<AppRoles>.FromString(rolesList.First());
+
+            var userDto = new UserDto()
+            {
+                Id = user.Id,
+                Email = user.Email ?? "",
+                LastName = user.LastName,
+                Name = user.Name,
+                UserName = user.UserName ?? "",
+                DocumentIdNumber = user.DocumentIdNumber,
+                IsVerified = user.EmailConfirmed,
+                Status = user.IsActive ? "Activo" : "Inactivo",
+                IsActive = user.IsActive,
+                Role = EnumMapper<AppRoles>.ToString(role)
+            };
+
+            return userDto;
+        }
+
+        public async Task<ApiUserPaginationResultDto> GetAllOnlyCommerce(int page = 1, int pageSize = 20, string? rol = null)
         {
             var commerceRoleId = await _identityContext.Roles
                 .Where(r => r.Name == AppRoles.COMMERCE.ToString())
@@ -198,7 +234,7 @@ public async Task<ApiUserPaginationResultDto> GetAllOnlyCommerce(int page = 1, i
                 .Take(pageSize)
                 .ToListAsync();
 
-            
+
             var result = pagedUsers.Select(x =>
             {
                 var roleName = x.Role.Name ?? "";
@@ -211,7 +247,7 @@ public async Task<ApiUserPaginationResultDto> GetAllOnlyCommerce(int page = 1, i
                 }
                 catch
                 {
-                    displayRole = roleName; 
+                    displayRole = roleName;
                 }
 
                 return new UserDtoForApi
@@ -233,6 +269,17 @@ public async Task<ApiUserPaginationResultDto> GetAllOnlyCommerce(int page = 1, i
                 CurrentPage = page,
                 TotalCount = totalCount
             };
+        }
+
+        public async Task<List<string>> GetActiveUserIdsAsync()
+        {
+            // Obtener todos los IDs de usuarios activos (IsActive = true)
+            var activeUserIds = await _userManager.Users
+                .Where(u => u.IsActive)
+                .Select(u => u.Id)
+                .ToListAsync();
+
+            return activeUserIds;
         }
 
 

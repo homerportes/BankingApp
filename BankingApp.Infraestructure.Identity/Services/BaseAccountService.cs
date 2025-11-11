@@ -61,9 +61,7 @@ namespace InvestmentApp.Infrastructure.Identity.Services
                 Email = saveDto.Email,
                 UserName = saveDto.UserName,
                 EmailConfirmed = false,
-
-             
-             
+                IsActive = false, // Usuario inactivo hasta confirmar email
                 DocumentIdNumber = saveDto.DocumentIdNumber,
             };
 
@@ -461,7 +459,7 @@ namespace InvestmentApp.Infrastructure.Identity.Services
                 UserName = user.UserName ?? "",
                 DocumentIdNumber = user.DocumentIdNumber,
                 IsVerified = user.EmailConfirmed,
-                Status=user.IsActive? "Activo": "Inactivo",
+                Status = user.IsActive ? "Activo" : "Inactivo",
                 IsActive = user.IsActive,
                 Role = EnumMapper<AppRoles>.ToString(role)
             };
@@ -532,16 +530,18 @@ namespace InvestmentApp.Infrastructure.Identity.Services
 
             if (isActive != null && isActive == true)
             {
-                users = users.Where(w => w.EmailConfirmed);
+                // Filtrar solo por IsActive (usuarios que han confirmado su correo)
+                users = users.Where(w => w.IsActive);
             }
 
             var listUser = await users.ToListAsync();
 
             foreach (var item in listUser)
             {
-
                 var rolesList = await _userManager.GetRolesAsync(item);
-                var role = EnumMapper<AppRoles>.FromString(rolesList.First());
+
+                // Usar directamente el string del rol sin conversión
+                string roleName = rolesList.FirstOrDefault() ?? "UNKNOWN";
 
                 listUsersDtos.Add(new UserDto()
                 {
@@ -554,7 +554,7 @@ namespace InvestmentApp.Infrastructure.Identity.Services
                     IsVerified = item.EmailConfirmed,
                     Status = item.IsActive ? "Activo" : "Inactivo",
                     IsActive = item.IsActive,
-                    Role = EnumMapper<AppRoles>.ToString(role)
+                    Role = roleName
                 });
             }
 
@@ -576,13 +576,17 @@ namespace InvestmentApp.Infrastructure.Identity.Services
             var result = await _userManager.ConfirmEmailAsync(user, token);
             if (result.Succeeded)
             {
-                response.Message = $"Account confirmed for {user.Email}. You can now use the app";
+                // Activar el usuario al confirmar el email
+                user.IsActive = true;
+                await _userManager.UpdateAsync(user);
+
+                response.Message = $"Cuenta confirmada para {user.Email}. Ahora puedes usar la aplicación";
                 response.HasError = false;
                 return response;
             }
             else
             {
-                response.Message = $"An error occurred while confirming this email {user.Email}";
+                response.Message = $"Ocurrió un error al confirmar el correo {user.Email}";
                 response.HasError = true;
                 return response;
             }

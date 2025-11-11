@@ -1,0 +1,152 @@
+@model BankingApp.Core.Application.ViewModels.SavingsAccount.SavingsAccountDetailsViewModel
+
+@{
+    ViewData["Title"] = "Detalles de Cuenta de Ahorro";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>@ViewData["Title"]</h2>
+            <p class="text-muted">Cuenta: @Model.Account.Number</p>
+        </div>
+    </div>
+
+    @if (TempData["Warning"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            @TempData["Warning"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">Información de la Cuenta</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <strong>Número de Cuenta:</strong>
+                    <p>@Model.Account.Number</p>
+                </div>
+                <div class="col-md-3">
+                    <strong>Cliente:</strong>
+                    <p>@Model.Account.ClientName</p>
+                </div>
+                <div class="col-md-2">
+                    <strong>Balance:</strong>
+                    <p class="text-success">$@Model.Account.Balance.ToString("N2")</p>
+                </div>
+                <div class="col-md-2">
+                    <strong>Tipo:</strong>
+                    <p>@Model.Account.TypeDisplay</p>
+                </div>
+                <div class="col-md-2">
+                    <strong>Estado:</strong>
+                    <p>@Model.Account.StatusDisplay</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Transacciones</h5>
+        </div>
+        <div class="card-body">
+            @if (Model.Transactions.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Monto</th>
+                                <th>Tipo</th>
+                                <th>Beneficiario</th>
+                                <th>Origen</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var transaction in Model.Transactions)
+                            {
+                                <tr>
+                                    <td>@transaction.TransactionDate.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>$@transaction.Amount.ToString("N2")</td>
+                                    <td>
+                                        @if (transaction.Type == BankingApp.Core.Domain.Common.Enums.TransactionType.DEBIT)
+                                        {
+                                            <span class="badge bg-danger">DÉBITO</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success">CRÉDITO</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @{
+                                            var beneficiary = transaction.Beneficiary;
+                                            if (beneficiary.ToLower() == "retiro" || beneficiary.ToLower().Contains("retiro"))
+                                            {
+                                                <text>Retiro</text>
+                                            }
+                                            else if (beneficiary.Length == 4)
+                                            {
+                                                <text>Tarjeta ****@beneficiary</text>
+                                            }
+                                            else
+                                            {
+                                                @beneficiary
+                                            }
+                                        }
+                                    </td>
+                                    <td>
+                                        @{
+                                            var origin = transaction.Origin;
+                                            if (origin.ToLower() == "deposito" || origin.ToLower().Contains("deposito"))
+                                            {
+                                                <text>Depósito</text>
+                                            }
+                                            else if (origin.Length == 4)
+                                            {
+                                                <text>Tarjeta ****@origin</text>
+                                            }
+                                            else
+                                            {
+                                                @origin
+                                            }
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (transaction.Status == BankingApp.Core.Domain.Common.Enums.OperationStatus.APPROVED)
+                                        {
+                                            <span class="badge bg-success">APROBADA</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">RECHAZADA</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info text-center">
+                    <i class="bi bi-info-circle"></i> No hay transacciones registradas para esta cuenta.
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Volver atrás
+        </a>
+    </div>
+</div>

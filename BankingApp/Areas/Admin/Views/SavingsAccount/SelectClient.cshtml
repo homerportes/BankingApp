@@ -1,0 +1,94 @@
+@model List<BankingApp.Core.Application.ViewModels.SavingsAccount.ClientSelectionViewModel>
+
+@{
+    ViewData["Title"] = "Seleccionar Cliente";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>@ViewData["Title"]</h2>
+            <p class="text-muted">Seleccione el cliente al que desea asignar una cuenta de ahorro secundaria</p>
+        </div>
+    </div>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" asp-action="SelectClient" class="row g-3">
+                <div class="col-md-6">
+                    <label for="cedula" class="form-label">Buscar por Cédula</label>
+                    <input type="text" class="form-control" id="cedula" name="cedula" value="@ViewBag.Cedula" placeholder="000-0000000-0">
+                </div>
+
+                <div class="col-md-6 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="bi bi-search"></i> Buscar
+                    </button>
+                    <a asp-action="SelectClient" class="btn btn-secondary me-2">
+                        <i class="bi bi-x-circle"></i> Limpiar
+                    </a>
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Volver al listado de cuentas
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            @if (Model.Any())
+            {
+                <form method="post" asp-action="ConfirmClient" id="clientForm">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th width="50">Seleccionar</th>
+                                    <th>Cédula</th>
+                                    <th>Nombre y Apellido</th>
+                                    <th>Correo Electrónico</th>
+                                    <th>Deuda Acumulada</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var client in Model)
+                                {
+                                    <tr>
+                                        <td class="text-center">
+                                            <input type="radio" name="selectedClientId" value="@client.Id" class="form-check-input" required>
+                                        </td>
+                                        <td>@client.DocumentId</td>
+                                        <td>@client.FullName</td>
+                                        <td>@client.Email</td>
+                                        <td>$@client.TotalDebt.ToString("N2")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-arrow-right-circle"></i> Siguiente paso
+                        </button>
+                    </div>
+                </form>
+            }
+            else
+            {
+                <div class="alert alert-info text-center">
+                    <i class="bi bi-info-circle"></i> No se encontraron clientes activos.
+                </div>
+            }
+        </div>
+    </div>
+</div>

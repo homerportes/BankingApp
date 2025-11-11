@@ -51,8 +51,10 @@ namespace BankingApp.Core.Application.LayerConfigurations
             {
                 { "activa", CardStatus.ACTIVE },
                  { "active", CardStatus.ACTIVE },
-                { "inactive", CardStatus.INACTIVE },
-                { "inactiva", CardStatus.INACTIVE },
+                { "cancelled", CardStatus.CANCELLED },
+                { "cancelada", CardStatus.CANCELLED },
+                { "inactive", CardStatus.CANCELLED },
+                { "inactiva", CardStatus.CANCELLED },
 
 
 
@@ -77,8 +79,8 @@ namespace BankingApp.Core.Application.LayerConfigurations
                 { "credit", TransactionType.CREDIT },
                 { "debit", TransactionType.DEBIT },
             });
-        
-    }
+
+        }
 
     }
 }

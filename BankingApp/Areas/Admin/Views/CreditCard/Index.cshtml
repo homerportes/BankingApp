@@ -1,0 +1,250 @@
+@model IEnumerable<BankingApp.Core.Application.ViewModels.CreditCard.CreditCardViewModel>
+
+@{
+    ViewData["Title"] = "Tarjetas de Crédito";
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">@ViewData["Title"]</h1>
+        <a asp-action="SelectClient" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+            <i class="bi bi-plus-circle"></i> Asignar Nueva Tarjeta
+        </a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Success"]
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Error"]
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+
+    @if (TempData["Warning"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            @TempData["Warning"]
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+
+    <!-- Filtros y Búsqueda -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Búsqueda y Filtros</h6>
+        </div>
+        <div class="card-body">
+            <form asp-action="Index" method="get">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="cedula" class="font-weight-bold">Buscar por Cédula:</label>
+                        <input type="text" name="cedula" id="cedula" class="form-control" 
+                               value="@ViewBag.Cedula" placeholder="11 dígitos sin guiones (Ej: 40212345678)"
+                               pattern="[0-9]{11}" maxlength="11" title="Ingrese 11 dígitos sin guiones ni espacios">
+                        <small class="form-text text-muted">
+                            <i class="bi bi-info-circle"></i> Ingrese 11 dígitos sin guiones ni espacios
+                        </small>
+                        @if (!string.IsNullOrEmpty(ViewBag.Cedula))
+                        {
+                            <small class="form-text text-success">
+                                <i class="bi bi-person-check"></i> 
+                                @if (!string.IsNullOrEmpty(ViewBag.UserName))
+                                {
+                                    <span>Mostrando tarjetas de: <strong>@ViewBag.UserName</strong></span>
+                                }
+                            </small>
+                        }
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="estado" class="font-weight-bold">Estado:</label>
+                        <select name="estado" id="estado" class="form-control">
+                            <option value="ACTIVE" selected="@(ViewBag.Estado == "ACTIVE" ? "selected" : null)">Activa</option>
+                            <option value="CANCELLED" selected="@(ViewBag.Estado == "CANCELLED" ? "selected" : null)">Cancelada</option>
+                        </select>
+                    </div>
+                    <div class="col-md-5 mb-3 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary mr-2">
+                            <i class="bi bi-search"></i> Buscar
+                        </button>
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="bi bi-arrow-clockwise"></i> Limpiar
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabla de Tarjetas -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Listado de Tarjetas</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Número de Tarjeta</th>
+                            <th>Cliente</th>
+                            <th>Límite de Crédito</th>
+                            <th>Fecha Expiración</th>
+                            <th>Total Adeudado</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            @foreach (var card in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <strong>@card.CardNumber</strong>
+                                    </td>
+                                    <td>@card.ClientName</td>
+                                    <td><strong>$@card.CreditLimit.ToString("N2")</strong></td>
+                                    <td>@card.ExpirationDate.ToString("MM/yy")</td>
+                                    <td>
+                                        <span class="@(card.CurrentDebt > 0 ? "text-danger" : "text-success")">
+                                            <strong>$@card.CurrentDebt.ToString("N2")</strong>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @switch (card.CardStatus)
+                                        {
+                                            case BankingApp.Core.Domain.Common.Enums.CardStatus.ACTIVE:
+                                                <span class="badge bg-success">Activa</span>
+                                                break;
+                                            case BankingApp.Core.Domain.Common.Enums.CardStatus.CANCELLED:
+                                                <span class="badge bg-danger">Cancelada</span>
+                                                break;
+                                            default:
+                                                <span class="badge bg-secondary">Desconocido</span>
+                                                break;
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="@Url.Action("Details", "CreditCard", new { area = "Admin", id = card.Id })" class="btn btn-info btn-sm" title="Ver Detalles">
+                                                <i class="bi bi-eye"></i> Detalles
+                                            </a>
+                                            @if (card.CardStatus == BankingApp.Core.Domain.Common.Enums.CardStatus.ACTIVE)
+                                            {
+                                                <a href="@Url.Action("Edit", "CreditCard", new { area = "Admin", id = card.Id })" class="btn btn-warning btn-sm" title="Editar">
+                                                    <i class="bi bi-pencil"></i> Editar
+                                                </a>
+                                                <a href="@Url.Action("Cancel", "CreditCard", new { area = "Admin", id = card.Id })" class="btn btn-danger btn-sm" title="Cancelar">
+                                                    <i class="bi bi-x-circle"></i> Cancelar
+                                                </a>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center">No hay tarjetas de crédito registradas.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Paginación -->
+    @if (ViewBag.TotalPages > 1)
+    {
+        <nav aria-label="Navegación de páginas">
+            <ul class="pagination justify-content-center">
+                <!-- Botón Primera Página -->
+                <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
+                    <a class="page-link" asp-action="Index" asp-route-page="1" 
+                       asp-route-cedula="@ViewBag.Cedula" asp-route-estado="@ViewBag.Estado">
+                        <i class="bi bi-chevron-double-left"></i>
+                    </a>
+                </li>
+                
+                <!-- Botón Anterior -->
+                <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
+                    <a class="page-link" asp-action="Index" asp-route-page="@(ViewBag.CurrentPage - 1)" 
+                       asp-route-cedula="@ViewBag.Cedula" asp-route-estado="@ViewBag.Estado">
+                        <i class="bi bi-chevron-left"></i> Anterior
+                    </a>
+                </li>
+                
+                <!-- Números de Página -->
+                @{
+                    int startPage = Math.Max(1, ViewBag.CurrentPage - 2);
+                    int endPage = Math.Min((int)ViewBag.TotalPages, ViewBag.CurrentPage + 2);
+                    
+                    if (startPage > 1)
+                    {
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    }
+                    
+                    for (int i = startPage; i <= endPage; i++)
+                    {
+                        <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                            <a class="page-link" asp-action="Index" asp-route-page="@i" 
+                               asp-route-cedula="@ViewBag.Cedula" asp-route-estado="@ViewBag.Estado">
+                                @i
+                            </a>
+                        </li>
+                    }
+                    
+                    if (endPage < ViewBag.TotalPages)
+                    {
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    }
+                }
+                
+                <!-- Botón Siguiente -->
+                <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
+                    <a class="page-link" asp-action="Index" asp-route-page="@(ViewBag.CurrentPage + 1)" 
+                       asp-route-cedula="@ViewBag.Cedula" asp-route-estado="@ViewBag.Estado">
+                        Siguiente <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+                
+                <!-- Botón Última Página -->
+                <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
+                    <a class="page-link" asp-action="Index" asp-route-page="@ViewBag.TotalPages" 
+                       asp-route-cedula="@ViewBag.Cedula" asp-route-estado="@ViewBag.Estado">
+                        <i class="bi bi-chevron-double-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        
+        <!-- Información de Paginación -->
+        <div class="text-center mb-3">
+            <small class="text-muted">
+                Página @ViewBag.CurrentPage de @ViewBag.TotalPages 
+                (@ViewBag.TotalRecords tarjetas en total)
+            </small>
+        </div>
+    }
+</div>

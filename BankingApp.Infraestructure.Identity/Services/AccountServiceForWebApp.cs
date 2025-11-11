@@ -6,12 +6,12 @@ using Microsoft.AspNetCore.Identity;
 
 namespace BankingApp.Infraestructure.Identity.Services
 {
-    public class AccountServiceForWebAPP : BaseAccountService,IAccountServiceForWebAPP
+    public class AccountServiceForWebAPP : BaseAccountService, IAccountServiceForWebAPP
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
 
-        public AccountServiceForWebAPP(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, IEmailService emailService) :base(userManager,emailService)
+        public AccountServiceForWebAPP(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, IEmailService emailService) : base(userManager, emailService)
         {
             _signInManager = signInManager;
             _userManager = userManager;
@@ -27,13 +27,21 @@ namespace BankingApp.Infraestructure.Identity.Services
             if (user == null)
             {
                 responseDto.HasError = true;
-                responseDto.Error = $"No hay ningun usuario el nombre de usuario {loginDto.Username}";
+                responseDto.Error = $"No hay ningún usuario con el nombre de usuario {loginDto.Username}";
                 return responseDto;
             }
+
             if (!user.EmailConfirmed)
             {
                 responseDto.HasError = true;
-                responseDto.Error = $"Esta cuenta no esta activa. Actívala mediante un link que ha sido enviado a tu correo";
+                responseDto.Error = $"Esta cuenta no está activa. Actívala mediante el link que ha sido enviado a tu correo";
+                return responseDto;
+            }
+
+            if (!user.IsActive)
+            {
+                responseDto.HasError = true;
+                responseDto.Error = $"Esta cuenta está desactivada. Contacta al administrador para más información";
                 return responseDto;
             }
 
@@ -49,13 +57,13 @@ namespace BankingApp.Infraestructure.Identity.Services
             responseDto.Id = user.Id;
             responseDto.UserName = user.UserName ?? "";
             responseDto.Email = user.Email ?? "";
-            responseDto.IsVerified = user.EmailConfirmed;
+            responseDto.IsVerified = user.EmailConfirmed && user.IsActive;
             responseDto.Roles = rolesList.ToList();
 
 
             return responseDto;
         }
-       
+
         public async Task SignOutAsync()
         {
             await _signInManager.SignOutAsync();

@@ -18,6 +18,9 @@ namespace BankingApp.Infraestructure.Persistence.EntitiesConfigurations
             builder.Property(x => x.Balance).IsRequired().HasPrecision(18,2);
             builder.Property(x => x.Type).IsRequired();
             builder.Property(x => x.Number).IsRequired();
+            builder.Property(x => x.Status).IsRequired();
+            builder.Property(x => x.CreatedAt).IsRequired();
+            builder.Property(x => x.AdminId);
 
             builder.HasIndex(a => a.Number)
             .IsUnique();

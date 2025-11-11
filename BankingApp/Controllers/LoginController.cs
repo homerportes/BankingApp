@@ -21,15 +21,25 @@ namespace BankingApp.Controllers
 
         public async Task<IActionResult> Index()
         {
-            AppUser? userSession = await _userManager.GetUserAsync(User);
-
-            if (userSession != null)
+            // Si ya hay un usuario autenticado
+            if (User.Identity?.IsAuthenticated == true)
             {
-                var user = await _accountServiceForWebApp.GetUserByUserName(userSession.UserName ?? "");
+                AppUser? userSession = await _userManager.GetUserAsync(User);
 
-                if (user != null && user.IsVerified == true)
+                if (userSession != null)
                 {
-                    return RedirectToRoute(new { controller = "Home", action = "Index" });
+                    // Verificar que el usuario esté activo y confirmado
+                    if (userSession.IsActive && userSession.EmailConfirmed)
+                    {
+                        var roles = await _userManager.GetRolesAsync(userSession);
+                        if (roles.Any())
+                        {
+                            return RedirectToHome(roles.First());
+                        }
+                    }
+
+                    // Si el usuario no está activo o no tiene email confirmado, cerrar sesión
+                    await _accountServiceForWebApp.SignOutAsync();
                 }
             }
 
@@ -39,15 +49,25 @@ namespace BankingApp.Controllers
         [HttpPost]
         public async Task<IActionResult> Index(LoginViewModel vm)
         {
-            AppUser? userSession = await _userManager.GetUserAsync(User);
-
-            if (userSession != null)
+            // Si ya hay un usuario autenticado
+            if (User.Identity?.IsAuthenticated == true)
             {
-                var user = await _accountServiceForWebApp.GetUserByUserName(userSession.UserName ?? "");
+                AppUser? userSession = await _userManager.GetUserAsync(User);
 
-                if (user != null && user.IsVerified == true)
+                if (userSession != null)
                 {
-                    return RedirectToRoute(new { controller = "Home", action = "Index" });
+                    // Verificar que el usuario esté activo y confirmado
+                    if (userSession.IsActive && userSession.EmailConfirmed)
+                    {
+                        var roles = await _userManager.GetRolesAsync(userSession);
+                        if (roles.Any())
+                        {
+                            return RedirectToHome(roles.First());
+                        }
+                    }
+
+                    // Si el usuario no está activo o no tiene email confirmado, cerrar sesión
+                    await _accountServiceForWebApp.SignOutAsync();
                 }
             }
 
@@ -98,7 +118,12 @@ namespace BankingApp.Controllers
 
             if (userDto != null && !userDto.HasError)
             {
-                return RedirectToRoute(new { controller = "Home", action = "Index" });
+                // Usar el rol del DTO de autenticación
+                if (userDto.Roles != null && userDto.Roles.Any())
+                {
+                    return RedirectToHome(userDto.Roles.First());
+                }
+                return RedirectToRoute(new { controller = "Login", action = "Index" });
             }
             else
             {
@@ -109,9 +134,32 @@ namespace BankingApp.Controllers
             }
         }
 
+        private IActionResult RedirectToHome(string role)
+        {
+            return role.ToUpper() switch
+            {
+                "ADMIN" => RedirectToRoute(new { area = "Admin", controller = "Home", action = "Index" }),
+                "TELLER" => RedirectToRoute(new { area = "Teller", controller = "Home", action = "Index" }),
+                "CLIENT" => RedirectToRoute(new { area = "Client", controller = "Home", action = "Index" }),
+                _ => RedirectToRoute(new { controller = "Login", action = "Index" })
+            };
+        }
+
         public async Task<IActionResult> Logout()
         {
             await _accountServiceForWebApp.SignOutAsync();
+            return RedirectToRoute(new { controller = "Login", action = "Index" });
+        }
+
+        public async Task<IActionResult> AccessDenied()
+        {
+            // Si hay un usuario autenticado, cerrar su sesión
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                await _accountServiceForWebApp.SignOutAsync();
+            }
+
+            TempData["ErrorMessage"] = "No tienes permisos para acceder a esta página o tu sesión ha expirado. Por favor, inicia sesión nuevamente.";
             return RedirectToRoute(new { controller = "Login", action = "Index" });
         }
 

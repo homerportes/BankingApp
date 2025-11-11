@@ -1,5 +1,7 @@
 ﻿
-﻿namespace BankingApp.Core.Application.Dtos.User
+
+
+namespace BankingApp.Core.Application.Dtos.User
 {
     public class SaveUserDto
     {
@@ -11,7 +13,7 @@
         public required string LastName { get; set; }
         public required string DocumentIdNumber { get; set; }
         public decimal? InitialAmount { get; set; } // Monto inicial para clientes
-        public  List<string> ?Roles { get; set; }
+        public List<string>? Roles { get; set; }
 
 
     }

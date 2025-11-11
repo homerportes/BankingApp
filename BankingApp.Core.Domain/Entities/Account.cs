@@ -13,6 +13,9 @@ namespace BankingApp.Core.Domain.Entities
         public required  string ClientId { get; set; }    
         public Decimal Balance { get; set; }
         public AccountType Type { get; set; }
+        public AccountStatus Status { get; set; } = AccountStatus.ACTIVE;
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public string? AdminId { get; set; } // Solo para cuentas secundarias
         public ICollection<Transaction>? Transactions { get; set; }
     }
 }

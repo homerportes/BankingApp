@@ -13,12 +13,12 @@ namespace BankingApp.Infraestructure.Persistence.EntitiesConfigurations
     {
         public void Configure(EntityTypeBuilder<Purchase> builder)
         {
-            builder.HasKey(x=>x.Id);
+            builder.HasKey(x => x.Id);
             builder.Property(x => x.AmountSpent).IsRequired().HasPrecision(18, 2);
             builder.Property(x => x.MerchantName).IsRequired();
             builder.Property(x => x.DateTime).IsRequired();
             builder.Property(x => x.CardNumber).IsRequired();
-
+            builder.Property(x => x.Status).IsRequired().HasConversion<string>();
         }
     }
 }

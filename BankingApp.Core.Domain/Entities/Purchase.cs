@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BankingApp.Core.Domain.Common.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,8 +18,10 @@ namespace BankingApp.Core.Domain.Entities
         public decimal AmountSpent { get; set; }
 
         //nombre del comercio donde se realizó el consumo; si se trata de un avance de efectivo, en lugar del nombre del comercio debe aparecer el texto "AVANCE
-        public required string MerchantName {  get; set; }
-        public string ?CardNumber { get; set; }
+        public required string MerchantName { get; set; }
+        public string? CardNumber { get; set; }
+
+        public required OperationStatus Status { get; set; }
 
         public CreditCard? CreditCard { get; set; }
     }
