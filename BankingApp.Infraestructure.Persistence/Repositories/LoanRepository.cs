@@ -19,5 +19,17 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
             return await _bankingContext.Set<Loan>().AnyAsync(r => r.PublicId == id);
 
         }
+
+        public async Task<Loan> UpdateByObjectAsync(Loan entity)
+        {
+            var entry = await _bankingContext.Set<Loan>().Where(r=>r.Id== entity.Id).FirstOrDefaultAsync();
+
+            if (entry != null)
+            {
+                _bankingContext.Entry(entry).CurrentValues.SetValues(entity);
+                await _bankingContext.SaveChangesAsync();
+            }
+            return entry;
+        }
     }
 }

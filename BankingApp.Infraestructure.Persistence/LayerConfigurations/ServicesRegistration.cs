@@ -1,4 +1,5 @@
-﻿using BankingApp.Core.Domain.Interfaces;
+﻿using BankingApp.Core.Application.Interfaces;
+using BankingApp.Core.Domain.Interfaces;
 using BankingApp.Infraestructure.Persistence.Contexts;
 using BankingApp.Infraestructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;

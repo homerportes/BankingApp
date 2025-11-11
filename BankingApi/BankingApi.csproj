@@ -28,8 +28,4 @@
     <ProjectReference Include="..\BankingApp.Infraestructure.Shared\BankingApp.Infraestructure.Shared.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Conventions\" />
-  </ItemGroup>
-
 </Project>

@@ -10,5 +10,7 @@ namespace BankingApp.Core.Domain.Interfaces
     public interface ILoanRepository : IGenericRepository<Loan>
     {
         Task<bool> LoanPublicIdExists(string id);
+        Task<Loan> UpdateByObjectAsync(Loan entity);
+
     }
 }

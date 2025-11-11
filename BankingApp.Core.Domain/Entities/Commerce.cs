@@ -11,5 +11,7 @@
         public required string Description { get; set; }
 
         public  required string Logo { get; set; }
+        public DateTime  CreatedAt { get; set; } = DateTime.Now;
+
     }
 }

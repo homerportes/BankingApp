@@ -1,5 +1,8 @@
-﻿using BankingApp.Core.Application.Interfaces;
+﻿using BankingApp.Core.Application.Dtos.Loan;
+using BankingApp.Core.Application.Interfaces;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+
 
 namespace BankingApi.Controllers.v1
 {
@@ -15,7 +18,7 @@ namespace BankingApi.Controllers.v1
 
         }
 
-        [HttpPost]
+        [HttpGet (Name ="Obtener todos")]
         public async Task<IActionResult> GetAll (int page = 1, int pageSize = 20, string? state = null, string? DocumentId = null)
         {
             string? clientId = null;
@@ -30,6 +33,65 @@ namespace BankingApi.Controllers.v1
 
             return Ok(all);
         }
-        
+
+        [HttpPost]
+
+        public async Task<IActionResult> SetLoan(LoanApiRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest("Faltan uno o más parámetros requeridos en la solicitud");
+            }
+
+            if (string.IsNullOrWhiteSpace(request.ClientId))
+            {
+                return BadRequest("El ID del usuario es requerido");
+            }
+
+            var user = await _userService.GetById(request.ClientId);
+            if (user == null) return BadRequest("No existe ningun usuario asociado a ese Id");
+
+            
+                var requestResult = await _loanService.HandleCreateRequestApi(request);
+                if (requestResult.ClientHasActiveLoan) return BadRequest("El usuario ya tiene un prestamo activo");
+                if (requestResult.ClientIsHighRisk) return Conflict("El usuario es de alto riesgo");
+            if (requestResult.LoanCreated) return Created();
+
+            else return BadRequest();
+            
+        }
+
+
+        [HttpGet ("/{id}")]
+
+        public async Task<IActionResult> GetDetails([FromRoute]string id)
+        {
+
+            var result = await _loanService.GetDetailed(id);
+            if (result == null) return NotFound();
+
+            return Ok(result);
+        }
+
+
+        [HttpPatch("/{id}/rate")]
+
+        public async Task<IActionResult> SetRate([FromRoute]string publicId ,[FromBody] decimal rate)
+        {
+
+            if (rate <= 0) return BadRequest("Tasa invalida");
+
+            
+            if (string.IsNullOrEmpty(publicId) || publicId == "string")
+            {
+                return BadRequest();
+            }
+            var result = await _loanService.UpdateLoanRate(publicId,rate);
+            if (!result.IsSuccessful) return NotFound();
+            if (result.IsSuccessful) return NoContent();
+            if (result == null) return NotFound();
+
+            return Ok(result);
+        }
     }
 }

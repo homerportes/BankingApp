@@ -19,18 +19,12 @@ namespace BankingApp.Core.Domain.Entities
         //Total del prestamo
         public decimal TotalLoanAmount { get; set; }
 
-        //Total de cuotas del  prestamo
-        public required int TotalInstallmentsCount { get; set; }
-
-        //Total de cuotas  pagadas del  prestamo
-        public required int PaidInstallmentsCount { get; set; }
-
 
         //Monto restante a pagar  prestamo
         public required decimal OutstandingBalance { get; set; }
 
         //Tasa aplicada
-        public required  int InterestRate { get; set; }
+        public required  decimal InterestRate { get; set; }
         //Plazo del prestamo en meses
         public required int LoanTermInMonths { get; set; }
 
@@ -40,6 +34,7 @@ namespace BankingApp.Core.Domain.Entities
         public DateTime CreatedAt { get; set; }
         public bool IsActive { get; set; }
 
-
+       public ICollection<Installment> ?Installments { get; set; }
+        public DateTime UpdatedAt { get; set; }
     }
 }
