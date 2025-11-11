@@ -14,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using System.Text;
+using System.Threading.Tasks;
 using IAccountServiceForWebApi = BankingApp.Core.Application.Interfaces.IAccountServiceForWebApi;
 
 namespace BankingApp.Infraestructure.Identity.LayerConfigurations
@@ -45,7 +46,7 @@ namespace BankingApp.Infraestructure.Identity.LayerConfigurations
                         .AddRoles<IdentityRole>()
                         .AddSignInManager()
                         .AddEntityFrameworkStores<IdentityContext>()
-                        .AddTokenProvider<DataProtectorTokenProvider<AppUser>>(TokenOptions.DefaultProvider);
+                        .AddDefaultTokenProviders();
 
 
 
@@ -59,22 +60,26 @@ namespace BankingApp.Infraestructure.Identity.LayerConfigurations
             {
                 opt.DefaultScheme = IdentityConstants.ApplicationScheme;
                 opt.DefaultChallengeScheme = IdentityConstants.ApplicationScheme;
-                opt.DefaultScheme = IdentityConstants.ApplicationScheme;
-
+                opt.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
 
             }).AddCookie(IdentityConstants.ApplicationScheme, opt =>
             {
                 opt.ExpireTimeSpan = TimeSpan.FromMinutes(30);
-                opt.LoginPath = "/Login";
+                opt.LoginPath = "/Login/Index";
                 opt.AccessDeniedPath = "/Login/AccessDenied";
                 opt.SlidingExpiration = true;
-
             });
+
+            // Configurar para incluir roles en claims
+            services.AddScoped<Microsoft.AspNetCore.Identity.IUserClaimsPrincipalFactory<AppUser>,
+                Microsoft.AspNetCore.Identity.UserClaimsPrincipalFactory<AppUser, IdentityRole>>();
             #endregion
 
 
             #region Services
             services.AddScoped<IAccountServiceForWebAPP, AccountServiceForWebAPP>();
+            services.AddScoped<IUserService, IdentityUserService>();
+
             #endregion
 
         }
@@ -135,9 +140,9 @@ namespace BankingApp.Infraestructure.Identity.LayerConfigurations
                     ValidateIssuerSigningKey = true,
                     ValidateLifetime = true,
                     ClockSkew = TimeSpan.FromMinutes(2),
-                    ValidIssuer= config["JwtSettings:Issuer"],
+                    ValidIssuer = config["JwtSettings:Issuer"],
                     ValidAudience = config["JwtSettings:Audience"],
-                    IssuerSigningKey=new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["JwtSettings:SecretKey"]??""))
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["JwtSettings:SecretKey"] ?? ""))
 
 
                 };
@@ -156,23 +161,23 @@ namespace BankingApp.Infraestructure.Identity.LayerConfigurations
                     OnChallenge = c =>
                     {
                         c.HandleResponse();
-                        c.Response.StatusCode = 481;
+                        c.Response.StatusCode = 401;
                         c.Response.ContentType = "application/json";
-                        var result = JsonConvert.SerializeObject(new JwtResponseDto() { HasError = true , Error="No estás autorizado"});
+                        var result = JsonConvert.SerializeObject(new JwtResponseDto() { HasError = true, Error = "Token ausente o inválido" });
                         return c.Response.WriteAsync(result);
                     },
                     OnForbidden = c =>
                     {
                         c.Response.StatusCode = 403;
                         c.Response.ContentType = "application/json";
-                        var result = JsonConvert.SerializeObject(new JwtResponseDto() { HasError = true, Error = "No estás autorizado para acceder a este recurso" });
+                        var result = JsonConvert.SerializeObject(new JwtResponseDto() { HasError = true, Error = "Usuario sin permisos" });
                         return c.Response.WriteAsync(result);
                     }
                 };
             }).AddCookie(IdentityConstants.ApplicationScheme, opt =>
             {
                 opt.ExpireTimeSpan = TimeSpan.FromMinutes(30);
-             
+
 
             });
 
@@ -181,12 +186,15 @@ namespace BankingApp.Infraestructure.Identity.LayerConfigurations
 
             #region Services
             services.AddScoped<IAccountServiceForWebApi, AccountServiceForWebApi>();
+            services.AddScoped<IAccountServiceForWebAPP, AccountServiceForWebAPP>();
+            services.AddScoped<IUserService, IdentityUserService>();
+
             #endregion
 
         }
 
-        private static void GeneralConfiguration(IServiceCollection services, IConfiguration config)
-         {
+        private static async Task GeneralConfiguration(IServiceCollection services, IConfiguration config)
+        {
 
             if (config.GetValue<bool>("UseInMemoryDatabase"))
             {
@@ -208,6 +216,8 @@ namespace BankingApp.Infraestructure.Identity.LayerConfigurations
                     optionsLifetime: ServiceLifetime.Scoped
                     );
             }
+
+
         }
 
         public static async Task RunIdentitySeedAsync(this IServiceProvider service)

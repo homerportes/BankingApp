@@ -12,6 +12,7 @@ builder.Services.AddSharedLayer(builder.Configuration);
 builder.Services.AddApplicationLayer();
 builder.Services.AddIdentityLayerIocForWebApp(builder.Configuration);
 
+
 var app = builder.Build();
 await app.Services.RunIdentitySeedAsync();
 
@@ -26,14 +27,17 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
 
 app.MapStaticAssets();
+
 app.MapControllerRoute(
     name: "areas",
     pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
+
 
 app.MapControllerRoute(
     name: "default",

@@ -1,0 +1,56 @@
+@model BankingApp.Core.Application.ViewModels.CreditCard.CreditCardViewModel
+
+@{
+    ViewData["Title"] = "Confirmar Cancelación de Tarjeta";
+    var lastFourDigits = Model.CardNumber.Substring(Model.CardNumber.Length - 4);
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">@ViewData["Title"]</h1>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6 offset-lg-3">
+            <div class="card shadow mb-4">
+                <div class="card-body text-center py-5">
+                    <div class="mb-4">
+                        <i class="bi bi-exclamation-triangle text-warning" style="font-size: 4rem;"></i>
+                    </div>
+                    
+                    <h4 class="mb-4">¿Está seguro que desea cancelar la tarjeta @lastFourDigits?</h4>
+
+                    @if (Model.CurrentDebt > 0)
+                    {
+                        <div class="alert alert-danger text-left" role="alert">
+                            <i class="bi bi-x-circle"></i> 
+                            <strong>Para cancelar esta tarjeta, el cliente debe saldar la totalidad de la deuda pendiente.</strong>
+                        </div>
+                    }
+
+                    <div class="mt-4">
+                        <a asp-action="Index" class="btn btn-secondary btn-lg me-2">
+                            <i class="bi bi-arrow-left"></i> Cancelar
+                        </a>
+                        
+                        @if (Model.CurrentDebt == 0)
+                        {
+                            <form asp-action="CancelConfirmed" method="post" style="display: inline;">
+                                <input type="hidden" asp-for="Id" />
+                                <button type="submit" class="btn btn-danger btn-lg">
+                                    <i class="bi bi-check-circle"></i> Aceptar
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-danger btn-lg" disabled>
+                                <i class="bi bi-check-circle"></i> Aceptar
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

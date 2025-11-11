@@ -12,5 +12,7 @@ namespace BankingApp.Infraestructure.Identity.Entities
 
         public bool IsActive { get; set; }
 
+        public DateTime CreatedAt { get; set; }= DateTime.Now;
+
     }
 }

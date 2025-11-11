@@ -1,4 +1,5 @@
-﻿using BankingApp.Core.Domain.Interfaces;
+﻿using BankingApp.Core.Application.Interfaces;
+using BankingApp.Core.Domain.Interfaces;
 using BankingApp.Infraestructure.Persistence.Contexts;
 using BankingApp.Infraestructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +30,15 @@ namespace BankingApp.Infraestructure.Persistence.LayerConfigurations
 
             #region Repositories
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+            services.AddScoped<IAccountRepository, AccountRepository>();
+            services.AddScoped<ICommerceRepository, CommerceRepository>();
+            services.AddScoped<ILoanRepository, LoanRepository>();
+            services.AddScoped<ICreditCardRepository, CreditCardRepository>();
+            services.AddScoped<IPurchaseRepository, PurchaseRepository>();
+            services.AddScoped<IBeneficiaryRepository, BeneficiaryRepository>();
+            services.AddScoped<IInstallmentRepository, InstallmentRepository>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+
             #endregion
         }
     }

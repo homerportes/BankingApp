@@ -1,0 +1,108 @@
+﻿@model BeneficiaryIndexViewModel
+@{
+    ViewData["Title"] = "Mis Beneficiarios";
+    Layout = "_LayoutClient";
+}
+
+
+<link rel="stylesheet" href="~/css/BeneficiaryStyle.css" />
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-primary">Mis Beneficiarios</h2>
+        <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#addBeneficiaryModal">
+            <i class="bi bi-person-plus-fill me-2"></i> Agregar Beneficiario
+        </button>
+    </div>
+
+    @if (!Model.ListBeneficiary.ListBeneficiary.Any())
+    {
+        <div class="alert alert-info text-center shadow-sm rounded-3 py-4">
+            <i class="bi bi-emoji-smile fs-3"></i>
+            <h5 class="mt-2 mb-0">No tienes beneficiarios agregados aún.</h5>
+            <p class="text-light mb-0">
+                Haz clic en <strong>“Agregar Beneficiario”</strong> para comenzar.
+            </p>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var beneficiary in Model.ListBeneficiary.ListBeneficiary)
+            {
+                <div class="col-md-4">
+                    <div class="card shadow-sm border-0 h-100">
+                        <div class="card-body text-center">
+                            <i class="bi bi-person-circle fs-1 mb-2"></i>
+                            <h5 class="card-title mb-0">@beneficiary.Name @beneficiary.LastName</h5>
+                            <p class="text-muted mb-3">Cuenta: <strong>@beneficiary.Number</strong></p>
+
+                            <a asp-area="Client"
+                               asp-controller="Beneficiary"
+                               asp-action="Delete"
+                               asp-route-id="@beneficiary.Id"
+                               class="btn btn-outline-danger">
+                                <i class="bi bi-trash3-fill me-1"></i> Eliminar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+
+<div class="modal fade" id="addBeneficiaryModal" tabindex="-1" aria-labelledby="addBeneficiaryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="addBeneficiaryModalLabel">
+                    <i class="bi bi-person-plus-fill me-2"></i> Nuevo Beneficiario
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <form asp-area="Client" asp-action="Create" method="post" class="p-3">
+                <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+                <div class="modal-body">
+                    <div class="form-group mb-3">
+                        <label asp-for="CreateBeneficiary.Number" class="form-label fw-semibold">Número de Cuenta</label>
+                        <input asp-for="CreateBeneficiary.Number" class="form-control" placeholder="Ingrese el número de cuenta" type="text" />
+                        <span asp-validation-for="CreateBeneficiary.Number" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-1"></i> Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save-fill me-1"></i> Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function () {
+            var showModal = '@Model.ShowCreateModal' === 'True';
+            if (showModal) {
+                var modal = new bootstrap.Modal(document.getElementById('addBeneficiaryModal'));
+                modal.show();
+            }
+        });
+    </script>
+}
+
+
+
+
+
+
+

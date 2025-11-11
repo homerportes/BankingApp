@@ -1,0 +1,162 @@
+@model IEnumerable<BankingApp.Core.Application.ViewModels.CreditCard.PurchaseViewModel>
+
+@{
+    ViewData["Title"] = "Consumos de Tarjeta de Crédito";
+    var creditCard = ViewBag.CreditCard as BankingApp.Core.Application.ViewModels.CreditCard.CreditCardViewModel;
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">@ViewData["Title"]</h1>
+        <a asp-action="Index" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="bi bi-arrow-left"></i> Volver Atrás
+        </a>
+    </div>
+
+    @if (creditCard != null)
+    {
+        <!-- Información de la Tarjeta -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Información de la Tarjeta</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <strong>Número de Tarjeta:</strong><br>
+                        <span class="h5">@creditCard.CardNumber</span>
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Cliente:</strong><br>
+                        @creditCard.ClientName
+                    </div>
+                    <div class="col-md-2">
+                        <strong>Límite de Crédito:</strong><br>
+                        <span class="text-primary">$@creditCard.CreditLimit.ToString("N2")</span>
+                    </div>
+                    <div class="col-md-2">
+                        <strong>Deuda Actual:</strong><br>
+                        <span class="@(creditCard.CurrentDebt > 0 ? "text-danger" : "text-success")">
+                            $@creditCard.CurrentDebt.ToString("N2")
+                        </span>
+                    </div>
+                    <div class="col-md-2">
+                        <strong>Crédito Disponible:</strong><br>
+                        <span class="text-success">$@creditCard.AvailableCredit.ToString("N2")</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Tabla de Consumos -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Listado de Consumos</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" width="100%" cellspacing="0">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Fecha del Consumo</th>
+                            <th>Monto Consumido</th>
+                            <th>Comercio</th>
+                            <th>Estado del Consumo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            @foreach (var purchase in Model)
+                            {
+                                <tr>
+                                    <td>@purchase.TransactionDate.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>
+                                        <strong class="@(purchase.Status == BankingApp.Core.Domain.Common.Enums.OperationStatus.APPROVED ? "text-danger" : "text-muted")">
+                                            $@purchase.Amount.ToString("N2")
+                                        </strong>
+                                    </td>
+                                    <td>
+                                        @if (string.IsNullOrEmpty(purchase.CommerceName) || purchase.CommerceName.ToUpper().Contains("AVANCE"))
+                                        {
+                                            <strong class="text-warning">AVANCE</strong>
+                                        }
+                                        else
+                                        {
+                                            @purchase.CommerceName
+                                        }
+                                    </td>
+                                    <td>
+                                        @switch (purchase.Status)
+                                        {
+                                            case BankingApp.Core.Domain.Common.Enums.OperationStatus.APPROVED:
+                                                <span class="badge bg-success">APROBADO</span>
+                                                break;
+                                            case BankingApp.Core.Domain.Common.Enums.OperationStatus.DECLINED:
+                                                <span class="badge bg-danger">RECHAZADO</span>
+                                                break;
+                                            default:
+                                                <span class="badge bg-secondary">DESCONOCIDO</span>
+                                                break;
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center">
+                                    <div class="alert alert-info mb-0" role="alert">
+                                        <i class="bi bi-info-circle"></i> No hay consumos registrados para esta tarjeta.
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            
+            @if (Model != null && Model.Any())
+            {
+                var totalApproved = Model.Where(p => p.Status == BankingApp.Core.Domain.Common.Enums.OperationStatus.APPROVED).Sum(p => p.Amount);
+                var totalDeclined = Model.Where(p => p.Status == BankingApp.Core.Domain.Common.Enums.OperationStatus.DECLINED).Sum(p => p.Amount);
+                
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <div class="card border-left-success">
+                            <div class="card-body">
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                    Total de Consumos Aprobados
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                    $@totalApproved.ToString("N2")
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card border-left-danger">
+                            <div class="card-body">
+                                <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                    Total de Consumos Rechazados
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                    $@totalDeclined.ToString("N2")
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Botón Volver Atrás -->
+    <div class="text-center mb-4">
+        <a asp-action="Index" class="btn btn-secondary btn-lg">
+            <i class="bi bi-arrow-left"></i> Volver Atrás
+        </a>
+    </div>
+</div>

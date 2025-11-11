@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace BankingApp.Areas.Admin.Controllers
 {
     [Authorize(Roles = "ADMIN")]
-
+    [Area("Admin")]
     public class CardsController : Controller
     {
         public IActionResult Index()

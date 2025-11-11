@@ -14,8 +14,9 @@ namespace BankingApp.Infraestructure.Persistence.EntitiesConfigurations
             builder.Property(x => x.Origin).IsRequired();
             builder.Property(x => x.Beneficiary).IsRequired();
             builder.Property(x => x.Type).IsRequired();
-            builder.Property(x => x.Amount).IsRequired();
+            builder.Property(x => x.Amount).IsRequired().HasPrecision(18, 2);
             builder.Property(x => x.DateTime).IsRequired();
+            builder.Property(x => x.AccountNumber).IsRequired();
 
         }
     }

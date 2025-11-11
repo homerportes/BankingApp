@@ -1,10 +1,15 @@
 ﻿
 
+using Newtonsoft.Json;
+
 namespace BankingApp.Core.Application.Dtos.Login
 {
     public class LoginDto
     {
-        public required string Username;
-        public required string Password;
+        [JsonProperty("usuario")]
+        public required string Username { get; set; }
+        [JsonProperty("contrasena")]
+
+        public required string Password { get; set; }
     }
 }

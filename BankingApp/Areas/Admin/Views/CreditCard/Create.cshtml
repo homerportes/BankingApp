@@ -1,0 +1,81 @@
+@model BankingApp.Core.Application.ViewModels.CreditCard.SaveCreditCardViewModel
+
+@{
+    ViewData["Title"] = "Asignar Nueva Tarjeta de Crédito";
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">@ViewData["Title"]</h1>
+        <div>
+            <a asp-action="SelectClient" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm mr-2">
+                <i class="bi bi-arrow-left"></i> Volver a Selección de Cliente
+            </a>
+            <a asp-action="Index" class="d-none d-sm-inline-block btn btn-sm btn-outline-secondary shadow-sm">
+                <i class="bi bi-list-ul"></i> Ir al Listado de Tarjetas
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 offset-lg-2">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Información de la Tarjeta</h6>
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.ClientName != null)
+                    {
+                        <div class="alert alert-info" role="alert">
+                            <i class="bi bi-person"></i> <strong>Cliente:</strong> @ViewBag.ClientName
+                        </div>
+                    }
+
+                    <form asp-action="Create" method="post">
+                        <input type="hidden" asp-for="ClientId" />
+
+                        <div class="form-group">
+                            <label asp-for="CreditLimit" class="control-label"></label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">$</span>
+                                </div>
+                                <input asp-for="CreditLimit" class="form-control" placeholder="Ejemplo: 5000 o 10000.50" />
+                            </div>
+                            <span asp-validation-for="CreditLimit" class="text-danger"></span>
+                            <small class="form-text text-muted">
+                                <i class="bi bi-info-circle"></i> <strong>Escribe solo números</strong> sin símbolo $ ni comas. 
+                                Ejemplos: <code>5000</code>, <code>10000</code>, <code>25000.50</code><br>
+                                <strong>Rango permitido:</strong> Mínimo $1,000.00 - Máximo $1,000,000.00
+                            </small>
+                        </div>
+
+
+                        <div class="alert alert-warning" role="alert">
+                            <i class="bi bi-exclamation-triangle"></i> 
+                            <strong>Nota:</strong> Al crear la tarjeta se generará automáticamente:
+                            <ul class="mb-0 mt-2">
+                                <li>Número de tarjeta único de 16 dígitos</li>
+                                <li>Código CVC encriptado</li>
+                                <li>Fecha de expiración (+3 años)</li>
+                            </ul>
+                        </div>
+
+                        <div class="form-group mt-4">
+                            <a asp-action="SelectClient" class="btn btn-secondary btn-lg">
+                                <i class="bi bi-arrow-left"></i> Regresar al Listado de Clientes
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check-circle"></i> Confirmar Asignación de Tarjeta
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

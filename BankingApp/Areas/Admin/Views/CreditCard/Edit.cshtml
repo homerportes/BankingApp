@@ -1,0 +1,140 @@
+@model BankingApp.Core.Application.ViewModels.CreditCard.SaveCreditCardViewModel
+
+@{
+    ViewData["Title"] = "Actualizar Límite de Crédito";
+    var creditCard = ViewBag.CreditCard as BankingApp.Core.Application.ViewModels.CreditCard.CreditCardViewModel;
+}
+
+@if (creditCard == null)
+{
+    <div class="alert alert-danger">
+        Error: No se pudo cargar la información de la tarjeta.
+    </div>
+    return;
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">@ViewData["Title"]</h1>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Formulario de Edición -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Actualizar Límite</h6>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Edit" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="ClientId" />
+
+                        <div class="form-group">
+                            <label asp-for="CreditLimit" class="control-label">Límite de la tarjeta</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">$</span>
+                                </div>
+                                <input asp-for="CreditLimit" class="form-control" placeholder="Ejemplo: 10000 o 15000.50" />
+                            </div>
+                            <span asp-validation-for="CreditLimit" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mt-4">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Volver al Listado
+                            </a>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="bi bi-save"></i> Guardar Cambios
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel Informativo -->
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-info text-white">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="bi bi-info-circle"></i> Información Importante
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <!-- Deuda Actual -->
+                    <div class="alert alert-warning mb-3" role="alert">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-exclamation-triangle-fill me-2" style="font-size: 1.5rem;"></i>
+                            <div>
+                                <strong>Deuda Actual:</strong><br>
+                                <span class="h4 mb-0 text-danger">${@creditCard.CurrentDebt.ToString("N2")}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reglas de Validación -->
+                    <div class="mb-3">
+                        <h6 class="font-weight-bold text-primary">
+                            <i class="bi bi-check-circle"></i> Requisitos:
+                        </h6>
+                        <div class="alert alert-light p-2 mb-2">
+                            <small>
+                                <i class="bi bi-arrow-right-circle text-success"></i> 
+                                El nuevo límite debe ser <strong>mayor o igual</strong> a la deuda actual
+                            </small>
+                        </div>
+                        <div class="alert alert-light p-2 mb-2">
+                            <small>
+                                <i class="bi bi-arrow-right-circle text-success"></i> 
+                                Rango permitido: <strong>$1,000</strong> - <strong>$1,000,000</strong>
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- Formato de Entrada -->
+                    <div class="mb-3">
+                        <h6 class="font-weight-bold text-primary">
+                            <i class="bi bi-keyboard"></i> Cómo escribir el monto:
+                        </h6>
+                        <div class="bg-light p-2 rounded">
+                            <small>
+                                <strong class="text-success">✓ Correcto:</strong> 
+                                <code>10000</code>, <code>15000</code>, <code>25000.50</code>
+                            </small>
+                            <br>
+                            <small>
+                                <strong class="text-danger">✗ Incorrecto:</strong> 
+                                <code>$10,000</code>, <code>10.000,00</code>
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- Qué sucederá -->
+                    <div>
+                        <h6 class="font-weight-bold text-primary">
+                            <i class="bi bi-bell"></i> Después de guardar:
+                        </h6>
+                        <div class="alert alert-light p-2">
+                            <small>
+                                <i class="bi bi-envelope-check text-info"></i> 
+                                Se enviará un <strong>correo automático</strong> al cliente notificando el cambio
+                            </small>
+                        </div>
+                        <div class="alert alert-light p-2">
+                            <small>
+                                <i class="bi bi-lightning-charge text-warning"></i> 
+                                El cambio será <strong>efectivo inmediatamente</strong>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -54,9 +54,9 @@ namespace BankingApi.Extensions
 
                     }, new List<string>()
                     }
-                 
+
                 });
-            });
+            }).AddSwaggerGenNewtonsoftSupport();
            
         }
         public static void AddApiVersioningExtension(this IServiceCollection services)

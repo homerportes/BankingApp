@@ -1,0 +1,67 @@
+@model BankingApp.Core.Application.ViewModels.SavingsAccount.SavingsAccountViewModel
+
+@{
+    ViewData["Title"] = "Cancelar Cuenta de Ahorro";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>@ViewData["Title"]</h2>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="bi bi-exclamation-triangle"></i> Confirmación de Cancelación
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning text-center">
+                        <h4>¿Está seguro que desea cancelar la cuenta @Model.Number?</h4>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <dl class="row mb-0">
+                                <dt class="col-sm-4">Número de Cuenta:</dt>
+                                <dd class="col-sm-8">@Model.Number</dd>
+
+                                <dt class="col-sm-4">Cliente:</dt>
+                                <dd class="col-sm-8">@Model.ClientName</dd>
+
+                                <dt class="col-sm-4">Balance Actual:</dt>
+                                <dd class="col-sm-8">$@Model.Balance.ToString("N2")</dd>
+
+                                <dt class="col-sm-4">Tipo:</dt>
+                                <dd class="col-sm-8">@Model.TypeDisplay</dd>
+                            </dl>
+                        </div>
+                    </div>
+
+                    @if (Model.Balance > 0)
+                    {
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i>
+                            <strong>Nota:</strong> El saldo de $@Model.Balance.ToString("N2") será transferido automáticamente a la cuenta de ahorro principal del cliente.
+                        </div>
+                    }
+
+                    <form method="post" asp-action="Cancel" asp-route-id="@Model.Id">
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-action="Index" class="btn btn-secondary btn-lg">
+                                <i class="bi bi-x-circle"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-danger btn-lg">
+                                <i class="bi bi-check-circle"></i> Aceptar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

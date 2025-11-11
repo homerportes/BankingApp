@@ -3,9 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BankingApp.Areas.Client.Controllers
 {
-
-    [Authorize(Roles = "Client")]
-
+    [Area("Client")]
+    [Authorize(Roles = "CLIENT")]
     public class HomeController : Controller
     {
         public IActionResult Index()

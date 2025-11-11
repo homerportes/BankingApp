@@ -1,0 +1,187 @@
+@{
+    ViewData["Title"] = "Panel de Administración";
+}
+
+<!-- Page Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="mb-1">
+            <i class="bi bi-speedometer2"></i> Panel de Administración
+        </h2>
+        <p class="text-muted">Bienvenido al sistema de gestión bancaria</p>
+    </div>
+</div>
+ 
+<!-- Stats Cards -->
+<div class="row g-4 mb-4">
+    <!-- Usuarios Card -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card stats-card primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="title text-primary">Usuarios</div>
+                        <div class="value text-dark">Gestión</div>
+                    </div>
+                    <div>
+                        <i class="bi bi-people icon text-primary"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tarjetas de Crédito Card -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card stats-card info">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="title text-info">Tarjetas de Crédito</div>
+                        <div class="value text-dark">Gestión</div>
+                    </div>
+                    <div>
+                        <i class="bi bi-credit-card icon text-info"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Préstamos Card -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card stats-card warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="title text-warning">Préstamos</div>
+                        <div class="value text-dark">Gestión</div>
+                    </div>
+                    <div>
+                        <i class="bi bi-cash-coin icon text-warning"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Second Row Stats -->
+<div class="row g-4 mb-4">
+    <!-- Cuentas de Ahorro Card -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card stats-card primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="title text-primary">Cuentas de Ahorro</div>
+                        <div class="value text-dark">Gestión</div>
+                    </div>
+                    <div>
+                        <i class="bi bi-piggy-bank icon text-primary"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Access Section -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header card-header-custom">
+                <i class="bi bi-lightning-charge"></i> Accesos Rápidos
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-lg-3 col-md-6">
+                        <a asp-area="Admin" asp-controller="Users" asp-action="Index" class="quick-access-btn btn btn-outline-primary w-100">
+                            <i class="bi bi-people"></i>
+                            <div class="mt-2">Gestionar Usuarios</div>
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <a asp-area="Admin" asp-controller="CreditCard" asp-action="Index" class="quick-access-btn btn btn-outline-info w-100">
+                            <i class="bi bi-credit-card"></i>
+                            <div class="mt-2">Gestionar Tarjetas</div>
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <a asp-area="Admin" asp-controller="Loans" asp-action="Index" class="quick-access-btn btn btn-outline-warning w-100">
+                            <i class="bi bi-cash-coin"></i>
+                            <div class="mt-2">Gestionar Préstamos</div>
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <a asp-area="Admin" asp-controller="SavingsAccount" asp-action="Index" class="quick-access-btn btn btn-outline-primary w-100">
+                            <i class="bi bi-piggy-bank"></i>
+                            <div class="mt-2">Gestionar Cuentas de Ahorro</div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Welcome Information -->
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header card-header-custom">
+                <i class="bi bi-info-circle"></i> Información del Sistema
+            </div>
+            <div class="card-body">
+                <h5 class="mb-3">¿Qué puedes hacer desde aquí?</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle-fill text-success"></i>
+                                <strong>Usuarios:</strong> Administrar clientes, cajeros y administradores
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle-fill text-success"></i>
+                                <strong>Cuentas de Ahorro:</strong> Asignar cuentas secundarias a clientes
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle-fill text-success"></i>
+                                <strong>Tarjetas:</strong> Asignar y gestionar tarjetas de crédito
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle-fill text-success"></i>
+                                <strong>Préstamos:</strong> Aprobar y gestionar solicitudes
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle-fill text-success"></i>
+                                <strong>Cuentas de Ahorro:</strong> Asignar cuentas secundarias a clientes
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header card-header-custom">
+                <i class="bi bi-exclamation-triangle"></i> Recordatorios
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning mb-0" role="alert">
+                    <i class="bi bi-shield-check"></i>
+                    <strong>Seguridad:</strong> Verifica siempre la identidad de los usuarios antes de realizar operaciones sensibles.
+                </div>
+                <div class="alert alert-info mb-0 mt-3" role="alert">
+                    <i class="bi bi-arrow-up-right-circle"></i>
+                    Utiliza el menú superior o los accesos rápidos para navegar por el sistema.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

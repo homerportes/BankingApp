@@ -7,18 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Remove="Areas\Shared\_AdminLayout.cshtml" />
-    <Content Remove="Areas\Shared\_ClientLayout.cshtml" />
-    <Content Remove="Areas\Shared\_FormLayout.cshtml" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="Areas\Shared\_AdminLayout.cshtml" />
-    <Compile Include="Areas\Shared\_ClientLayout.cshtml" />
-    <Compile Include="Areas\Shared\_FormLayout.cshtml" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.10">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

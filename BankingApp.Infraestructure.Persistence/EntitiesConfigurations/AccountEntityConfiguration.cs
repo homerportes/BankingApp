@@ -15,11 +15,20 @@ namespace BankingApp.Infraestructure.Persistence.EntitiesConfigurations
         {
             builder.HasKey(x => x.Id);
             builder.Property(x => x.ClientId).IsRequired();
-            builder.Property(x => x.Balance).IsRequired();
+            builder.Property(x => x.Balance).IsRequired().HasPrecision(18,2);
             builder.Property(x => x.Type).IsRequired();
+            builder.Property(x => x.Number).IsRequired();
+            builder.Property(x => x.Status).IsRequired();
+            builder.Property(x => x.CreatedAt).IsRequired();
+            builder.Property(x => x.AdminId);
+
+            builder.HasIndex(a => a.Number)
+            .IsUnique();
 
             builder.HasMany(x => x.Transactions)
-                    .WithOne(x => x.Account);
+                    .WithOne(x => x.Account)
+                    .HasForeignKey(x => x.AccountNumber)
+                    .HasPrincipalKey(x => x.Number);
 
 
         }

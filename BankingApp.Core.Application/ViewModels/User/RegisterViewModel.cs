@@ -11,6 +11,8 @@ namespace BankingApp.Core.Application.ViewModels.User
         public string LastName { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "La cédula es requerida")]
+        [StringLength(11, MinimumLength = 11, ErrorMessage = "La cédula debe tener exactamente 11 dígitos")]
+        [RegularExpression(@"^\d{11}$", ErrorMessage = "La cédula debe contener solo 11 números, sin guiones ni espacios")]
         public string DocumentIdNumber { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "El correo electrónico es requerido")]

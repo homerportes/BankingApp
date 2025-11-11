@@ -1,10 +1,13 @@
 ﻿using BankingApp.Core.Application.Dtos.Email;
 using BankingApp.Core.Application.Dtos.User;
+using BankingApp.Core.Application.Helpers;
 using BankingApp.Core.Application.Interfaces;
+using BankingApp.Core.Domain.Common.Enums;
 using BankingApp.Infraestructure.Identity.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 using System.Text;
 
 namespace InvestmentApp.Infrastructure.Identity.Services
@@ -58,18 +61,23 @@ namespace InvestmentApp.Infrastructure.Identity.Services
                 Email = saveDto.Email,
                 UserName = saveDto.UserName,
                 EmailConfirmed = false,
+                IsActive = false, // Usuario inactivo hasta confirmar email
                 DocumentIdNumber = saveDto.DocumentIdNumber,
             };
 
             var result = await _userManager.CreateAsync(user, saveDto.Password);
             if (result.Succeeded)
             {
-                await _userManager.AddToRoleAsync(user, saveDto.Role);
-                
+                // Agregar todos los roles especificados
+                foreach (var role in saveDto.Roles)
+                {
+                    await _userManager.AddToRoleAsync(user, role);
+                }
+
                 if (isApi != null && !isApi.Value)
                 {
                     string verificationUri = await GetVerificationEmailUri(user, origin ?? "");
-                    
+
                     string emailBody = $@"
                         <html>
                         <body style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>
@@ -93,7 +101,7 @@ namespace InvestmentApp.Infrastructure.Identity.Services
                             </div>
                         </body>
                         </html>";
-                    
+
                     await _emailService.SendAsync(new EmailRequestDto()
                     {
                         To = saveDto.Email,
@@ -104,12 +112,57 @@ namespace InvestmentApp.Infrastructure.Identity.Services
                 else
                 {
                     string? verificationToken = await GetVerificationEmailToken(user);
-                    
+
+                    // Email para API con formato HTML
+                    string emailBody = $@"
+                        <!DOCTYPE html>
+                        <html lang='es'>
+                        <head>
+                            <meta charset='UTF-8'>
+                            <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+                            <title>Confirmación de Cuenta - Banking App API</title>
+                        </head>
+                        <body style='margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;'>
+                            <div style='max-width: 600px; margin: 40px auto; background-color: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);'>
+                                <div style='background: linear-gradient(135deg, #003d82 0%, #2c9fa3 100%); padding: 30px; text-align: center;'>
+                                    <h1 style='color: white; margin: 0; font-size: 28px;'>Banking App API</h1>
+                                    <p style='color: #e0f2f7; margin: 10px 0 0 0; font-size: 16px;'>Confirmación de Cuenta</p>
+                                </div>
+                                <div style='padding: 40px 30px;'>
+                                    <h2 style='color: #003d82; margin-top: 0;'>¡Bienvenido a Banking App API!</h2>
+                                    <p style='color: #333; line-height: 1.6; font-size: 16px;'>
+                                        Tu cuenta ha sido creada exitosamente. Para activarla, necesitarás el siguiente token de verificación:
+                                    </p>
+                                    <div style='background-color: #f8f9fa; border-left: 4px solid #2c9fa3; padding: 20px; margin: 30px 0; border-radius: 4px;'>
+                                        <p style='margin: 0 0 10px 0; color: #666; font-size: 14px; font-weight: bold;'>User ID:</p>
+                                        <p style='margin: 0 0 20px 0; color: #003d82; font-size: 16px; font-family: monospace;'>{user.Id}</p>
+                                        <p style='margin: 0 0 10px 0; color: #666; font-size: 14px; font-weight: bold;'>Token de Verificación:</p>
+                                        <code style='display: block; background-color: white; padding: 15px; border: 2px solid #2c9fa3; border-radius: 4px; color: #003d82; font-size: 16px; word-break: break-all; font-family: monospace;'>
+                                            {verificationToken}
+                                        </code>
+                                    </div>
+                                    <p style='color: #666; line-height: 1.6; font-size: 14px;'>
+                                        Utiliza este token en la solicitud POST a <code style='background-color: #f8f9fa; padding: 2px 6px; border-radius: 3px; color: #003d82;'>/account/confirm</code> para activar tu cuenta.
+                                    </p>
+                                    <div style='background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 4px;'>
+                                        <p style='margin: 0; color: #856404; font-size: 14px;'>
+                                            ⚠️ <strong>Importante:</strong> Este token es único y expirará en 24 horas. Mantenlo seguro.
+                                        </p>
+                                    </div>
+                                    <hr style='border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;'>
+                                    <p style='color: #999; font-size: 12px; text-align: center;'>
+                                        Si no solicitaste esta cuenta, por favor ignora este correo.
+                                    </p>
+                                </div>
+                            </div>
+                        </body>
+                        </html>";
+
                     await _emailService.SendAsync(new EmailRequestDto()
                     {
                         To = saveDto.Email,
-                        BodyHtml = $"Please confirm your account use this token {verificationToken}",
-                        Subject = "Confirm registration"
+                        BodyHtml = emailBody,
+                        Subject = "Confirmación de Cuenta - Banking App API"
                     });
                 }
 
@@ -179,7 +232,7 @@ namespace InvestmentApp.Infrastructure.Identity.Services
             user.EmailConfirmed = user.EmailConfirmed && user.Email == saveDto.Email;
             user.Email = saveDto.Email;
             user.DocumentIdNumber = saveDto.DocumentIdNumber;
-            
+
 
             if (!string.IsNullOrWhiteSpace(saveDto.Password) && isNotcreated)
             {
@@ -200,7 +253,11 @@ namespace InvestmentApp.Infrastructure.Identity.Services
                 var rolesList = await _userManager.GetRolesAsync(user);
                 await _userManager.RemoveFromRolesAsync(user, rolesList.ToList());
 
-                await _userManager.AddToRoleAsync(user, saveDto.Role);
+                // Agregar todos los roles especificados
+                foreach (var role in saveDto.Roles)
+                {
+                    await _userManager.AddToRoleAsync(user, role);
+                }
 
 
                 if (!user.EmailConfirmed && isNotcreated)
@@ -266,7 +323,7 @@ namespace InvestmentApp.Infrastructure.Identity.Services
             if (isApi != null && !isApi.Value)
             {
                 var resetUri = await GetResetPasswordUri(user, request.Origin ?? "");
-                
+
                 string emailBody = $@"
                     <html>
                     <body style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>
@@ -291,7 +348,7 @@ namespace InvestmentApp.Infrastructure.Identity.Services
                         </div>
                     </body>
                     </html>";
-                
+
                 await _emailService.SendAsync(new EmailRequestDto()
                 {
                     To = user.Email,
@@ -302,11 +359,36 @@ namespace InvestmentApp.Infrastructure.Identity.Services
             else
             {
                 string? resetToken = await GetResetPasswordToken(user);
+
+                string emailBody = $@"
+                    <html>
+                    <body style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>
+                        <div style='max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa; border-radius: 10px;'>
+                            <div style='background-color: #003d82; color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0;'>
+                                <h1 style='margin: 0;'>Banking App API</h1>
+                            </div>
+                            <div style='background-color: white; padding: 30px; border-radius: 0 0 10px 10px;'>
+                                <h2 style='color: #003d82;'>Token de Recuperación de Contraseña</h2>
+                                <p>Hola {user.Name},</p>
+                                <p>Recibimos una solicitud para restablecer la contraseña de tu cuenta. Utiliza el siguiente token para completar el proceso:</p>
+                                <div style='background-color: #f8f9fa; padding: 20px; border-radius: 5px; text-align: center; margin: 30px 0; border: 2px dashed #2c9fa3;'>
+                                    <p style='margin: 0; font-size: 12px; color: #666; margin-bottom: 10px;'>Tu token de reseteo:</p>
+                                    <code style='font-size: 14px; font-weight: bold; color: #003d82; word-break: break-all; display: block;'>{resetToken}</code>
+                                </div>
+                                <p style='color: #666; font-size: 14px;'><strong>Importante:</strong> Copia este token y úsalo en la solicitud de reseteo de contraseña del API.</p>
+                                <p style='color: #666; font-size: 14px;'><strong>Tu User ID es:</strong> {user.Id}</p>
+                                <hr style='border: none; border-top: 1px solid #ddd; margin: 30px 0;'>
+                                <p style='color: #999; font-size: 12px; text-align: center;'>Este token expirará pronto por seguridad. Si no solicitaste este cambio, ignora este correo.</p>
+                            </div>
+                        </div>
+                    </body>
+                    </html>";
+
                 await _emailService.SendAsync(new EmailRequestDto()
                 {
                     To = user.Email,
-                    BodyHtml = $"Please reset your password account use this token {resetToken}",
-                    Subject = "Reset password"
+                    BodyHtml = emailBody,
+                    Subject = "Token de Reseteo de Contraseña - Banking App API"
                 });
             }
 
@@ -366,6 +448,7 @@ namespace InvestmentApp.Infrastructure.Identity.Services
             }
 
             var rolesList = await _userManager.GetRolesAsync(user);
+            var role = EnumMapper<AppRoles>.FromString(rolesList.First());
 
             var userDto = new UserDto()
             {
@@ -376,7 +459,9 @@ namespace InvestmentApp.Infrastructure.Identity.Services
                 UserName = user.UserName ?? "",
                 DocumentIdNumber = user.DocumentIdNumber,
                 IsVerified = user.EmailConfirmed,
-                Role = rolesList.FirstOrDefault() ?? ""
+                Status = user.IsActive ? "Activo" : "Inactivo",
+                IsActive = user.IsActive,
+                Role = EnumMapper<AppRoles>.ToString(role)
             };
 
             return userDto;
@@ -391,6 +476,7 @@ namespace InvestmentApp.Infrastructure.Identity.Services
             }
 
             var rolesList = await _userManager.GetRolesAsync(user);
+            var role = EnumMapper<AppRoles>.FromString(rolesList.First());
 
             var userDto = new UserDto()
             {
@@ -401,7 +487,9 @@ namespace InvestmentApp.Infrastructure.Identity.Services
                 UserName = user.UserName ?? "",
                 DocumentIdNumber = user.DocumentIdNumber,
                 IsVerified = user.EmailConfirmed,
-                Role = rolesList.FirstOrDefault() ?? ""
+                Status = user.IsActive ? "Activo" : "Inactivo",
+                IsActive = user.IsActive,
+                Role = EnumMapper<AppRoles>.ToString(role)
             };
 
             return userDto;
@@ -416,6 +504,7 @@ namespace InvestmentApp.Infrastructure.Identity.Services
             }
 
             var rolesList = await _userManager.GetRolesAsync(user);
+            var role = EnumMapper<AppRoles>.FromString(rolesList.First());
 
             var userDto = new UserDto()
             {
@@ -426,7 +515,9 @@ namespace InvestmentApp.Infrastructure.Identity.Services
                 UserName = user.UserName ?? "",
                 DocumentIdNumber = user.DocumentIdNumber,
                 IsVerified = user.EmailConfirmed,
-                Role = rolesList.FirstOrDefault() ?? ""
+                Status = user.IsActive ? "Activo" : "Inactivo",
+                IsActive = user.IsActive,
+                Role = EnumMapper<AppRoles>.ToString(role)
             };
 
             return userDto;
@@ -439,14 +530,18 @@ namespace InvestmentApp.Infrastructure.Identity.Services
 
             if (isActive != null && isActive == true)
             {
-                users = users.Where(w => w.EmailConfirmed);
+                // Filtrar solo por IsActive (usuarios que han confirmado su correo)
+                users = users.Where(w => w.IsActive);
             }
 
             var listUser = await users.ToListAsync();
 
             foreach (var item in listUser)
             {
-                var roleList = await _userManager.GetRolesAsync(item);
+                var rolesList = await _userManager.GetRolesAsync(item);
+
+                // Usar directamente el string del rol sin conversión
+                string roleName = rolesList.FirstOrDefault() ?? "UNKNOWN";
 
                 listUsersDtos.Add(new UserDto()
                 {
@@ -457,7 +552,9 @@ namespace InvestmentApp.Infrastructure.Identity.Services
                     UserName = item.UserName ?? "",
                     DocumentIdNumber = item.DocumentIdNumber,
                     IsVerified = item.EmailConfirmed,
-                    Role = roleList.FirstOrDefault() ?? ""
+                    Status = item.IsActive ? "Activo" : "Inactivo",
+                    IsActive = item.IsActive,
+                    Role = roleName
                 });
             }
 
@@ -479,13 +576,17 @@ namespace InvestmentApp.Infrastructure.Identity.Services
             var result = await _userManager.ConfirmEmailAsync(user, token);
             if (result.Succeeded)
             {
-                response.Message = $"Account confirmed for {user.Email}. You can now use the app";
+                // Activar el usuario al confirmar el email
+                user.IsActive = true;
+                await _userManager.UpdateAsync(user);
+
+                response.Message = $"Cuenta confirmada para {user.Email}. Ahora puedes usar la aplicación";
                 response.HasError = false;
                 return response;
             }
             else
             {
-                response.Message = $"An error occurred while confirming this email {user.Email}";
+                response.Message = $"Ocurrió un error al confirmar el correo {user.Email}";
                 response.HasError = true;
                 return response;
             }
@@ -532,5 +633,50 @@ namespace InvestmentApp.Infrastructure.Identity.Services
             return token;
         }
         #endregion
+
+        public virtual async Task<EditUserResponseDto> UpdateUserStatusAsync(string userId, bool isActive)
+        {
+            EditUserResponseDto response = new()
+            {
+                HasError = false,
+                Email = "",
+                Id = "",
+                IsVerified = false,
+                LastName = "",
+                Name = "",
+                UserName = "",
+                DocumentIdNumber = ""
+            };
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                response.HasError = true;
+                response.Errors = new List<string> { "El usuario no existe" };
+                return response;
+            }
+
+            user.IsActive = isActive;
+            var result = await _userManager.UpdateAsync(user);
+
+            if (!result.Succeeded)
+            {
+                response.HasError = true;
+                response.Errors = result.Errors.Select(e => e.Description).ToList();
+                return response;
+            }
+
+            var rolesList = await _userManager.GetRolesAsync(user);
+
+            response.Id = user.Id;
+            response.Email = user.Email ?? "";
+            response.UserName = user.UserName ?? "";
+            response.Name = user.Name;
+            response.LastName = user.LastName;
+            response.IsVerified = user.EmailConfirmed;
+            response.Roles = rolesList.ToList();
+
+            return response;
+        }
     }
 }

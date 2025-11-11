@@ -1,0 +1,199 @@
+@model List<BankingApp.Core.Application.ViewModels.SavingsAccount.SavingsAccountViewModel>
+
+@{
+    ViewData["Title"] = "Gestión de Cuentas de Ahorro";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>@ViewData["Title"]</h2>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["Warning"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            @TempData["Warning"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" asp-action="Index" class="row g-3">
+                <div class="col-md-3">
+                    <label for="cedula" class="form-label">Buscar por Cédula</label>
+                    <input type="text" class="form-control" id="cedula" name="cedula" value="@ViewBag.Cedula" placeholder="000-0000000-0">
+                </div>
+                
+                <div class="col-md-3">
+                    <label for="estado" class="form-label">Estado</label>
+                    <select class="form-select" id="estado" name="estado">
+                        <option value="">Todos</option>
+                        <option value="ACTIVE" selected="@(ViewBag.Estado == "ACTIVE")">Activas</option>
+                        <option value="CANCELLED" selected="@(ViewBag.Estado == "CANCELLED")">Canceladas</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label for="tipo" class="form-label">Tipo de Cuenta</label>
+                    <select class="form-select" id="tipo" name="tipo">
+                        <option value="">Todos</option>
+                        <option value="PRIMARY" selected="@(ViewBag.Tipo == "PRIMARY")">Principal</option>
+                        <option value="SECONDARY" selected="@(ViewBag.Tipo == "SECONDARY")">Secundaria</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="bi bi-search"></i> Buscar
+                    </button>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Limpiar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(ViewBag.UserName as string))
+    {
+        <div class="alert alert-info">
+            Mostrando cuentas de: <strong>@ViewBag.UserName</strong>
+        </div>
+    }
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <p class="text-muted mb-0">
+                Mostrando @Model.Count de @ViewBag.TotalRecords cuentas
+            </p>
+        </div>
+        <div>
+            <a asp-action="SelectClient" class="btn btn-success">
+                <i class="bi bi-plus-circle"></i> Asignar cuenta de ahorro
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            @if (Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Número de Cuenta</th>
+                                <th>Cliente</th>
+                                <th>Balance</th>
+                                <th>Tipo</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var account in Model)
+                            {
+                                <tr>
+                                    <td>@account.Number</td>
+                                    <td>@account.ClientName</td>
+                                    <td>$@account.Balance.ToString("N2")</td>
+                                    <td>
+                                        @if (account.Type == BankingApp.Core.Domain.Common.Enums.AccountType.PRIMARY)
+                                        {
+                                            <span class="badge bg-primary">Principal</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-info">Secundaria</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (account.Status == BankingApp.Core.Domain.Common.Enums.AccountStatus.ACTIVE)
+                                        {
+                                            <span class="badge bg-success">Activa</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">Cancelada</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <a asp-action="Details" asp-route-id="@account.Id" class="btn btn-sm btn-info" title="Ver detalles">
+                                            <i class="bi bi-eye"></i> Ver detalles
+                                        </a>
+                                        @if (account.Type == BankingApp.Core.Domain.Common.Enums.AccountType.SECONDARY && 
+                                             account.Status == BankingApp.Core.Domain.Common.Enums.AccountStatus.ACTIVE)
+                                        {
+                                            <a asp-action="Cancel" asp-route-id="@account.Id" class="btn btn-sm btn-danger" title="Cancelar cuenta">
+                                                <i class="bi bi-x-circle"></i> Cancelar
+                                            </a>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                @if (ViewBag.TotalPages > 1)
+                {
+                    <nav aria-label="Navegación de páginas">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
+                                <a class="page-link" asp-action="Index" 
+                                   asp-route-page="@(ViewBag.CurrentPage - 1)"
+                                   asp-route-cedula="@ViewBag.Cedula"
+                                   asp-route-estado="@ViewBag.Estado"
+                                   asp-route-tipo="@ViewBag.Tipo">Anterior</a>
+                            </li>
+
+                            @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                            {
+                                <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                                    <a class="page-link" asp-action="Index" 
+                                       asp-route-page="@i"
+                                       asp-route-cedula="@ViewBag.Cedula"
+                                       asp-route-estado="@ViewBag.Estado"
+                                       asp-route-tipo="@ViewBag.Tipo">@i</a>
+                                </li>
+                            }
+
+                            <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
+                                <a class="page-link" asp-action="Index" 
+                                   asp-route-page="@(ViewBag.CurrentPage + 1)"
+                                   asp-route-cedula="@ViewBag.Cedula"
+                                   asp-route-estado="@ViewBag.Estado"
+                                   asp-route-tipo="@ViewBag.Tipo">Siguiente</a>
+                            </li>
+                        </ul>
+                    </nav>
+                }
+            }
+            else
+            {
+                <div class="alert alert-info text-center">
+                    <i class="bi bi-info-circle"></i> No se encontraron cuentas de ahorro.
+                </div>
+            }
+        </div>
+    </div>
+</div>

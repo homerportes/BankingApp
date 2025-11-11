@@ -22,17 +22,18 @@ namespace BankingApp.Infraestructure.Shared.Services.Email
         }
         public async Task SendAsync(EmailRequestDto request)
         {
-           try
+            try
             {
                 Logger.LogInformation($"Enviando email a {request.To} - Asunto: {request.Subject}");
-                
+
                 request.ToRange?.Add(request.To ?? "");
                 MimeMessage email = new MimeMessage()
                 {
                     Sender = MailboxAddress.Parse(_settings.EmailFrom),
                     Subject = request.Subject
                 };
-                foreach (var toItem in request.ToRange?? []){
+                foreach (var toItem in request.ToRange ?? [])
+                {
                     email.To.Add(MailboxAddress.Parse(toItem));
                 }
 
@@ -42,15 +43,15 @@ namespace BankingApp.Infraestructure.Shared.Services.Email
                 };
 
                 email.Body = builder.ToMessageBody();
-                
-                using MailKit.Net.Smtp.SmtpClient smtpClient = new ();
+
+                using MailKit.Net.Smtp.SmtpClient smtpClient = new();
                 await smtpClient.ConnectAsync(_settings.SmptHost, _settings.SmtpPort, MailKit.Security.SecureSocketOptions.StartTls);
                 await smtpClient.AuthenticateAsync(_settings.SmtpUser, _settings.SmtpPass);
                 await smtpClient.SendAsync(email);
                 await smtpClient.DisconnectAsync(true);
-                
+
                 Logger.LogInformation($"Email enviado exitosamente a {request.To}");
-            
+
             }
 
             catch (Exception ex)
