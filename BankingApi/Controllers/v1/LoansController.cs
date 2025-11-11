@@ -10,15 +10,16 @@ namespace BankingApi.Controllers.v1
 
     public class LoansController : BaseApiController
     {
-        private ILoanService _loanService;
-        private IUserService _userService;
+        private readonly ILoanService _loanService;
+        private readonly IUserService _userService;
+        
         public LoansController(ILoanService loanService, IUserService userService)
         {
             _loanService = loanService;
-
+            _userService = userService;
         }
 
-        [HttpGet (Name ="Obtener todos")]
+        [HttpGet(Name = "GetAllLoans")]
         public async Task<IActionResult> GetAll (int page = 1, int pageSize = 20, string? state = null, string? DocumentId = null)
         {
             string? clientId = null;
@@ -34,8 +35,7 @@ namespace BankingApi.Controllers.v1
             return Ok(all);
         }
 
-        [HttpPost]
-
+        [HttpPost(Name = "CreateLoan")]
         public async Task<IActionResult> SetLoan(LoanApiRequest request)
         {
             if (!ModelState.IsValid)
@@ -62,8 +62,7 @@ namespace BankingApi.Controllers.v1
         }
 
 
-        [HttpGet ("/{id}")]
-
+        [HttpGet("{id}", Name = "GetLoanDetails")]
         public async Task<IActionResult> GetDetails([FromRoute]string id)
         {
 
@@ -74,8 +73,7 @@ namespace BankingApi.Controllers.v1
         }
 
 
-        [HttpPatch("/{id}/rate")]
-
+        [HttpPatch("{id}/rate", Name = "UpdateLoanRate")]
         public async Task<IActionResult> SetRate([FromRoute]string publicId ,[FromBody] decimal rate)
         {
 

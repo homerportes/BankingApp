@@ -186,6 +186,7 @@ namespace BankingApp.Infraestructure.Identity.LayerConfigurations
 
             #region Services
             services.AddScoped<IAccountServiceForWebApi, AccountServiceForWebApi>();
+            services.AddScoped<IAccountServiceForWebAPP, AccountServiceForWebAPP>();
             services.AddScoped<IUserService, IdentityUserService>();
 
             #endregion
