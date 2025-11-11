@@ -117,7 +117,6 @@ namespace BankingApp.Infraestructure.Identity.Services
 
             return userDto;
         }
-        public async Task<ApiUserPaginationResultDto> GetAllOnlyCommerce(int page = 1, int pageSize = 20, string? rol = null)
 
         public async Task<ApiUserPaginationResultDto> GetAllOnlyCommerce(int page = 1, int pageSize = 20, string? rol = null)
         {

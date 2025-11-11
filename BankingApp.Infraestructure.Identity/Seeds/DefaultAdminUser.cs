@@ -66,11 +66,6 @@ namespace BankingApp.Infraestructure.Identity.Seeds
             await userManager.AddPasswordAsync(Teller!, "Tel$Pas2");
             await userManager.AddToRoleAsync(Teller!, AppRoles.TELLER.ToString());
 
-
-
-            var user = await userManager.FindByNameAsync("superAdmin");
-            await userManager.AddPasswordAsync(user, "Pa$Word1");
-
         }
     }
 }

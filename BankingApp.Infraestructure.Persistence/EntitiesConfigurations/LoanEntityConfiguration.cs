@@ -25,7 +25,8 @@ namespace BankingApp.Infraestructure.Persistence.EntitiesConfigurations
 
             builder.HasMany(x => x.Installments)
                 .WithOne(x => x.Loan)
-                .HasForeignKey(x => x.Id);
+                .HasForeignKey(x => x.LoanId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

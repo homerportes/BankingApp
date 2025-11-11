@@ -21,9 +21,9 @@ namespace BankingApp.Core.Application.Services
         private readonly IInstallmentRepository _installmentRepo;
         private readonly IAccountRepository _accountRepo;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly ILogger _logger;
+        private readonly ILogger<LoanService> _logger;
 
-        public LoanService(ILoanRepository repo, IMapper mapper, IInstallmentRepository installmentRepository, ILogger logger, IAccountRepository accountRepository, IUnitOfWork unitOfWork) : base(repo, mapper)
+        public LoanService(ILoanRepository repo, IMapper mapper, IInstallmentRepository installmentRepository, ILogger<LoanService> logger, IAccountRepository accountRepository, IUnitOfWork unitOfWork) : base(repo, mapper)
         {
             _loanRepository = repo;
             _mapper=mapper;

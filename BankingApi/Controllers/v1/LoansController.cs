@@ -48,7 +48,7 @@ namespace BankingApi.Controllers.v1
                 return BadRequest("El ID del usuario es requerido");
             }
 
-            var user = await _userService.GetById(request.ClientId);
+            var user = await _userService.GetUserById(request.ClientId);
             if (user == null) return BadRequest("No existe ningun usuario asociado a ese Id");
 
             
