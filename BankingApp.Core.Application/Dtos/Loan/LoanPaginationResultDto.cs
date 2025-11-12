@@ -1,8 +1,7 @@
-﻿using BankingApp.Core.Application.Dtos.User;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 namespace BankingApp.Core.Application.Dtos.Loan
 {
-    public class ApiLoanPaginationResultDto
+    public class LoanPaginationResultDto
     {
         public required List<LoanDto> Data { get; set; }
 

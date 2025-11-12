@@ -10,10 +10,10 @@ namespace BankingApi.Controllers.v1
 
     public class LoansController : BaseApiController
     {
-        private readonly ILoanService _loanService;
+        private readonly ILoanServiceForWebApi _loanService;
         private readonly IUserService _userService;
         
-        public LoansController(ILoanService loanService, IUserService userService)
+        public LoansController(ILoanServiceForWebApi loanService, IUserService userService)
         {
             _loanService = loanService;
             _userService = userService;
@@ -84,7 +84,7 @@ namespace BankingApi.Controllers.v1
             {
                 return BadRequest();
             }
-            var result = await _loanService.UpdateLoanRate(publicId,rate);
+            var result = await _loanService.UpdateLoanRateAPI(publicId,rate);
             if (!result.IsSuccessful) return NotFound();
             if (result.IsSuccessful) return NoContent();
             if (result == null) return NotFound();

@@ -14,16 +14,16 @@ using System.Reflection.Metadata;
 
 namespace BankingApp.Core.Application.Services
 {
-    public class LoanService : GenericService<Loan, LoanDto>, ILoanService
+    public class LoanServiceForWebApi : BaseLoanService, ILoanServiceForWebApi
     {
         private readonly ILoanRepository _loanRepository;
         private readonly IMapper _mapper;
         private readonly IInstallmentRepository _installmentRepo;
         private readonly IAccountRepository _accountRepo;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly ILogger<LoanService> _logger;
+        private readonly ILogger<Loan> _logger;
 
-        public LoanService(ILoanRepository repo, IMapper mapper, IInstallmentRepository installmentRepository, ILogger<LoanService> logger, IAccountRepository accountRepository, IUnitOfWork unitOfWork) : base(repo, mapper)
+        public LoanServiceForWebApi(ILoanRepository repo, IMapper mapper, IInstallmentRepository installmentRepository, ILogger<Loan> logger, IAccountRepository accountRepository, IUnitOfWork unitOfWork) : base(repo, mapper, logger)
         {
             _loanRepository = repo;
             _mapper=mapper;
@@ -33,77 +33,13 @@ namespace BankingApp.Core.Application.Services
             
             _logger = logger;
         }
-        public async Task<string> GenerateLoanId()
-        {
-            bool LoanIdExists = false;
-            string Id;
-            do
-            {
-                Id = new string(
-                         Guid.NewGuid()
-                         .ToString("N")
-                         .Where(char.IsDigit)
-                         .Take(9)
-                         .ToArray());
-                LoanIdExists = await _loanRepository.LoanPublicIdExists(Id);
-
-            } while (LoanIdExists);
-
-            return Id;
-        }
-        public async Task<ApiLoanPaginationResultDto> GetAllFiltered(int page = 1, int pageSize = 20, string? state = null, string? clientId = null)
-        {
-            var query = _loanRepository.GetAllQuery();
-
-            if (!string.IsNullOrEmpty(state))
-            {
-                try
-                {
-                    var statusEnum = EnumMapper<LoanStatus>.FromString(state);
-                    query = query.Where(r => r.Status == statusEnum);
-                }
-                catch
-                {
-                    
-                }
-            }
-
-            if (!string.IsNullOrEmpty(clientId))
-            {
-                query = query.Where(r => r.ClientId == clientId);
-            }
-
-            var totalCount = await query.CountAsync();
-
-            query = query
-                .Skip(pageSize * (page - 1))
-                .Take(pageSize);
-
-            var data = await query.ToListAsync();
-            var mapped = _mapper.Map<List<LoanDto>>(data);
-
-            return new ApiLoanPaginationResultDto
-            {
-                Data = mapped,
-                PagesCount = (int)Math.Ceiling((double)totalCount / pageSize),
-                CurrentPage = page,
-            };
-        }
-
-
-        public async Task<decimal> GetAverageLoanDebth()
-        {
-            return await _loanRepository.GetAllQuery().Where(r => r.IsActive).SumAsync(r => r.OutstandingBalance);
-        }
-        public async Task<bool> ClientHasActiveLoan ( string clientId)
-        {
-          return  await _loanRepository.GetAllQuery().Where(r => r.IsActive && r.ClientId == clientId).AnyAsync();
-        }
+    
+      
         public async Task<CreateLoanResult> HandleCreateRequestApi(LoanApiRequest request)
         {
             var result = new CreateLoanResult();
 
-            result.ClientHasActiveLoan = await ClientHasActiveLoan(request.ClientId);
+            result.ClientHasActiveLoan = await base.ClientHasActiveLoan(request.ClientId);
             if (result.ClientHasActiveLoan)
                 return result;
 
@@ -189,78 +125,7 @@ namespace BankingApp.Core.Application.Services
 
             return result;
         }
-
-        private static decimal DecimalPow(decimal baseValue, decimal exponent)
-        {
-        
-            double result = Math.Pow((double)baseValue, (double)exponent);
-            return (decimal)result;
-        }
-
-
-
-        public async Task VerifyAndMarkDelayedLoansAsync()
-        {
-            const int batchSize = 200;
-            int skip = 0;
-            int totalProcessed = 0;
-
-
-            while (true)
-            {
-                var loans =  await _loanRepository.GetAllQueryWithInclude(new List<string> { "Installments" })
-                          .Where(l => l.Installments.Any(i => !i.IsPaid && i.PayDate < DateOnly.FromDateTime(DateTime.Now)))
-                          .Skip(skip)
-                          .Take(batchSize)
-                          .ToListAsync();
-
-
-                if (!loans.Any()) break;
-
-
-                foreach (var loan in loans)
-                {
-                    bool hasDelay = false;
-
-                    foreach (var installment in loan.Installments)
-                    {
-                        if (!installment.IsPaid && installment.PayDate < DateOnly.FromDateTime(DateTime.Now))
-                        {
-                            installment.IsDelinquent = true;
-                            hasDelay = true;
-                        }
-                    }
-
-                    if (hasDelay)
-                        loan.Status = LoanStatus.DELIQUENT;
-                   
-                    await _loanRepository.UpdateByObjectAsync(loan);
-
-                    totalProcessed += loans.Count();
-                    skip += batchSize;
-                    _logger.LogInformation("Procesados {count} préstamos hasta ahora.", totalProcessed);
-
-                }
-
-            }
-  
-
-        }
-
-        public async Task<DetailedLoanDto?> GetDetailed (string Id)
-        {
-            var loan=await _loanRepository.GetAllQuery().Where(r=>r.PublicId == Id).FirstOrDefaultAsync();   
-
-            if (loan == null) return null;
-
-            return new DetailedLoanDto
-            {
-                LoadId = loan.PublicId,
-                Installments = _mapper.Map<List<InstallmentDto>>(loan.Installments)
-            };
-        }
-
-        public async Task<OperationResultDto> UpdateLoanRate(string publicId, decimal newRate)
+        public async Task<OperationResultDto> UpdateLoanRateAPI(string publicId, decimal newRate)
         {
             var result = new OperationResultDto { IsSuccessful = false };
 
@@ -318,6 +183,20 @@ namespace BankingApp.Core.Application.Services
 
             return result;
         }
+        private static decimal DecimalPow(decimal baseValue, decimal exponent)
+        {
+        
+            double result = Math.Pow((double)baseValue, (double)exponent);
+            return (decimal)result;
+        }
+
+
+
+
+
+      
+
+       
 
     }
 }
