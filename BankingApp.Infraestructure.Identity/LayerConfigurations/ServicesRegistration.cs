@@ -64,7 +64,7 @@ namespace BankingApp.Infraestructure.Identity.LayerConfigurations
 
             }).AddCookie(IdentityConstants.ApplicationScheme, opt =>
             {
-                opt.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+                opt.ExpireTimeSpan = TimeSpan.FromMinutes(5);
                 opt.LoginPath = "/Login/Index";
                 opt.AccessDeniedPath = "/Login/AccessDenied";
                 opt.SlidingExpiration = true;
@@ -230,7 +230,8 @@ namespace BankingApp.Infraestructure.Identity.LayerConfigurations
             await DefaultRoles.SeedAsync(roleManager);
 
             await DefaultAdminUser.SeedAsync(userManager);
-
+            await DefaultClientUser.SeedAsync(userManager);
+            await DefaultTellerUser.SeedAsync(userManager);
             await DefaultUser.SeedAsync(userManager);
         }
     }

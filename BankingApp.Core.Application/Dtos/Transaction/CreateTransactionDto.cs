@@ -5,12 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BankingApp.Core.Domain.Entities
+namespace BankingApp.Core.Application.Dtos.Transaction
 {
-
-    // Para las cuentas
-    public class Transaction
+    public class CreateTransactionDto
     {
+
         public Guid Id { get; set; }
         //Monto
         public decimal Amount { get; set; }
@@ -20,14 +19,13 @@ namespace BankingApp.Core.Domain.Entities
         public TransactionType Type { get; set; }
 
         public required string AccountNumber { get; set; }
-    
+
         public int AccountId { get; set; }
 
-        public Account ?Account { get; set; }
-
-        public required string   Origin { get; set; }
+        public required string Origin { get; set; }
         public required string Beneficiary { get; set; }
         public OperationStatus Status { get; set; }
         public DescriptionTransaction Description { get; set; }
+
     }
 }

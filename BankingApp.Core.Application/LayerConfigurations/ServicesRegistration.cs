@@ -21,6 +21,7 @@ namespace BankingApp.Core.Application.LayerConfigurations
             services.AddScoped<ICommerceService, CommerceService>();
             services.AddScoped<ICreditCardService, CreditCardService>();
             services.AddScoped<ISavingsAccountServiceForWebApp, SavingsAccountServiceForWebApp>();
+            services.AddScoped<ITransactionService, TransactionExpressService>();
 
 
             services.AddAutoMapper(cfg => { }, Assembly.GetExecutingAssembly());
