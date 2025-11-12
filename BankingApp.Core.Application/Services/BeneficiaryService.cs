@@ -18,10 +18,10 @@ namespace BankingApp.Core.Application.Services
         private readonly IBeneficiaryRepository repo;
         private readonly IAccountRepository accountRepository;
         private readonly IAccountServiceForWebAPP serviceForWebApi;
-        private IBankAccountService serviceBank;
+        private ISavingsAccountServiceForWebApp serviceBank;
 
 
-        public BeneficiaryService(IMapper mapper, IBeneficiaryRepository repo, IAccountRepository accountRepository, IAccountServiceForWebAPP serviceForWebApi, IBankAccountService serviceBank) : base(repo,mapper)
+        public BeneficiaryService(IMapper mapper, IBeneficiaryRepository repo, IAccountRepository accountRepository, IAccountServiceForWebAPP serviceForWebApi, ISavingsAccountServiceForWebApp serviceBank) : base(repo,mapper)
         {
 
             this.repo = repo;

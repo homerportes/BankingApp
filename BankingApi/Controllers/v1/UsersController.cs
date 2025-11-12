@@ -19,10 +19,10 @@ namespace BankingApi.Controllers.v1
     {
         private IUserService _userService;
         private readonly IAccountServiceForWebApi _accountService;
-        private readonly IBankAccountService _bankAccountService;
+        private readonly ISavingAccountServiceForApi _bankAccountService;
         private readonly ICommerceService _commerceService;
 
-        public UsersController(IUserService userService, IAccountServiceForWebApi accountService, IBankAccountService bankAccountService, ICommerceService commerceService)
+        public UsersController(IUserService userService, IAccountServiceForWebApi accountService, ISavingAccountServiceForApi bankAccountService, ICommerceService commerceService)
         {
             _userService = userService;
             _accountService = accountService;

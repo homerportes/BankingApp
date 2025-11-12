@@ -9,8 +9,8 @@ namespace VerifyLoanDelayIndicator;
 public class VerifyLoanDelayIndicator
 {
     private readonly ILogger _logger;
-    private ILoanService _loanService;
-    public VerifyLoanDelayIndicator(ILoggerFactory loggerFactory, ILoanService loanService)
+    private ILoanServiceForWebApp _loanService;
+    public VerifyLoanDelayIndicator(ILoggerFactory loggerFactory, ILoanServiceForWebApp loanService)
     {
         _logger = loggerFactory.CreateLogger<VerifyLoanDelayIndicator>();
         _loanService = loanService;
