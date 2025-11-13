@@ -9,8 +9,7 @@ namespace BankingApp.Core.Application.Interfaces
     {
         Task<bool> ApproveTransactionAsync(int id, CreateTransactionDto dto);
         Task<bool> DeclieneTransactionAsync(int id, CreateTransactionDto dto);
-        Task<bool> MarkAsCreditAsync(int id, CreateTransactionDto dto);
-        Task<bool> MarkAsDebitAsync(int id, CreateTransactionDto dto);
+    
         Task<ValidateAccountNumberResponseDto?> ValidateNumberAsync(string number);
         Task<AccountDto?> CreditBalanceAsync(string number,decimal Amount);
         Task<AccountDto?> DebitBalanceAsync(string number,decimal Amount);

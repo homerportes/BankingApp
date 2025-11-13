@@ -5,10 +5,11 @@ using BankingApp.Core.Application.Interfaces;
 using BankingApp.Core.Application.ViewModels.TransaccionExpres;
 using BankingApp.Core.Domain.Common.Enums;
 using BankingApp.Infraestructure.Identity.Entities;
-using BankingApp.Infraestructure.Shared.Services.Email;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Globalization;
 using System.Text.Json;
 
 namespace BankingApp.Areas.Client.Controllers
@@ -22,17 +23,18 @@ namespace BankingApp.Areas.Client.Controllers
         private readonly ITransactionService transactionService;
         private readonly IEmailService emailService;
         private readonly UserManager<AppUser> userManager;
+        private readonly IWebHostEnvironment webHostEnvironment;
+      
 
 
-        public TransactionExpressController(IMapper _mapper, ITransactionService transactionService, UserManager<AppUser> userManager, IEmailService emailService)
+        public TransactionExpressController(IMapper _mapper, ITransactionService transactionService, UserManager<AppUser> userManager, IEmailService emailService, IWebHostEnvironment webHostEnvironment)
         {
 
             this._mapper = _mapper;
             this.transactionService = transactionService;
             this.userManager = userManager;
             this.emailService = emailService;
-
-
+            this.webHostEnvironment = webHostEnvironment;
         }
 
 
@@ -79,7 +81,7 @@ namespace BankingApp.Areas.Client.Controllers
 
                 ModelState.AddModelError(string.Empty, $"{validateAmount!.Error}");
                 //registrar transaccion en caso de ser rechazada
-                var Transaccion = _mapper.Map<CreateTransactionDto>(vm);
+                var Transaccion = _mapper.Map<CreateTransactionDto>(vm);           
                 Transaccion.Status = OperationStatus.DECLINED;
                 Transaccion.Type = TransactionType.DEBIT;
                 Transaccion.AccountId = validateAmount!.AccounId;
@@ -188,12 +190,11 @@ namespace BankingApp.Areas.Client.Controllers
 
 
             //correo para cliente origen
-            string template = await System.IO.File.ReadAllTextAsync("wwwroot/templates/NotificationTransactionExpressClient.html");
+            var pathClient = Path.Combine(webHostEnvironment.WebRootPath, "HTML", "notificaciones", "NotificationTransactionExpressClient.html");
+            string template = await System.IO.File.ReadAllTextAsync(pathClient);
 
-
-            template = template.Replace("{{AMOUNT}}", Transaccion.Amount.ToString("C"))
+            template = template.Replace("{{AMOUNT}}", Transaccion.Amount.ToString("C", new CultureInfo("es-DO")))
                                .Replace("{{DATE}}", Transaccion.DateTime.ToString("dd/MM/yyyy HH:mm"));
-                              
 
             await emailService.SendAsync(new EmailRequestDto()
             {
@@ -205,34 +206,23 @@ namespace BankingApp.Areas.Client.Controllers
 
             //correo para el beneficiario
 
-            string _template = await System.IO.File.ReadAllTextAsync("wwwroot/templates/NotificationTransactionExpressBeneficiary.html");
+            var pathBeneficiary = Path.Combine(webHostEnvironment.WebRootPath, "HTML", "notificaciones", "NotificationTransactionExpressBeneficiary.html");
+            string _template = await System.IO.File.ReadAllTextAsync(pathBeneficiary);
 
-
-
-            _template = _template.Replace("{{AMOUNT}}", Transaccion.Amount.ToString("C"))
-                               .Replace("{{DATE}}", Transaccion.DateTime.ToString("dd/MM/yyyy HH:mm"));
-                             
+            _template = _template.Replace("{{AMOUNT}}", Transaccion.Amount.ToString("C", new CultureInfo("es-DO")))
+                                 .Replace("{{DATE}}", Transaccion.DateTime.ToString("dd/MM/yyyy HH:mm"));
 
             await emailService.SendAsync(new EmailRequestDto()
             {
-                To = user!.Email,
+                To = beneficiary.Gmail,
                 Subject = $"Transacción enviada desde la cuenta [****{model.Origin[^4..]}]",
                 BodyHtml = _template
             });
 
 
-
-            TempData["Success"] = "Transacción completada exitosamente.";
             return RedirectToRoute(new { area = "Client", controller = "Home", action = "Index" });
 
-
         }
-
-
-
-
-
-
 
     }
 }

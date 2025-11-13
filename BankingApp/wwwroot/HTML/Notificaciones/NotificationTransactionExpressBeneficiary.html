@@ -3,91 +3,28 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Transferencia recibida con exito</title>
-    <style>
-        :root {
-            --color-azul-oscuro: #154D71;
-            --color-azul-medio: #1C6EA4;
-            --color-azul-claro: #33A1E0;
-            --color-body-bg: #FDFAF6;
-            --color-texto: #212529;
-            --color-texto-claro: #ffffff;
-        }
-
-        body {
-            font-family: 'Segoe UI', Roboto, sans-serif;
-            background-color: var(--color-body-bg);
-            color: var(--color-texto);
-            margin: 0;
-            padding: 0;
-        }
-
-        .email-container {
-            max-width: 600px;
-            margin: 30px auto;
-            border-radius: 14px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-            overflow: hidden;
-            background-color: #ffffff;
-        }
-
-        .email-header {
-            background: linear-gradient(90deg, var(--color-azul-oscuro), var(--color-azul-medio), var(--color-azul-claro));
-            color: var(--color-texto-claro);
-            padding: 25px;
-            text-align: center;
-        }
-
-            .email-header h2 {
-                margin: 0;
-                font-size: 1.5rem;
-                letter-spacing: 0.5px;
-            }
-
-        .email-body {
-            padding: 30px;
-            line-height: 1.7;
-            font-size: 16px;
-        }
-
-            .email-body p {
-                margin: 10px 0;
-            }
-
-        .amount {
-            color: var(--color-azul-medio);
-            font-weight: bold;
-            font-size: 1.1rem;
-        }
-
-        .footer {
-            background: linear-gradient(90deg, var(--color-azul-medio), var(--color-azul-oscuro));
-            color: var(--color-texto-claro);
-            text-align: center;
-            padding: 18px;
-            font-size: 14px;
-            letter-spacing: 0.4px;
-        }
-
-            .footer strong {
-                color: var(--color-azul-claro);
-            }
-    </style>
+    <title>Transferencia recibida con éxito</title>
 </head>
-<body>
-    <div class="email-container">
-        <div class="email-header">
-            <h2>Transferencia recibida</h2>
+<body style="font-family: 'Segoe UI', Roboto, sans-serif; background-color: #FDFAF6; color: #212529; margin: 0; padding: 0;">
+    <div style="max-width:600px; margin:30px auto; border-radius:14px; box-shadow:0 2px 10px rgba(0,0,0,0.08); overflow:hidden; background-color:#ffffff;">
+
+       
+        <div style="background:linear-gradient(90deg,#154D71,#1C6EA4,#33A1E0); color:#ffffff; padding:25px; text-align:center;">
+            <h2 style="margin:0; font-size:1.5rem; letter-spacing:0.5px;">Transferencia recibida</h2>
         </div>
-        <div class="email-body">
-            <p>Estimado cliente,</p>
-            <p>Le informamos que  has recibido una <strong>transferencia </strong> desde una cuenta.......</p>
-            <p><span class="amount">Monto recibido:</span> {{AMOUNT}}</p>
-            <p><span class="amount">Fecha:</span> {{DATE}}</p>
-            <p>Gracias por utilizar nuestros servicios bancarios.</p>
+
+      
+        <div style="padding:30px; line-height:1.7; font-size:16px;">
+            <p style="margin:10px 0;">Estimado cliente,</p>
+            <p style="margin:10px 0;">Le informamos que has recibido una <strong>transferencia</strong> desde una cuenta asociada.</p>
+            <p style="margin:10px 0;"><span style="color:#1C6EA4; font-weight:bold;">Monto recibido:</span> {{AMOUNT}}</p>
+            <p style="margin:10px 0;"><span style="color:#1C6EA4; font-weight:bold;">Fecha:</span> {{DATE}}</p>
+            <p style="margin:10px 0;">Gracias por utilizar nuestros servicios bancarios.</p>
         </div>
-        <div class="footer">
-            <strong>BankingApp</strong> | Transacción Express
+
+     
+        <div style="background:linear-gradient(90deg,#1C6EA4,#154D71); color:#ffffff; text-align:center; padding:18px; font-size:14px; letter-spacing:0.4px;">
+            <strong style="color:#33A1E0;">BankingApp</strong> | Transacción Express
         </div>
     </div>
 </body>

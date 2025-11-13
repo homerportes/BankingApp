@@ -7,7 +7,7 @@ namespace BankingApp.Core.Application.ViewModels.TransaccionExpres
     {
 
 
-        [Range(0.01, double.MaxValue, ErrorMessage = "El valor del monto debe ser valido y mayor a 0")]
+        [Range(0.001, double.MaxValue, ErrorMessage = "El valor del monto debe ser valido y mayor a 0")]
         [Required(ErrorMessage = "Debes ingresar el valor del monto")]
         public decimal Amount { get; set; }
 

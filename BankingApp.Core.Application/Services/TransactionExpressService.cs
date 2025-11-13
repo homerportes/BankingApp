@@ -21,13 +21,16 @@ namespace BankingApp.Core.Application.Services
         private readonly IAccountRepository accountRepository;
         private readonly IBeneficiaryService beneficiaryService;
         private readonly IAccountServiceForWebAPP serviceForWebAPP;
+        private readonly IUnitOfWork unitOfWork;
+
 
         public TransactionExpressService(IGenericRepository<Transaction> repo,
             IMapper mapper,
             ITransacctionRepository transacctionRepository,
             IAccountRepository accountRepository,
             IBeneficiaryService beneficiaryService,
-            IAccountServiceForWebAPP serviceForWebAPP) : base(repo, mapper)
+            IAccountServiceForWebAPP serviceForWebAPP,
+            IUnitOfWork unitOfWork) : base(repo, mapper)
         {
 
 
@@ -36,6 +39,59 @@ namespace BankingApp.Core.Application.Services
             this.transacctionRepository = transacctionRepository;
             this.beneficiaryService = beneficiaryService;
             this.serviceForWebAPP = serviceForWebAPP;
+            this.unitOfWork = unitOfWork;
+        }
+
+
+
+
+
+        public override async Task<CreateTransactionDto?> AddAsync(CreateTransactionDto Dto)
+        {
+
+              await unitOfWork.BeginTransactionAsync();   
+            try
+            {
+
+                var _validateAccountBeneficiary = await ValidateNumberAsync(Dto.Beneficiary);
+                if (_validateAccountBeneficiary == null)
+                {
+
+                    return null;
+
+                }
+
+
+                var _validateAmount = await ValidateAmount(Dto.Origin,Dto.Amount);
+                if(_validateAmount == null || _validateAmount!.IsSuccess == false)
+                {
+
+                    return null;
+              
+                }
+
+
+
+                var entity = _mapper.Map<Transaction>(Dto);
+                if (entity is not null)
+                {
+                    var transac = await transacctionRepository.AddAsync(entity);
+                    var dto = _mapper.Map<CreateTransactionDto>(transac);
+                    await unitOfWork.CommitAsync();
+                    return dto;
+                }
+
+
+                return null;
+
+            }
+            catch
+            {
+
+                await unitOfWork.RollbackAsync();   
+                return default;
+
+            }
         }
 
 
@@ -44,6 +100,8 @@ namespace BankingApp.Core.Application.Services
 
         public async Task<bool> ApproveTransactionAsync(int id, CreateTransactionDto dto)
         {
+
+           
             try
             {
 
@@ -60,8 +118,9 @@ namespace BankingApp.Core.Application.Services
                 if (aproved)
                 {
 
+                   
                     return true;
-
+                  
 
                 }
 
@@ -72,7 +131,7 @@ namespace BankingApp.Core.Application.Services
             catch (Exception ex)
             {
 
-
+               
                 return false;
 
 
@@ -84,7 +143,7 @@ namespace BankingApp.Core.Application.Services
 
         public async Task<AccountDto?> CreditBalanceAsync(string number, decimal Amount)
         {
-
+         
             try
             {
 
@@ -107,14 +166,14 @@ namespace BankingApp.Core.Application.Services
 
                 }
 
-
+               
                 return _DTO;
 
             }
             catch (Exception ex)
             {
 
-
+                
                 return null;
 
 
@@ -128,6 +187,7 @@ namespace BankingApp.Core.Application.Services
 
         public async Task<List<string>?> CuentaListAsync(string idUser)
         {
+           
             try
             {
                 var NumeberAccounts = new List<string>();
@@ -154,6 +214,7 @@ namespace BankingApp.Core.Application.Services
                 }
 
 
+             
                 return NumeberAccounts;
 
 
@@ -174,6 +235,7 @@ namespace BankingApp.Core.Application.Services
         public async Task<AccountDto?> DebitBalanceAsync(string number, decimal Amount)
         {
 
+          
             try
             {
 
@@ -195,6 +257,7 @@ namespace BankingApp.Core.Application.Services
                 }
 
 
+          
                 return _DTO;
 
             }
@@ -202,6 +265,7 @@ namespace BankingApp.Core.Application.Services
             {
 
 
+               
                 return null;
 
 
@@ -220,6 +284,7 @@ namespace BankingApp.Core.Application.Services
 
         public async Task<bool> DeclieneTransactionAsync(int id, CreateTransactionDto dto)
         {
+          
             try
             {
 
@@ -236,6 +301,7 @@ namespace BankingApp.Core.Application.Services
                 if (aproved)
                 {
 
+                   
                     return true;
 
                 }
@@ -253,92 +319,6 @@ namespace BankingApp.Core.Application.Services
 
             }
         }
-
-
-
-
-
-
-        public async Task<bool> MarkAsCreditAsync(int id, CreateTransactionDto dto)
-        {
-            try
-            {
-
-                if (dto == null || id < 0)
-                {
-
-                    return false;
-
-                }
-
-
-                var _DTO = _mapper.Map<Transaction>(dto);
-                _DTO.Type = TransactionType.CREDIT;
-                bool aproved = await transacctionRepository.ApproveTransaction(id, _DTO);
-                if (aproved)
-                {
-
-                    return true;
-
-
-                }
-
-
-                return false;
-
-            }
-            catch (Exception ex)
-            {
-
-
-                return false;
-
-
-            }
-        }
-
-
-
-
-
-        public async Task<bool> MarkAsDebitAsync(int id, CreateTransactionDto dto)
-        {
-            try
-            {
-
-                if (dto == null || id < 0)
-                {
-
-                    return false;
-
-                }
-
-
-                var _DTO = _mapper.Map<Transaction>(dto);
-                _DTO.Type = TransactionType.DEBIT;
-                bool aproved = await transacctionRepository.ApproveTransaction(id, _DTO);
-                if (aproved)
-                {
-
-                    return true;
-
-
-                }
-
-
-                return false;
-
-            }
-            catch (Exception ex)
-            {
-
-
-                return false;
-
-
-            }
-        }
-
 
 
 
@@ -370,7 +350,7 @@ namespace BankingApp.Core.Application.Services
                 {
 
                     response.IsSuccess = false;
-                    response.Error = "El monto ingresado excede el saldo disponible";
+                    response.Error = "El monto ingresado excede el saldo disponible, Favor verificar";
 
                 }
 
@@ -411,7 +391,7 @@ namespace BankingApp.Core.Application.Services
                 var data = await beneficiaryService.ValidateAccountNumberExist(number);
                 var entity = await accountRepository.GetAccountByNumber(number);
 
-                if (data != null)
+                if (data != null && entity != null)
                 {
 
                     var map = _mapper.Map<ValidateAccountNumberResponseDto>(data);

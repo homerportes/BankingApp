@@ -115,9 +115,13 @@ namespace BankingApp.Core.Application.Services
 
             var systemDebt = await GetAverageLoanDebth();
 
-            result.ClientIsHighRisk = userDebt > systemDebt || (userDebt + request.LoanAmount) > systemDebt;
-            if (result.ClientIsHighRisk)
-                return result;
+            if (systemDebt > 0)
+            {
+                result.ClientIsHighRisk = userDebt > systemDebt || (userDebt + request.LoanAmount) > systemDebt;
+                if (result.ClientIsHighRisk)
+                    return result;
+            }
+
 
             decimal annualInterest = request.AnualInterest;
             decimal monthlyRate = (annualInterest / 100m) / 12m;
@@ -151,20 +155,33 @@ namespace BankingApp.Core.Application.Services
                 var installments = new List<Installment>(request.LoanTermInMonths);
                 var firstDueDate = DateOnly.FromDateTime(now.AddMonths(1));
 
+                decimal remainingBalance = P;
+
                 for (int i = 0; i < request.LoanTermInMonths; i++)
                 {
                     var dueDate = firstDueDate.AddMonths(i);
+                    decimal interest = Math.Round(remainingBalance * monthlyRate, 2);
+                    decimal principal = Math.Round(constantPayment - interest, 2);
+
+                  
+                    if (i == request.LoanTermInMonths - 1)
+                        principal = remainingBalance;
+
+                    remainingBalance -= principal;
+
                     installments.Add(new Installment
                     {
                         LoanId = loanEntity.Id,
-                        Id=0,
-                        Number = i+1,
-                        Value = constantPayment,
+                        Id = 0,
+                        Number = i + 1,
+                        Value = constantPayment,   
                         PayDate = dueDate,
-                        IsPaid = i == 0, 
+                        IsPaid = false,            
                         IsDelinquent = dueDate < DateOnly.FromDateTime(now)
                     });
                 }
+
+
                 await _installmentRepo.AddRangeAsync(installments);
 
                 var account = await _accountRepo
