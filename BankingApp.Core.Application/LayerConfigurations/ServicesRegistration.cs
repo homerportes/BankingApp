@@ -24,6 +24,7 @@ namespace BankingApp.Core.Application.LayerConfigurations
             services.AddScoped<ICreditCardService, CreditCardService>();
             services.AddScoped<ISavingsAccountServiceForWebApp, SavingsAccountServiceForWebApp>();
             services.AddScoped<ISavingAccountServiceForApi, SavingAccountServiceForApi>();
+            services.AddScoped<IUserAccountManagementService, UserAccountManagmentService>();
 
             services.AddAutoMapper(cfg => { }, Assembly.GetExecutingAssembly());
             EnumMappings.Initialize();

@@ -11,5 +11,6 @@ namespace BankingApp.Core.Application.Dtos.Loan
         public bool ClientIsHighRisk {  get; set; }
         public bool ClientHasActiveLoan { get; set; }
         public bool LoanCreated { get; internal set; }
+        public bool ClientIsAlreadyHighRisk { get; set; }
     }
 }

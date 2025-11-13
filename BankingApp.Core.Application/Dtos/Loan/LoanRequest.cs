@@ -3,7 +3,7 @@
 
 namespace BankingApp.Core.Application.Dtos.Loan
 {
-    public class LoanApiRequest
+    public class LoanRequest
     {
         [JsonProperty("ClienteId")]
         public  required string ClientId { get; set; }

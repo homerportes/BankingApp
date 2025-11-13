@@ -18,5 +18,9 @@ namespace BankingApp.Core.Application.Interfaces
         public  Task<string> GenerateLoanId();
         Task VerifyAndMarkDelayedLoansAsync();
 
+        Task<OperationResultDto> UpdateLoanRate(string publicId, decimal newRate);
+        Task<decimal> GetAverageLoanDebth();
+        Task<CreateLoanResult> Create(LoanRequest request);
+        Task<CreateLoanResult> SendEmail(LoanRequest request, CreateLoanResult createLoanResult);
     }
 }
