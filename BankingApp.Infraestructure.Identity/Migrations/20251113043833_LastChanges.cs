@@ -2,10 +2,10 @@
 
 #nullable disable
 
-namespace BankingApp.Infraestructure.Persistence.Migrations
+namespace BankingApp.Infraestructure.Identity.Migrations
 {
     /// <inheritdoc />
-    public partial class UpdateExistingPurchasesStatus : Migration
+    public partial class LastChanges : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

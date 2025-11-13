@@ -7,6 +7,10 @@ namespace BankingApp.Core.Application.Dtos.User
         [JsonProperty("usuario")]
         public required string UserName { get; set; }
 
+
+        [JsonIgnore]
+        public  string? Id { get; set; }
+
         [JsonProperty("correo")]
         public required string Email { get; set; }
 
@@ -27,7 +31,7 @@ namespace BankingApp.Core.Application.Dtos.User
         public required string DocumentIdNumber { get; set; }
         [JsonProperty("montoAdicional")]
 
-        public required decimal ? AditionalBalance { get; set; }
+        public required decimal ? AdditionalBalance { get; set; }
 
     }
 }

@@ -10,10 +10,10 @@ namespace BankingApi.Controllers.v1
 
     public class LoansController : BaseApiController
     {
-        private readonly ILoanServiceForWebApi _loanService;
+        private readonly ILoanServiceForWebApp _loanService;
         private readonly IUserService _userService;
         
-        public LoansController(ILoanServiceForWebApi loanService, IUserService userService)
+        public LoansController(ILoanServiceForWebApp loanService, IUserService userService)
         {
             _loanService = loanService;
             _userService = userService;
@@ -36,7 +36,7 @@ namespace BankingApi.Controllers.v1
         }
 
         [HttpPost(Name = "CreateLoan")]
-        public async Task<IActionResult> SetLoan(LoanApiRequest request)
+        public async Task<IActionResult> SetLoan(LoanRequest request)
         {
             if (!ModelState.IsValid)
             {
@@ -52,7 +52,7 @@ namespace BankingApi.Controllers.v1
             if (user == null) return BadRequest("No existe ningun usuario asociado a ese Id");
 
             
-                var requestResult = await _loanService.HandleCreateRequestApi(request);
+                var requestResult = await _loanService.HandleCreateRequest(request);
                 if (requestResult.ClientHasActiveLoan) return BadRequest("El usuario ya tiene un prestamo activo");
                 if (requestResult.ClientIsHighRisk) return Conflict("El usuario es de alto riesgo");
             if (requestResult.LoanCreated) return Created();
@@ -84,7 +84,7 @@ namespace BankingApi.Controllers.v1
             {
                 return BadRequest();
             }
-            var result = await _loanService.UpdateLoanRateAPI(publicId,rate);
+            var result = await _loanService.UpdateLoanRate(publicId,rate);
             if (!result.IsSuccessful) return NotFound();
             if (result.IsSuccessful) return NoContent();
             if (result == null) return NotFound();
