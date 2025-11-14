@@ -4,10 +4,12 @@ using BankingApp.Core.Application.Interfaces;
 using BankingApp.Core.Domain.Common.Enums;
 using BankingApp.Infraestructure.Identity.Contexts;
 using BankingApp.Infraestructure.Identity.Entities;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
+using System.Security.Claims;
 
 
 namespace BankingApp.Infraestructure.Identity.Services
@@ -17,11 +19,14 @@ namespace BankingApp.Infraestructure.Identity.Services
 
         private UserManager<AppUser> _userManager;
         private readonly IdentityContext _identityContext;
+        private readonly IHttpContextAccessor _context;
 
-        public IdentityUserService(UserManager<AppUser> userManager, IdentityContext identityDbContext)
+        public IdentityUserService(UserManager<AppUser> userManager, IdentityContext identityDbContext, IHttpContextAccessor context)
         {
             _userManager = userManager;
             _identityContext = identityDbContext;
+            _context = context;
+
         }
 
 
@@ -118,7 +123,7 @@ namespace BankingApp.Infraestructure.Identity.Services
             return userDto;
         }
 
-        public async Task<ApiUserPaginationResultDto> GetAllOnlyCommerce(int page = 1, int pageSize = 20, string? rol = null)
+        public async Task<UserPaginationResultDto> GetAllOnlyCommerce(int page = 1, int pageSize = 20, string? rol = null)
         {
             var commerceRoleId = await _identityContext.Roles
                 .Where(r => r.Name == AppRoles.COMMERCE.ToString())
@@ -196,8 +201,9 @@ namespace BankingApp.Infraestructure.Identity.Services
                     displayRole = roleName;
                 }
 
-                return new UserDtoForApi
+                return new UserDto
                 {
+                    Id= u.Id,
                     Email = u.Email ?? "",
                     Name = u.Name,
                     LastName = u.LastName,
@@ -208,7 +214,7 @@ namespace BankingApp.Infraestructure.Identity.Services
                 };
             }).ToList();
 
-            return new ApiUserPaginationResultDto
+            return new UserPaginationResultDto
             {
                 Data = result,
                 PagesCount = (int)Math.Ceiling((double)totalCount / pageSize),
@@ -217,7 +223,7 @@ namespace BankingApp.Infraestructure.Identity.Services
             };
         }
 
-        public async Task<ApiUserPaginationResultDto> GetAllExceptCommerce(int page = 1, int pageSize = 20, string? rol = null)
+        public async Task<UserPaginationResultDto> GetAllExceptCommerce(int page = 1, int pageSize = 20, string? rol = null)
         {
             var commerceRoleId = await _identityContext.Roles
                 .Where(r => r.Name == AppRoles.COMMERCE.ToString())
@@ -234,7 +240,7 @@ namespace BankingApp.Infraestructure.Identity.Services
                     var enumName = enumValue.ToString();
 
                     extraRoleId = await _identityContext.Roles
-                        .Where(r => r.Name.Equals(enumName, StringComparison.OrdinalIgnoreCase))
+                        .Where(r => r.Name== enumName)
                         .Select(r => r.Id)
                         .FirstOrDefaultAsync();
                 }
@@ -279,19 +285,22 @@ namespace BankingApp.Infraestructure.Identity.Services
                     displayRole = roleName;
                 }
 
-                return new UserDtoForApi
+                return new UserDto
                 {
+                    Id=x.User.Id,
                     Email = x.User.Email ?? "",
                     Name = x.User.Name,
                     LastName = x.User.LastName,
                     Role = displayRole,
                     DocumentIdNumber = x.User.DocumentIdNumber,
                     UserName = x.User.UserName ?? "",
-                    Status = x.User.EmailConfirmed ? "activo" : "inactivo"
+                    IsActive=x.User.IsActive,
+                    IsVerified= x.User.EmailConfirmed,
+                    Status = x.User.IsActive ? "activo" : "inactivo"
                 };
             }).ToList();
 
-            return new ApiUserPaginationResultDto
+            return new UserPaginationResultDto
             {
                 Data = result,
                 PagesCount = (int)Math.Ceiling((double)totalCount / pageSize),
@@ -303,7 +312,6 @@ namespace BankingApp.Infraestructure.Identity.Services
        
         public async Task<List<string>> GetActiveUserIdsAsync()
         {
-            // Obtener todos los IDs de usuarios activos (IsActive = true)
             var activeUserIds = await _userManager.Users
                 .Where(u => u.IsActive)
                 .Select(u => u.Id)
@@ -312,6 +320,86 @@ namespace BankingApp.Infraestructure.Identity.Services
             return activeUserIds;
         }
 
+        public async Task ToogleState(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            user.IsActive = !user.IsActive;
+
+            await _userManager.UpdateAsync(user);
+
+        }
+
+        public async Task<List<UserDto>> GetClientsWithDebtInfo(Dictionary<string, decimal> clientDebts, string? DocumentId = null)
+        {
+            var clientRole = await _identityContext.Roles
+                .FirstOrDefaultAsync(r => r.Name == AppRoles.CLIENT.ToString());
+
+            if (clientRole == null)
+                return new List<UserDto>();
+
+            var userRoles = await _identityContext.UserRoles
+                .Where(r => r.RoleId == clientRole.Id)
+                .ToListAsync();
+
+            var usersId = userRoles
+                .Where(r => !clientDebts.ContainsKey(r.UserId))
+                .Select(r => r.UserId)
+                .Distinct()
+                .ToList();
+
+            var query = _userManager.Users
+                .Where(u => u.IsActive && usersId.Contains(u.Id));
+
+            if (!string.IsNullOrEmpty(DocumentId))
+            {
+                query = query.Where(r => r.DocumentIdNumber == DocumentId);
+            }
+
+            var users = await query
+                .Select(u => new UserDto
+                {
+                    DocumentIdNumber = u.DocumentIdNumber,
+                    Email = u.Email,
+                    Id = u.Id,
+                    LastName = u.LastName,
+                    Name = u.Name,
+                    Role = "",
+                    Status = u.IsActive ? "Activo" : "Inactivo",
+                    UserName = u.UserName,
+                    IsActive = u.IsActive,
+                    TotalDebt = clientDebts.ContainsKey(u.Id) ? clientDebts[u.Id] : 0m
+                })
+                .ToListAsync();
+
+            return users;
+        }
+
+
+
+        public async Task<UserDto?> GetCurrentUserAsync()
+        {
+            var httpUser = _context.HttpContext?.User;
+            if (httpUser?.Identity == null || !httpUser.Identity.IsAuthenticated)
+                return null;
+
+          
+
+            var user = await _userManager.Users.Where(r=>r.UserName==httpUser.Identity.Name).FirstOrDefaultAsync();
+            if (user == null)
+                return null;
+
+            return new UserDto
+            {
+                Id = user.Id,
+                Name = user.Name,
+                LastName = user.LastName,
+                DocumentIdNumber = user.DocumentIdNumber,
+                Email = user.Email,
+                UserName = user.UserName,
+                Status= user.IsActive? "Activo": "Inactivo",
+                Role=""
+            };
+        }
 
     }
 }

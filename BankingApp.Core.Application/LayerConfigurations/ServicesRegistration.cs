@@ -11,17 +11,20 @@ namespace BankingApp.Core.Application.LayerConfigurations
         public static void AddApplicationLayer(this IServiceCollection services)
         {
            services.AddScoped(typeof(IGenericService<,>), typeof(GenericService<,>));
-            services.AddScoped<IBankAccountService,BankAccountService>();
+            services.AddScoped<ISavingAccountServiceForApi,SavingAccountServiceForApi>();
             services.AddScoped<ICommerceService,CommerceService> ();
             services.AddScoped<IBeneficiaryService, BeneficiaryService>();
 
-            services.AddScoped<ILoanService, LoanService>();
+            services.AddScoped<ILoanServiceForWebApi, LoanServiceForWebApi>();
+            services.AddScoped<ILoanServiceForWebApp, LoanServiceForWebApp>();
+
             services.AddScoped(typeof(IGenericService<,>), typeof(GenericService<,>));
-            services.AddScoped<IBankAccountService, BankAccountService>();
+            services.AddScoped<ISavingAccountServiceForApi, SavingAccountServiceForApi>();
             services.AddScoped<ICommerceService, CommerceService>();
             services.AddScoped<ICreditCardService, CreditCardService>();
             services.AddScoped<ISavingsAccountServiceForWebApp, SavingsAccountServiceForWebApp>();
-
+            services.AddScoped<ISavingAccountServiceForApi, SavingAccountServiceForApi>();
+            services.AddScoped<IUserAccountManagementService, UserAccountManagmentService>();
 
             services.AddAutoMapper(cfg => { }, Assembly.GetExecutingAssembly());
             EnumMappings.Initialize();

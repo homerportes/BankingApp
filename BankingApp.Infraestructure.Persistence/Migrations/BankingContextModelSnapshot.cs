@@ -62,37 +62,6 @@ namespace BankingApp.Infraestructure.Persistence.Migrations
                     b.ToTable("Account");
                 });
 
-            modelBuilder.Entity("BankingApp.Core.Domain.Entities.Commerce", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Logo")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Commerce");
-                });
-
             modelBuilder.Entity("BankingApp.Core.Domain.Entities.Beneficiary", b =>
                 {
                     b.Property<int>("Id")
@@ -126,6 +95,9 @@ namespace BankingApp.Infraestructure.Persistence.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -196,6 +168,43 @@ namespace BankingApp.Infraestructure.Persistence.Migrations
                     b.ToTable("CreditCard");
                 });
 
+            modelBuilder.Entity("BankingApp.Core.Domain.Entities.Installment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsDelinquent")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsModified")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPaid")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("LoanId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Number")
+                        .HasColumnType("int");
+
+                    b.Property<DateOnly>("PayDate")
+                        .HasColumnType("date");
+
+                    b.Property<decimal>("Value")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LoanId");
+
+                    b.ToTable("Installment");
+                });
+
             modelBuilder.Entity("BankingApp.Core.Domain.Entities.Loan", b =>
                 {
                     b.Property<Guid>("Id")
@@ -209,8 +218,8 @@ namespace BankingApp.Infraestructure.Persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("InterestRate")
-                        .HasColumnType("int");
+                    b.Property<decimal>("InterestRate")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -222,10 +231,6 @@ namespace BankingApp.Infraestructure.Persistence.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("PaidInstallmentsCount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("int");
-
                     b.Property<string>("PublicId")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -233,12 +238,12 @@ namespace BankingApp.Infraestructure.Persistence.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.Property<int>("TotalInstallmentsCount")
-                        .HasColumnType("int");
-
                     b.Property<decimal>("TotalLoanAmount")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -315,6 +320,17 @@ namespace BankingApp.Infraestructure.Persistence.Migrations
                     b.ToTable("Transaction");
                 });
 
+            modelBuilder.Entity("BankingApp.Core.Domain.Entities.Installment", b =>
+                {
+                    b.HasOne("BankingApp.Core.Domain.Entities.Loan", "Loan")
+                        .WithMany("Installments")
+                        .HasForeignKey("LoanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Loan");
+                });
+
             modelBuilder.Entity("BankingApp.Core.Domain.Entities.Purchase", b =>
                 {
                     b.HasOne("BankingApp.Core.Domain.Entities.CreditCard", "CreditCard")
@@ -347,6 +363,11 @@ namespace BankingApp.Infraestructure.Persistence.Migrations
             modelBuilder.Entity("BankingApp.Core.Domain.Entities.CreditCard", b =>
                 {
                     b.Navigation("Purchases");
+                });
+
+            modelBuilder.Entity("BankingApp.Core.Domain.Entities.Loan", b =>
+                {
+                    b.Navigation("Installments");
                 });
 #pragma warning restore 612, 618
         }
