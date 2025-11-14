@@ -5,11 +5,10 @@ using BankingApp.Core.Application.Dtos.Account;
 using BankingApp.Core.Application.Dtos.Beneficiary;
 using BankingApp.Core.Application.Dtos.Transaction;
 using BankingApp.Core.Application.Interfaces;
-using BankingApp.Core.Domain.Common.Enums;
 using BankingApp.Core.Domain.Entities;
 using BankingApp.Core.Domain.Interfaces;
 using BankingApp.Infraestructure.Persistence.Repositories;
-using System.Net.NetworkInformation;
+
 
 
 namespace BankingApp.Core.Application.Services

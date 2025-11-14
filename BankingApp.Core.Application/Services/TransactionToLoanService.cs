@@ -18,7 +18,7 @@ namespace BankingApp.Core.Application.Services
         private readonly IUnitOfWork unitOfWork;
         private readonly ITransacctionRepository repo;
         private readonly IAccountRepository accountRepository;
-        private readonly IBankAccountService bankAccountService;
+        private readonly ISavingsAccountServiceForWebApp bankAccountService;
         private readonly IInstallmentRepository installmentRepository;
         private readonly ILoanRepository loanRepo;
 
@@ -31,7 +31,7 @@ namespace BankingApp.Core.Application.Services
             ILoanRepository loanRepo,
             IInstallmentRepository installmentRepository,
             IAccountRepository accountRepository,
-            IBankAccountService _service)
+            ISavingsAccountServiceForWebApp _service)
             : base(repo, _mapper)
         {
 

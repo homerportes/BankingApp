@@ -13,9 +13,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
+using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
-using IAccountServiceForWebApi = BankingApp.Core.Application.Interfaces.IAccountServiceForWebApi;
+
 
 namespace BankingApp.Infraestructure.Identity.LayerConfigurations
 {
@@ -142,9 +142,10 @@ namespace BankingApp.Infraestructure.Identity.LayerConfigurations
                     ClockSkew = TimeSpan.FromMinutes(2),
                     ValidIssuer = config["JwtSettings:Issuer"],
                     ValidAudience = config["JwtSettings:Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["JwtSettings:SecretKey"] ?? ""))
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["JwtSettings:SecretKey"] ?? "")),
 
-
+                    NameClaimType = ClaimTypes.NameIdentifier,
+                    RoleClaimType = ClaimTypes.Role
                 };
                 opt.RequireHttpsMetadata = false;
 

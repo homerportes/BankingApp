@@ -9,22 +9,19 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BankingApp.Core.Application.Services
 {
-    public class SavingsAccountServiceForWebApp : ISavingsAccountServiceForWebApp
+    public class SavingsAccountServiceForWebApp :BaseSavingAccountService, ISavingsAccountServiceForWebApp
     {
         private readonly IAccountRepository _accountRepository;
         private readonly IUserService _userService;
-        private readonly IBankAccountService _bankAccountService;
         private readonly IMapper _mapper;
 
         public SavingsAccountServiceForWebApp(
             IAccountRepository accountRepository,
             IUserService userService,
-            IBankAccountService bankAccountService,
-            IMapper mapper)
+            IMapper mapper):base(accountRepository,mapper)
         {
             _accountRepository = accountRepository;
             _userService = userService;
-            _bankAccountService = bankAccountService;
             _mapper = mapper;
         }
 
@@ -121,7 +118,7 @@ namespace BankingApp.Core.Application.Services
         public async Task<AccountDto> CreateSecondaryAccountAsync(AccountDto accountDto, string adminId)
         {
             // Generar número de cuenta único
-            var accountNumber = await _bankAccountService.GenerateAccountNumber();
+            var accountNumber = await GenerateAccountNumber();
             
             var account = _mapper.Map<Account>(accountDto);
             account.Number = accountNumber;

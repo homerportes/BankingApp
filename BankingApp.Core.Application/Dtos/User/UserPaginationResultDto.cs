@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace BankingApp.Core.Application.Dtos.User
 {
-    public class ApiUserPaginationResultDto
+    public class UserPaginationResultDto
     {
-        public required List <UserDtoForApi> Data { get; set; }
+        public required List <UserDto> Data { get; set; }
 
         [JsonProperty("totalUsuarios")]
 

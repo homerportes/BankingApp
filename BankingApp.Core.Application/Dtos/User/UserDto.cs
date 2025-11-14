@@ -31,6 +31,6 @@ namespace BankingApp.Core.Application.Dtos.User
         [JsonProperty("estado")]
 
         public required string Status { get; set; }
-
+        public decimal? TotalDebt { get; set; }
     }
 }
