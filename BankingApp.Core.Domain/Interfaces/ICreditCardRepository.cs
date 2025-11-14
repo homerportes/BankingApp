@@ -7,5 +7,10 @@ namespace BankingApp.Core.Domain.Interfaces
         Task<CreditCard?> GetByNumberAsync(string cardNumber);
         Task<List<CreditCard>> GetByClientIdAsync(string clientId);
         Task<bool> CardNumberExistsAsync(string cardNumber);
+
+        Task<CreditCard?> DebitTotalAmountOwedAsync(string number, decimal Amount);
+        Task<List<CreditCard>> GetActiveByClientIdAsync(string clientId);
+
+
     }
 }
