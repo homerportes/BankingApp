@@ -1,4 +1,5 @@
-﻿using BankingApp.Core.Domain.Entities;
+﻿using BankingApp.Core.Domain.Common.Enums;
+using BankingApp.Core.Domain.Entities;
 using BankingApp.Core.Domain.Interfaces;
 using BankingApp.Infraestructure.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
@@ -82,6 +83,16 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
         {
 
             return  await _context.Set<Account>().Where(s => s.ClientId == IdCliente).ToListAsync();
+
+        }
+
+
+
+
+        public async Task<Account?> GetAccounByIdClienteAsync(string IdCliente)
+        {
+
+            return await _context.Set<Account>().FirstOrDefaultAsync(s => s.ClientId == IdCliente && s.Status == AccountStatus.ACTIVE);
 
         }
 

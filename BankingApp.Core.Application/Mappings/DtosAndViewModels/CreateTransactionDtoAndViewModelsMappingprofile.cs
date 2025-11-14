@@ -33,6 +33,11 @@ namespace BankingApp.Core.Application.Mappings.DtosAndViewModels
                 .ForMember(s => s.IdBeneficiary, opt => opt.MapFrom(src => src.BeneficiaryId));
 
 
+            CreateMap<ValidateAccountNumberResponseDto, BeneficiaryToTransactionViewModel>()
+                .ReverseMap();
+          
+            
+
 
             CreateMap<CreateTransactionDto, CreateTransactionToCreditCardViewModel>()
                .ReverseMap()
@@ -60,6 +65,30 @@ namespace BankingApp.Core.Application.Mappings.DtosAndViewModels
                .ForMember(s => s.Description, opt => opt.Ignore())
                .ForMember(s => s.Type, opt => opt.Ignore())
                .ForMember(s => s.AccountNumber, opt => opt.Ignore());
+
+
+
+
+
+
+
+            CreateMap<CreateTransactionDto, CreateTransactionToBeneficiaryViewModel>()
+               .ReverseMap()
+               .ForMember(s => s.Origin, opt => opt.MapFrom(src => src.Origen))
+               .ForMember(s => s.Amount, opt => opt.MapFrom(src => src.Amount))
+               .ForMember(s => s.Beneficiary, opt => opt.MapFrom(src => src.Beneficiary))
+               .ForMember(s => s.Status, opt => opt.Ignore())
+               .ForMember(s => s.DateTime, opt => opt.Ignore())
+               .ForMember(s => s.AccountId, opt => opt.Ignore())
+               .ForMember(s => s.Description, opt => opt.Ignore())
+               .ForMember(s => s.Type, opt => opt.Ignore())
+               .ForMember(s => s.AccountNumber, opt => opt.Ignore());
+
+
+
+
+
+            
         }
 
 

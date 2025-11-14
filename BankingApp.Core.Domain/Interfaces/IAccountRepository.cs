@@ -7,6 +7,7 @@ namespace BankingApp.Core.Domain.Interfaces
         Task<bool> AccountExists(string accountNumber);
         Task<Account?>  GetAccountByNumber(string accountNumber);
         Task<List<Account>>  GetAllListByIdClienteAsync(string IdCliente);
+        Task<Account?> GetAccounByIdClienteAsync(string IdCliente);
 
 
         //metodo para debitar monto o acreditar

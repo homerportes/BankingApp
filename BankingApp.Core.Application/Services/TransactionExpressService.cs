@@ -2,6 +2,7 @@
 
 using AutoMapper;
 using BankingApp.Core.Application.Dtos.Account;
+using BankingApp.Core.Application.Dtos.Beneficiary;
 using BankingApp.Core.Application.Dtos.Transaction;
 using BankingApp.Core.Application.Interfaces;
 using BankingApp.Core.Domain.Common.Enums;
@@ -13,7 +14,7 @@ using System.Net.NetworkInformation;
 
 namespace BankingApp.Core.Application.Services
 {
-    public class TransactionExpressService : GenericService<Transaction, CreateTransactionDto>, ITransactionService
+    public class TransactionExpressService : GenericService<Transaction, CreateTransactionDto>, ITransactionService, ITransactionToBeneficiaryService
     {
 
         public readonly IMapper _mapper;
@@ -21,6 +22,7 @@ namespace BankingApp.Core.Application.Services
         private readonly IAccountRepository accountRepository;
         private readonly IBeneficiaryService beneficiaryService;
         private readonly IAccountServiceForWebAPP serviceForWebAPP;
+        private readonly IBeneficiaryRepository beneficiaryRepository;
         private readonly IUnitOfWork unitOfWork;
 
 
@@ -30,7 +32,8 @@ namespace BankingApp.Core.Application.Services
             IAccountRepository accountRepository,
             IBeneficiaryService beneficiaryService,
             IAccountServiceForWebAPP serviceForWebAPP,
-            IUnitOfWork unitOfWork) : base(repo, mapper)
+            IUnitOfWork unitOfWork,
+            IBeneficiaryRepository beneficiaryRepository) : base(repo, mapper)
         {
 
 
@@ -40,6 +43,7 @@ namespace BankingApp.Core.Application.Services
             this.beneficiaryService = beneficiaryService;
             this.serviceForWebAPP = serviceForWebAPP;
             this.unitOfWork = unitOfWork;
+            this.beneficiaryRepository = beneficiaryRepository;
         }
 
 
@@ -49,7 +53,7 @@ namespace BankingApp.Core.Application.Services
         public override async Task<CreateTransactionDto?> AddAsync(CreateTransactionDto Dto)
         {
 
-              await unitOfWork.BeginTransactionAsync();   
+            await unitOfWork.BeginTransactionAsync();
             try
             {
 
@@ -62,12 +66,12 @@ namespace BankingApp.Core.Application.Services
                 }
 
 
-                var _validateAmount = await ValidateAmount(Dto.Origin,Dto.Amount);
-                if(_validateAmount == null || _validateAmount!.IsSuccess == false)
+                var _validateAmount = await ValidateAmount(Dto.Origin, Dto.Amount);
+                if (_validateAmount == null || _validateAmount!.IsSuccess == false)
                 {
 
                     return null;
-              
+
                 }
 
 
@@ -88,7 +92,7 @@ namespace BankingApp.Core.Application.Services
             catch
             {
 
-                await unitOfWork.RollbackAsync();   
+                await unitOfWork.RollbackAsync();
                 return default;
 
             }
@@ -101,7 +105,7 @@ namespace BankingApp.Core.Application.Services
         public async Task<bool> ApproveTransactionAsync(int id, CreateTransactionDto dto)
         {
 
-           
+
             try
             {
 
@@ -118,9 +122,9 @@ namespace BankingApp.Core.Application.Services
                 if (aproved)
                 {
 
-                   
+
                     return true;
-                  
+
 
                 }
 
@@ -131,7 +135,7 @@ namespace BankingApp.Core.Application.Services
             catch (Exception ex)
             {
 
-               
+
                 return false;
 
 
@@ -143,7 +147,7 @@ namespace BankingApp.Core.Application.Services
 
         public async Task<AccountDto?> CreditBalanceAsync(string number, decimal Amount)
         {
-         
+
             try
             {
 
@@ -166,14 +170,14 @@ namespace BankingApp.Core.Application.Services
 
                 }
 
-               
+
                 return _DTO;
 
             }
             catch (Exception ex)
             {
 
-                
+
                 return null;
 
 
@@ -187,7 +191,7 @@ namespace BankingApp.Core.Application.Services
 
         public async Task<List<string>?> CuentaListAsync(string idUser)
         {
-           
+
             try
             {
                 var NumeberAccounts = new List<string>();
@@ -196,7 +200,7 @@ namespace BankingApp.Core.Application.Services
                 if (idUser == null)
                 {
 
-                    return new List<string>();  
+                    return new List<string>();
 
                 }
 
@@ -214,7 +218,7 @@ namespace BankingApp.Core.Application.Services
                 }
 
 
-             
+
                 return NumeberAccounts;
 
 
@@ -235,7 +239,7 @@ namespace BankingApp.Core.Application.Services
         public async Task<AccountDto?> DebitBalanceAsync(string number, decimal Amount)
         {
 
-          
+
             try
             {
 
@@ -257,7 +261,7 @@ namespace BankingApp.Core.Application.Services
                 }
 
 
-          
+
                 return _DTO;
 
             }
@@ -265,7 +269,7 @@ namespace BankingApp.Core.Application.Services
             {
 
 
-               
+
                 return null;
 
 
@@ -284,7 +288,7 @@ namespace BankingApp.Core.Application.Services
 
         public async Task<bool> DeclieneTransactionAsync(int id, CreateTransactionDto dto)
         {
-          
+
             try
             {
 
@@ -301,7 +305,7 @@ namespace BankingApp.Core.Application.Services
                 if (aproved)
                 {
 
-                   
+
                     return true;
 
                 }
@@ -319,6 +323,46 @@ namespace BankingApp.Core.Application.Services
 
             }
         }
+
+
+
+        public async Task<List<BeneficiaryToTransactionDto>> GetLisBeneficiary(string IdCliente)
+        {
+            try
+            {
+
+
+                var ListDataBeneificary = new List<BeneficiaryToTransactionDto>();
+                var beneficiaryList = await beneficiaryRepository.GetBeneficiariesByIdCliente(IdCliente);
+
+                foreach (var item in beneficiaryList)
+                {
+
+                  var accountBeneficiary =  await  accountRepository.GetAccounByIdClienteAsync(item.BeneficiaryId);
+                  var UserBeneficiary =   await  serviceForWebAPP.GetUserById(item.BeneficiaryId);
+
+
+                    var entity = _mapper.Map<BeneficiaryToTransactionDto>(UserBeneficiary);
+                    entity.Id = item.BeneficiaryId;
+                    entity.Cuenta = accountBeneficiary!.Number;
+                  
+                    ListDataBeneificary.Add(entity);
+                }
+
+               
+                return ListDataBeneificary; 
+
+
+            }
+            catch (Exception ex)
+            {
+
+                return new List<BeneficiaryToTransactionDto>();
+               
+            }
+
+        }
+
 
 
 
@@ -399,7 +443,7 @@ namespace BankingApp.Core.Application.Services
                     map.AccountBenefiicaryId = entity!.Id;
                     map.LastName = beneficiary!.LastName;
                     map.Gmail = beneficiary.Email;
-                 
+
                     return map;
                 }
 
