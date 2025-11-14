@@ -29,7 +29,6 @@ namespace BankingApp.Infraestructure.Identity.Seeds
 
 
 
-            //agregando un usuario de tipo cliente
             await userManager.CreateAsync(new AppUser
             {
                 DocumentIdNumber = "",
@@ -48,7 +47,6 @@ namespace BankingApp.Infraestructure.Identity.Seeds
 
 
          
-            //Agregando un usuario de tipo Teller 
             await userManager.CreateAsync(new AppUser
             {
                 DocumentIdNumber = "",

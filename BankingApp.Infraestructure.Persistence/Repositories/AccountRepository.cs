@@ -22,5 +22,13 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
         {
          return  await _context.Set<Account>().AnyAsync(r=>r.Number == accountNumber);
         }
+
+        public async Task<int> CountSavingAccountsByUserIds(HashSet<string> userIds)
+        {
+            return await _context.Set<Account>()
+                .Where(a => userIds.Contains(a.UserId))
+                .CountAsync();
+        }
+
     }
 }
