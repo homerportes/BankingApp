@@ -3,7 +3,6 @@ using BankingApp.Core.Application.Dtos.Email;
 using BankingApp.Core.Application.Dtos.Installment;
 using BankingApp.Core.Application.Dtos.Loan;
 using BankingApp.Core.Application.Dtos.Operations;
-using BankingApp.Core.Application.Dtos.User;
 using BankingApp.Core.Application.Helpers;
 using BankingApp.Core.Application.Interfaces;
 using BankingApp.Core.Domain.Common.Enums;
@@ -26,19 +25,20 @@ namespace BankingApp.Core.Application.Services
         private readonly IEmailService _emailService;
         private readonly IUserService _UserService;
 
+
         public BaseLoanService(ILoanRepository repo, IMapper mapper, ILogger<Loan> logger, IUnitOfWork unitOfWork, IInstallmentRepository installmentRepository, IAccountRepository accountRepository, IEmailService emailService, IUserService userService) : base(repo, mapper)
         {
             _repo = repo;
             _mapper = mapper;
             _logger = logger;
             _unitOfWork = unitOfWork;
-            _installmentRepo= installmentRepository;
-            _accountRepository= accountRepository;
+            _installmentRepo = installmentRepository;
+            _accountRepository = accountRepository;
             _emailService = emailService;
             _UserService = userService;
         }
 
-     
+
         public async Task<string> GenerateLoanId()
         {
             bool LoanIdExists = false;
@@ -61,7 +61,7 @@ namespace BankingApp.Core.Application.Services
 
         public async Task<LoanPaginationResultDto> GetAllFiltered(int page = 1, int pageSize = 20, string? state = null, string? clientId = null)
         {
-            var query = _repo.GetAllQueryWithInclude(new List <string>{ "Installments" });
+            var query = _repo.GetAllQueryWithInclude(new List<string> { "Installments" });
 
             if (!string.IsNullOrEmpty(state))
             {
@@ -105,10 +105,125 @@ namespace BankingApp.Core.Application.Services
         }
         public async Task<bool> ClientHasActiveLoan(string clientId)
         {
+
             return await _repo.GetAllQuery().Where(r => r.IsActive && r.ClientId == clientId).AnyAsync();
         }
 
-     
+
+
+        //metodo que quizas tenga problema de logica
+        public async Task<CreateLoanResult> HandleCreateRequestApi(LoanRequest request)
+        {
+            var result = new CreateLoanResult();
+
+            result.ClientHasActiveLoan = await ClientHasActiveLoan(request.ClientId);
+            if (result.ClientHasActiveLoan)
+                return result;
+
+            var userDebt = await _repo
+                .GetAllQuery()
+                .Where(r => r.IsActive && r.ClientId == request.ClientId)
+                .Select(r => r.OutstandingBalance)
+                .SumAsync();
+
+            var systemDebt = await GetAverageLoanDebth();
+
+            if (systemDebt > 0)
+            {
+                result.ClientIsHighRisk = userDebt > systemDebt || (userDebt + request.LoanAmount) > systemDebt;
+                if (result.ClientIsHighRisk)
+                    return result;
+            }
+
+
+            decimal annualInterest = request.AnualInterest;
+            decimal monthlyRate = (annualInterest / 100m) / 12m;
+            decimal n = request.LoanTermInMonths;
+            decimal P = request.LoanAmount;
+
+            decimal onePlusRPowN = DecimalPow(1 + monthlyRate, n);
+            decimal constantPayment = P * (monthlyRate * onePlusRPowN) / (onePlusRPowN - 1);
+            constantPayment = Math.Round(constantPayment, 2, MidpointRounding.ToEven);
+
+            await _unitOfWork.BeginTransactionAsync();
+            try
+            {
+                var now = DateTime.Now;
+
+                var loanEntity = new Loan
+                {
+                    Id = Guid.NewGuid(),
+                    ClientId = request.ClientId,
+                    LoanTermInMonths = request.LoanTermInMonths,
+                    InterestRate = request.AnualInterest,
+                    OutstandingBalance = request.LoanAmount,
+                    TotalLoanAmount = request.LoanAmount,
+                    PublicId = await GenerateLoanId(),
+                    Status = LoanStatus.ONTIME,
+                    IsActive = true,
+                    CreatedAt = now
+                };
+                await _repo.AddAsync(loanEntity);
+
+                var installments = new List<Installment>(request.LoanTermInMonths);
+                var firstDueDate = DateOnly.FromDateTime(now.AddMonths(1));
+
+                decimal remainingBalance = P;
+
+                for (int i = 0; i < request.LoanTermInMonths; i++)
+                {
+                    var dueDate = firstDueDate.AddMonths(i);
+                    decimal interest = Math.Round(remainingBalance * monthlyRate, 2);
+                    decimal principal = Math.Round(constantPayment - interest, 2);
+
+
+                    if (i == request.LoanTermInMonths - 1)
+                        principal = remainingBalance;
+
+                    remainingBalance -= principal;
+
+                    installments.Add(new Installment
+                    {
+                        LoanId = loanEntity.Id,
+                        Id = 0,
+                        Number = i + 1,
+                        Value = constantPayment,
+                        PayDate = dueDate,
+                        IsPaid = false,
+                        IsDelinquent = dueDate < DateOnly.FromDateTime(now)
+                    });
+                }
+
+
+                await _installmentRepo.AddRangeAsync(installments);
+
+                var account = await _accountRepository
+                    .GetAllQuery()
+                    .FirstOrDefaultAsync(a => a.ClientId == request.ClientId && a.Type == AccountType.PRIMARY);
+
+                if (account is not null)
+                {
+                    account.Balance += P;
+                    await _accountRepository.UpdateAsync(account.Id, account);
+                }
+
+                await _unitOfWork.CommitAsync();
+                result.LoanCreated = true;
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackAsync();
+                _logger.LogError(ex, "Error al crear el préstamo para el cliente {ClientId}", request.ClientId);
+
+                result.LoanCreated = false;
+            }
+
+            await _repo.GetAllQuery().Where(r => r.IsActive && r.ClientId == request.ClientId).AnyAsync();
+            return result;
+  
+        }
+
+
 
         public async Task VerifyAndMarkDelayedLoansAsync()
         {
@@ -154,9 +269,9 @@ namespace BankingApp.Core.Application.Services
                 }
             }
         }
-            
-              public async Task<DetailedLoanDto?> GetDetailed(string Id)
-             {
+
+        public async Task<DetailedLoanDto?> GetDetailed(string Id)
+        {
             var loan = await _repo.GetAllQuery().Where(r => r.PublicId == Id).FirstOrDefaultAsync();
 
             if (loan == null) return null;
@@ -167,12 +282,18 @@ namespace BankingApp.Core.Application.Services
                 Installments = _mapper.Map<List<InstallmentDto>>(loan.Installments)
             };
         }
+
+
+
+
         public static decimal DecimalPow(decimal baseValue, decimal exponent)
         {
 
             double result = Math.Pow((double)baseValue, (double)exponent);
             return (decimal)result;
         }
+
+
 
         public async Task<OperationResultDto> UpdateLoanRate(string publicId, decimal newRate)
         {

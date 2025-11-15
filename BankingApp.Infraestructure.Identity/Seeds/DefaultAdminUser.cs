@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace BankingApp.Infraestructure.Identity.Seeds
 {
-    public class DefaultAdminUser
+    public static class DefaultAdminUser
     {
         public static async Task SeedAsync(UserManager<AppUser> userManager)
         {
