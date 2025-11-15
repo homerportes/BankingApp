@@ -2,7 +2,6 @@
 using BankingApp.Core.Application.Dtos.Loan;
 using BankingApp.Core.Application.Dtos.User;
 using BankingApp.Core.Application.Interfaces;
-using BankingApp.Core.Domain.Common.Enums;
 using BankingApp.Core.Domain.Entities;
 using BankingApp.Core.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +14,8 @@ using System.Threading.Tasks;
 
 namespace BankingApp.Core.Application.Services
 {
+
+    //Revisar para el web app
     public class LoanServiceForWebApp : BaseLoanService, ILoanServiceForWebApp
     {
         private readonly IUserService _userService;
@@ -31,9 +32,10 @@ namespace BankingApp.Core.Application.Services
             IUnitOfWork unitOfWork, 
             IInstallmentRepository installmentRepository,
             IAccountRepository accountRepository,
-            IEmailService emailService
+            IEmailService emailService,
+            ICreditCardRepository creditCardRepository
             ) 
-            : base(repo, mapper, logger, unitOfWork, installmentRepository, accountRepository, emailService, userService)
+            : base(repo, mapper, logger, unitOfWork, installmentRepository, accountRepository, emailService, userService, creditCardRepository)
         {
             _repo = repo;
             _userService= userService;
@@ -41,6 +43,8 @@ namespace BankingApp.Core.Application.Services
             _unitOfWork = unitOfWork;
             _installmentRepository = installmentRepository;
             _accountRepository = accountRepository;
+
+
 
 
         }
@@ -68,7 +72,7 @@ namespace BankingApp.Core.Application.Services
                 .Select(r => r.OutstandingBalance)
                 .SumAsync();
 
-            var systemDebt = await GetAverageLoanDebth();
+            var systemDebt = await GetTotalLoanDebt();
 
             result.ClientIsHighRisk = userDebt > systemDebt ||
                 (userDebt + ((request.LoanAmount * request.AnualInterest / 100) * (request.LoanTermInMonths / 12))) > systemDebt;

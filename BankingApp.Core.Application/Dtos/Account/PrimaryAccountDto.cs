@@ -10,7 +10,7 @@ namespace BankingApp.Core.Application.Dtos.Account
     {
 
         [JsonProperty("numeroCuenta")]
-        public string? AccountNumber { get; set; }
+        public string? Number { get; set; }
 
         [JsonProperty("balance")]
         public decimal? Balance { get; set; }

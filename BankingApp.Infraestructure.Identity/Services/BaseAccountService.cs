@@ -50,7 +50,7 @@ namespace InvestmentApp.Infrastructure.Identity.Services
             if (userWithSameEmail != null)
             {
                 response.HasError = true;
-                response.Errors.Add($"this email: {saveDto.Email} is already taken.");
+                response.Errors.Add($"this email: {saveDto.Email} ya esta asociado al usuario.");
                 return response;
             }
 

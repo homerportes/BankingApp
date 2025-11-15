@@ -12,5 +12,7 @@ namespace BankingApp.Core.Application.Dtos.Loan
         public bool ClientHasActiveLoan { get; set; }
         public bool LoanCreated { get; internal set; }
         public bool ClientIsAlreadyHighRisk { get; set; }
+        public string ValidationMessage { get; internal set; }
+        public bool HasValidationErrors { get; internal set; }
     }
 }

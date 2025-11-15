@@ -98,10 +98,10 @@ namespace BankingApp.Core.Application.Services
                     return response;
                 }
 
-                response.IdBeneficiary = account.ClientId;
+                response.IdBeneficiary = account.UserId;
 
                
-                var user = await serviceForWebApi.GetUserById(account.ClientId);
+                var user = await serviceForWebApi.GetUserById(account.UserId);
                 if (user != null)
                 {
                     response.NameBeneficiary = $"{user.Name} {user.LastName}";

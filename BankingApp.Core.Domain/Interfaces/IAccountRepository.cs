@@ -6,5 +6,7 @@ namespace BankingApp.Core.Domain.Interfaces
     {
         Task<bool> AccountExists(string accountNumber);
         Task<int> CountSavingAccountsByUserIds(HashSet<string> userIds);
+
+       
     }
 }
