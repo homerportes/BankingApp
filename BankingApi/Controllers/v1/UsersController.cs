@@ -38,6 +38,10 @@ namespace BankingApi.Controllers.v1
         }
 
         [HttpGet(Name = "ObtenerTodosLosUsuarios")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+
         public async Task<IActionResult> GetAll([FromQuery] int page = 1, int pageSize = 20, string? rol = null)
         {
             try
@@ -57,6 +61,9 @@ namespace BankingApi.Controllers.v1
         }
 
         [HttpGet("commerce", Name = "ObtenerUsuariosComercios")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> GetAllCommerce([FromQuery] int page = 1, int pageSize = 20, string? rol = null)
         {
             try
@@ -79,6 +86,8 @@ namespace BankingApi.Controllers.v1
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [HttpPost(Name = "CrearUsuario")]
         public async Task<IActionResult> Register([FromBody] CreateUserDto dto)
         {
@@ -191,6 +200,8 @@ namespace BankingApi.Controllers.v1
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> RegisterUserCommerce([FromRoute] int? commerceId, [FromBody] CreateUserDto dto)
         {
             if (!ModelState.IsValid)
@@ -287,7 +298,8 @@ namespace BankingApi.Controllers.v1
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Update([FromRoute] string id, [FromBody] UpdateUserDto dto)
         {

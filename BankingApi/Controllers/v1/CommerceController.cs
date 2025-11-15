@@ -26,6 +26,9 @@ namespace BankingApi.Controllers.v1
         }
         [HttpGet(Name = "ObtenerTodosLoscomercios")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
 
         public async Task<IActionResult> GetAll([FromQuery] int page=1, [FromQuery] int pageSize=20)
@@ -47,6 +50,7 @@ namespace BankingApi.Controllers.v1
         }
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
 
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
 
@@ -70,6 +74,8 @@ namespace BankingApi.Controllers.v1
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Register([FromBody] CreateCommerceDto dto)
         {
@@ -100,6 +106,9 @@ namespace BankingApi.Controllers.v1
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Update([FromRoute]int id, [FromBody] EditCommerceDto dto)
@@ -141,7 +150,12 @@ namespace BankingApi.Controllers.v1
 
         }
             [HttpPatch("{id}")]
-            public async Task<IActionResult> ToogleState([FromRoute] int id, [FromBody] StatusUpdateDto  updateStatusDto)
+            [ProducesResponseType(StatusCodes.Status400BadRequest)]
+            [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+            [ProducesResponseType(StatusCodes.Status403Forbidden)]
+
+            [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> ToogleState([FromRoute] int id, [FromBody] StatusUpdateDto  updateStatusDto)
             {
 
 

@@ -478,5 +478,25 @@ namespace BankingApp.Infraestructure.Identity.Services
                 .Select(u=>u.Id).ToHashSetAsync();
         }
 
+
+        public async Task<List<UserBasicInfoDto>> GetUsersBasicInfoAsync(List<string> ids)
+        {
+            if (ids == null || ids.Count == 0)
+                return new List<UserBasicInfoDto>();
+
+            var users = await _userManager.Users
+                .Where(u => ids.Contains(u.Id))
+                .Select(u => new UserBasicInfoDto
+                {
+                    Id = u.Id,
+                    FullName = u.Name+" "+u.LastName,
+                    DocumentId = u.DocumentIdNumber
+                })
+                .ToListAsync();
+
+            return users;
+        }
+
+
     }
 }

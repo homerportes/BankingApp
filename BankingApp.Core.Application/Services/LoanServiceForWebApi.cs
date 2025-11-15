@@ -9,6 +9,7 @@ using BankingApp.Core.Application.Interfaces;
 using BankingApp.Core.Domain.Common.Enums;
 using BankingApp.Core.Domain.Entities;
 using BankingApp.Core.Domain.Interfaces;
+using BankingApp.Infraestructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Reflection.Metadata;
@@ -35,9 +36,10 @@ namespace BankingApp.Core.Application.Services
             IUnitOfWork unitOfWork,
             IEmailService emailService,
             IUserService userService,
-            ICreditCardRepository cardRepository
+            ICreditCardRepository cardRepository,
+            ITransacctionRepository transacctionRepository
             )
-            : base(repo, mapper, logger, unitOfWork, installmentRepository, accountRepository, emailService, userService, cardRepository)
+            : base(repo, mapper, logger, unitOfWork, installmentRepository, accountRepository, emailService, userService, cardRepository, transacctionRepository)
         {
             _loanRepository = repo;
             _mapper = mapper;
@@ -47,11 +49,15 @@ namespace BankingApp.Core.Application.Services
             _logger = logger;
             _cardRepository= cardRepository;
 
+
         }
 
         public async Task<CreateLoanResult> HandleCreateRequestApi(LoanRequest request)
         {
             var result = new CreateLoanResult();
+            result.ClientIsHighRisk = false;
+            result.ClientIsAlreadyHighRisk = false;
+            result.ClientHasActiveLoan = false;
 
             if (request == null ||
                string.IsNullOrEmpty( request.ClientId)||
@@ -70,6 +76,7 @@ namespace BankingApp.Core.Application.Services
                 return result;
 
           
+         
             var clientLoansDebt = await GetClientLoansDebt(request.ClientId);
             var cardDebt = await _cardRepository.GetClientTotalCreditCardDebt(request.ClientId);
 
@@ -80,6 +87,14 @@ namespace BankingApp.Core.Application.Services
 
             var systemDebt = systemLoansDebt + systemCardDebt;
 
+
+            if (userDebt > systemDebt)
+            {
+                result.ClientIsAlreadyHighRisk = true;
+                return result;
+            }
+             
+
             var monthlyRate = request.AnualInterest / 100m;  
             var interests = request.LoanAmount * monthlyRate * request.LoanTermInMonths;
 
@@ -87,15 +102,23 @@ namespace BankingApp.Core.Application.Services
 
             result.ClientIsHighRisk =
                 userDebt > systemDebt ||
-                (userDebt + newLoanTotal) > systemDebt;
+               ( (userDebt + newLoanTotal) > systemDebt && systemDebt>0);
 
             if (result.ClientIsHighRisk)
                 return result;
 
             var createResult = await Create(request);
 
+
+
+
+
             if (createResult.LoanCreated)
+            {
+              
                 await SendEmail(request, createResult);
+
+            }
 
             return createResult;
         }

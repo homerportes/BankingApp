@@ -4,6 +4,7 @@ using BankingApp.Core.Application.Dtos.User;
 using BankingApp.Core.Application.Interfaces;
 using BankingApp.Core.Domain.Entities;
 using BankingApp.Core.Domain.Interfaces;
+using BankingApp.Infraestructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
@@ -33,9 +34,11 @@ namespace BankingApp.Core.Application.Services
             IInstallmentRepository installmentRepository,
             IAccountRepository accountRepository,
             IEmailService emailService,
-            ICreditCardRepository creditCardRepository
-            ) 
-            : base(repo, mapper, logger, unitOfWork, installmentRepository, accountRepository, emailService, userService, creditCardRepository)
+            ICreditCardRepository creditCardRepository,
+          ITransacctionRepository transacctionRepository
+
+            )
+            : base(repo, mapper, logger, unitOfWork, installmentRepository, accountRepository, emailService, userService, creditCardRepository, transacctionRepository)
         {
             _repo = repo;
             _userService= userService;
