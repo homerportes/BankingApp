@@ -14,6 +14,10 @@ namespace BankingApp.Core.Domain.Interfaces
         Task<int> GetAllLoansCount();
         Task<bool> LoanPublicIdExists(string id);
         Task<Loan> UpdateByObjectAsync(Loan entity);
+        Task<List<Loan>> GetLoanListByIdClient(string idCliente);
+        Task<Loan?> PayLoan( Guid idLoan, decimal amount,int value);
+        Task<Loan?> GetLoanByPublicId( string publicId);
+       
 
     }
 }

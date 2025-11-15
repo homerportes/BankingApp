@@ -41,6 +41,8 @@ namespace BankingApp.Infraestructure.Persistence.LayerConfigurations
             services.AddScoped<ICommerceRepository, CommerceRepository>();
             services.AddScoped<ICommerceUserRepository, CommerceUserRepository>();
 
+            services.AddScoped<ITransacctionRepository,TransacctionRepository>();
+
             #endregion
         }
     }
