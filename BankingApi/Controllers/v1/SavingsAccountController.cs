@@ -93,7 +93,7 @@ namespace BankingApi.Controllers.v1
 
                 if (clientId != null)
                 {
-                    filteredAccounts = filteredAccounts.Where(a => a.ClientId == clientId);
+                    filteredAccounts = filteredAccounts.Where(a => a.UserId == clientId);
                 }
 
                 if (!string.IsNullOrWhiteSpace(estado))
@@ -123,7 +123,7 @@ namespace BankingApi.Controllers.v1
                 var accountsWithClientInfo = new List<object>();
                 foreach (var account in paginatedAccounts)
                 {
-                    var client = await _userService.GetUserById(account.ClientId);
+                    var client = await _userService.GetUserById(account.UserId);
                     accountsWithClientInfo.Add(new
                     {
                         numeroCuenta = account.Number,
@@ -221,7 +221,7 @@ namespace BankingApi.Controllers.v1
                 {
                     Id = 0,
                     Number = accountNumber,
-                    ClientId = client.Id,
+                    UserId = client.Id,
                     Balance = dto.InitialBalance,
                     Type = AccountType.SECONDARY,
                     Status = AccountStatus.ACTIVE,

@@ -56,7 +56,14 @@ namespace BankingApp.Core.Application.Services
                     AdminId = AdminId
                 };
 
-                await _SavingAccountService.AddAsync(accountDto);
+                var accountResult=await _SavingAccountService.AddAsync(accountDto);
+                if(accountResult==null)
+                {
+                    response.IsSuccesful = false;
+                    response.IsInternalError = true;
+                    await _unitOfWork.RollbackAsync();
+
+                }
                 var reponsemap = _mapper.Map<RegisterUserWithAccountResponseDto>(user);
                 response = reponsemap;
                 response.EntityId = reponsemap.EntityId;

@@ -15,7 +15,7 @@ namespace BankingApp.Infraestructure.Identity.Seeds
                 LastName = "",
                 Name = "",
                 UserName = "superAdmin",
-                Email = "no.repply.bankingapp@gmail.com",
+                Email = "no.repply.bankingappp@gmail.com",
                 EmailConfirmed = true,
                 IsActive = true
 
@@ -25,29 +25,6 @@ namespace BankingApp.Infraestructure.Identity.Seeds
             await userManager.AddPasswordAsync(user!, "Pa$Word1");
 
             await userManager.AddToRoleAsync(user!, AppRoles.ADMIN.ToString());
-
-
-
-
-
-
-            await userManager.CreateAsync(new AppUser
-            {
-                DocumentIdNumber = "",
-                LastName = "",
-                Name = "",
-                UserName = "UltraAdmin",
-                Email = "no.repply.bankingapp@gmail.com",
-                EmailConfirmed = true,
-                IsActive = true
-
-            });
-
-            var user2 = await userManager.FindByNameAsync("UltraAdmin");
-            await userManager.AddPasswordAsync(user2!, "Pa$Word1");
-
-            await userManager.AddToRoleAsync(user2!, AppRoles.ADMIN.ToString());
-
 
 
 
