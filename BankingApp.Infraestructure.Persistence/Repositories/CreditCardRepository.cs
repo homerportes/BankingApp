@@ -98,5 +98,20 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
                   .Where(r => r.Status==CardStatus.ACTIVE && ids.Contains(r.ClientId)).
                   SumAsync(l => l.TotalAmountOwed);
         }
+
+        public async Task<decimal> GetTotalClientsCreditCardDebt()
+        {
+            return await _context.Set<CreditCard>()
+                  .SumAsync(l => l.TotalAmountOwed);
+        }
+        public async Task<decimal> GetClientTotalCreditCardDebt(string ClientId)
+        {
+            return await _context.Set<CreditCard>()
+                .Where(r=>r.ClientId==ClientId)
+                  .SumAsync(l => l.TotalAmountOwed);
+        }
+
+
+
     }
 }

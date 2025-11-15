@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BankingApp.Core.Application.Dtos.Account;
+using BankingApp.Core.Application.Dtos.Common;
 using BankingApp.Core.Application.Dtos.Operations;
 using BankingApp.Core.Application.Dtos.User;
 using BankingApp.Core.Application.Helpers;
@@ -113,8 +114,13 @@ namespace BankingApi.Controllers.v1
             if (dto.DocumentIdNumber.Length != 11 || !dto.DocumentIdNumber.All(char.IsDigit))
                 return BadRequest("La cédula debe contener exactamente 11 caracteres numéricos.");
 
+            var commerceAliases = EnumMapper<AppRoles>.GetAliasesFor(AppRoles.COMMERCE)
+                 .Select(a => a.ToLower())
+                 .ToList();
+
             var allRoles = EnumMapper<AppRoles>.GetAllAliases()
                 .Select(a => a.ToLower())
+                .Where(a => !commerceAliases.Contains(a))
                 .Distinct()
                 .ToList();
 
@@ -151,7 +157,6 @@ namespace BankingApi.Controllers.v1
 
                     var resultRegister = await _accountService.RegisterUser(saveUserDto, null, true);
 
-                    // Corregido: antes devolvía Conflict si NO había error
                     if (resultRegister.HasError)
                         return Conflict("El nombre de usuario o el correo electrónico ya están registrados.");
 
@@ -165,7 +170,7 @@ namespace BankingApi.Controllers.v1
                 if (!result.IsSuccesful && result.IsInternalError)
                     return StatusCode(StatusCodes.Status500InternalServerError, "Error del servidor.");
 
-                if (!result.IsSuccesful )
+                if (!result.IsSuccesful)
                     return Conflict("El nombre de usuario o el correo electrónico ya están registrados.");
 
                 return CreatedAtAction(nameof(Register), new { dto.UserName }, new
@@ -186,7 +191,7 @@ namespace BankingApi.Controllers.v1
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> RegisterCommerce([FromRoute] int? commerceId, [FromBody] CreateUserDto dto)
+        public async Task<IActionResult> RegisterUserCommerce([FromRoute] int? commerceId, [FromBody] CreateUserDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest("Faltan uno o más parámetros requeridos en la solicitud.");
@@ -219,7 +224,6 @@ namespace BankingApi.Controllers.v1
 
             try
             {
-                // Verificar comercio
                 var commerce = await _commerceService.GetByIdAsync(commerceId.Value);
                 if (commerce == null)
                     return BadRequest("El comercio especificado no existe.");
@@ -227,35 +231,50 @@ namespace BankingApi.Controllers.v1
                 if (commerce.UserId != null)
                     return BadRequest("El comercio ya tiene un usuario asociado.");
 
-                // Validar rol
                 var allRoles = EnumMapper<AppRoles>.GetAllAliases().Select(a => a.ToLower()).Distinct().ToList();
                 if (!allRoles.Contains(dto.Role.ToLower()))
                     return BadRequest("Rol inválido.");
 
                 var enumRole = EnumMapper<AppRoles>.FromString(dto.Role);
                 var currentUser = await _userService.GetCurrentUserAsync();
+                if (enumRole != AppRoles.COMMERCE)
+                    return BadRequest("Rol inválido");
 
-                // Asignar roles
-                dto.Roles = new List<string> { enumRole.ToString(), "commerce" };
+                dto.Roles = new List<string> { "commerce" };
+
+                //Validar que no tenga usuario
+                var commerceHasUser = await _commerceService.CommerceAlreadyHasUser(commerceId ?? 0);
+
+                if (commerceHasUser) return BadRequest("El comercio ya tiene un usuario asociado");
 
                 // Crear usuario
-                var result = await _bankAccountService.CreateUserWithAmount(dto, currentUser?.Id ?? "");
+                var result = await _bankAccountService.CreateUserWithAmount(dto, currentUser?.Id ?? "", true);
                 if (result == null)
                     return StatusCode(StatusCodes.Status500InternalServerError, "Error interno al crear el usuario.");
 
                 if (!result.IsSuccesful && !result.IsInternalError)
                     return Conflict("Usuario o correo ya registrado.");
 
-                // Asociar usuario al comercio (si todo sale bien)
-                await _commerceService.SetUser(commerceId.Value, result.EntityId);
+                var resultCommerce = await _commerceService.SetUser(commerceId.Value, result.EntityId);
 
-                // Retornar éxito con información básica
-                return CreatedAtRoute("CrearUsuarioComercio", new { commerceId }, new
+                if (resultCommerce.IsSuccessful)
                 {
-                    mensaje = "Usuario de comercio creado correctamente.",
-                    usuarioId = result.EntityId,
-                    comercioId = commerceId
-                });
+                    return CreatedAtRoute("CrearUsuarioComercio", new { commerceId }, new
+                    {
+                        mensaje = "Usuario de comercio creado correctamente.",
+                        usuarioId = result.EntityId,
+                        comercioId = commerceId
+                    });
+                }
+                if (!result.IsSuccesful && !resultCommerce.IsInternalError)
+                {
+                    return BadRequest("El comercio ya tiene un usuario asociado ");
+                }
+
+
+                return StatusCode(StatusCodes.Status500InternalServerError, "Ocurrió un error en el servidor");
+
+
             }
             catch (Exception ex)
             {
@@ -272,12 +291,12 @@ namespace BankingApi.Controllers.v1
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Update([FromRoute] string id, [FromBody] UpdateUserDto dto)
         {
-           
+
 
             if (string.IsNullOrWhiteSpace(id))
                 return BadRequest("El ID del usuario es requerido.");
 
-            dto.Id = id; 
+            dto.Id = id;
 
             var missingFields = new List<string>();
             if (string.IsNullOrWhiteSpace(dto.UserName) || dto.UserName == "string") missingFields.Add("usuario");
@@ -285,6 +304,8 @@ namespace BankingApi.Controllers.v1
             if (string.IsNullOrWhiteSpace(dto.Name) || dto.Name == "string") missingFields.Add("nombre");
             if (string.IsNullOrWhiteSpace(dto.LastName) || dto.LastName == "string") missingFields.Add("apellido");
             if (string.IsNullOrWhiteSpace(dto.DocumentIdNumber) || dto.DocumentIdNumber == "string") missingFields.Add("cédula");
+            if (string.IsNullOrWhiteSpace(dto.Password) || dto.Password == "string") missingFields.Add("Contraseña");
+            if (string.IsNullOrWhiteSpace(dto.ConfirmPassword) || dto.ConfirmPassword == "string") missingFields.Add("ConfirmarContraseña");
 
             if (missingFields.Any())
                 return BadRequest(new { mensaje = "Faltan campos requeridos.", camposFaltantes = missingFields });
@@ -321,14 +342,15 @@ namespace BankingApi.Controllers.v1
                 var role = EnumMapper<AppRoles>.FromString(existingUser.Role);
                 if (role == AppRoles.CLIENT)
                 {
-                    if (!dto.AdditionalBalance.HasValue)
-                        return BadRequest("Debe especificar 'montoAdicional' para clientes.");
+                    if (!dto.AdditionalBalance.HasValue || dto.AdditionalBalance<0)
+                        return BadRequest("Debe especificar 'montoAdicional' para clientes y debe ser mayor o igual a 0.");
 
+                  
                     if (dto.AdditionalBalance > 0)
                         await _bankAccountService.ChangeBalanceForClient(result.Id, dto.AdditionalBalance.Value);
                 }
 
-                return NoContent();
+                return NoContent( );
             }
             catch (Exception ex)
             {
@@ -339,11 +361,13 @@ namespace BankingApi.Controllers.v1
 
 
         [HttpPatch("{id}/status", Name = "CambiarEstadoUsuario")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UpdateStatus([FromRoute] string id, [FromBody] bool? status)
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+
+        public async Task<IActionResult> UpdateStatus([FromRoute] string id, [FromBody] StatusUpdateDto dto)
         {
             if (!ModelState.IsValid)
             {
@@ -356,14 +380,21 @@ namespace BankingApi.Controllers.v1
             }
 
 
-            if (status == null)
+            if (dto.Status == null)
             {
                 return BadRequest("Estructura inválida");
 
             }
             try
+
+
             {
-                var updateResult = await _accountService.UpdateUserStatusAsync(id, status ?? false);
+                var currentUser = await _userService.GetCurrentUserAsync();
+                if (currentUser.Id == id)
+                    return StatusCode(StatusCodes.Status403Forbidden,
+                        new { message = "Un usuario no puede modificar su propio estado" });
+
+                var updateResult = await _accountService.UpdateUserStatusAsync(id, dto.Status);
 
                 if (updateResult.HasError)
                 {
@@ -371,6 +402,8 @@ namespace BankingApi.Controllers.v1
                     {
                         return NotFound("El usuario especificado no existe");
                     }
+
+
 
                     return BadRequest(new
                     {
@@ -405,7 +438,19 @@ namespace BankingApi.Controllers.v1
                 {
                     return NotFound("El usuario especificado no existe");
                 }
+                var userRol = EnumMapper<AppRoles>.FromString(user.Role);
 
+                if (userRol==AppRoles.COMMERCE || userRol == AppRoles.CLIENT)
+                {
+                    var userPrimaryAccount = await _bankAccountService.GetMainSavingAccount(user.Id);
+
+                    if (userPrimaryAccount != null)
+                    {
+
+
+                        user.MainAccount = _mapper.Map<PrimaryAccountDto>(userPrimaryAccount);
+                    }
+                }
                 return Ok(user);
 
 

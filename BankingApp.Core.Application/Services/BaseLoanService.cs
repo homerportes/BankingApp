@@ -24,10 +24,11 @@ namespace BankingApp.Core.Application.Services
         private readonly IAccountRepository _accountRepository;
         private readonly IEmailService _emailService;
         private readonly IUserService _UserService;
+        private readonly ICreditCardRepository _cardRepository;
 
-
-        public BaseLoanService(ILoanRepository repo, IMapper mapper, ILogger<Loan> logger, IUnitOfWork unitOfWork, IInstallmentRepository installmentRepository, IAccountRepository accountRepository, IEmailService emailService, IUserService userService) : base(repo, mapper)
-        {
+        public BaseLoanService(ILoanRepository repo, IMapper mapper, ILogger<Loan> logger, IUnitOfWork unitOfWork, IInstallmentRepository installmentRepository, IAccountRepository accountRepository, IEmailService emailService, IUserService userService, ICreditCardRepository cardRepository) : base(repo, mapper)
+{
+     
             _repo = repo;
             _mapper = mapper;
             _logger = logger;
@@ -36,6 +37,7 @@ namespace BankingApp.Core.Application.Services
             _accountRepository = accountRepository;
             _emailService = emailService;
             _UserService = userService;
+            _cardRepository = cardRepository;
         }
 
 
@@ -99,7 +101,7 @@ namespace BankingApp.Core.Application.Services
         }
 
 
-        public async Task<decimal> GetAverageLoanDebth()
+        public async Task<decimal> GetTotalLoanDebt()
         {
             return await _repo.GetAllQuery().Where(r => r.IsActive).SumAsync(r => r.OutstandingBalance);
         }
@@ -109,9 +111,20 @@ namespace BankingApp.Core.Application.Services
             return await _repo.GetAllQuery().Where(r => r.IsActive && r.ClientId == clientId).AnyAsync();
         }
 
+     public async Task<decimal> GetClientLoansDebt( string clientId)
+        {
+            var userDebt = await _repo
+              .GetAllQuery()
+              .Where(r => r.IsActive && r.ClientId ==clientId)
+              .Select(r => r.OutstandingBalance)
+              .SumAsync();
+
+            return userDebt;
+
+        }
 
 
-        //metodo que quizas tenga problema de logica
+
         public async Task<CreateLoanResult> HandleCreateRequestApi(LoanRequest request)
         {
             var result = new CreateLoanResult();
@@ -222,6 +235,7 @@ namespace BankingApp.Core.Application.Services
             return result;
   
         }
+
 
 
 
@@ -407,7 +421,6 @@ namespace BankingApp.Core.Application.Services
 
                 await _installmentRepo.AddRangeAsync(installments);
 
-                // Actualizar cuenta del cliente
                 var account = await _accountRepository
                     .GetAllQuery()
                     .FirstOrDefaultAsync(a => a.UserId == request.ClientId && a.Type == AccountType.PRIMARY);

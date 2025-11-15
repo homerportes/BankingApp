@@ -17,5 +17,7 @@ namespace BankingApp.Core.Domain.Interfaces
         Task<int> GetTotalActiveCreditCardsWithClient();
         Task<int> GetTotalCreditCardsWithClient();
         Task<decimal> GetActiveClientsCreditCardDebt(HashSet<string> ids);
+        Task<decimal> GetTotalClientsCreditCardDebt();
+        Task<decimal> GetClientTotalCreditCardDebt(string ClientId);
     }
 }

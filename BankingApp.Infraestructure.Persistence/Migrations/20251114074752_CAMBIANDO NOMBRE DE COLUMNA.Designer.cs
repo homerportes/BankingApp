@@ -4,6 +4,7 @@ using BankingApp.Infraestructure.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BankingApp.Infraestructure.Persistence.Migrations
 {
     [DbContext(typeof(BankingContext))]
-    partial class BankingContextModelSnapshot : ModelSnapshot
+    [Migration("20251114074752_CAMBIANDO NOMBRE DE COLUMNA")]
+    partial class CAMBIANDONOMBREDECOLUMNA
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -114,34 +117,12 @@ namespace BankingApp.Infraestructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
                     b.ToTable("Commerce");
-                });
-
-            modelBuilder.Entity("BankingApp.Core.Domain.Entities.CommerceUser", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CommerceId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CommerceId");
-
-                    b.HasIndex("UserId", "CommerceId")
-                        .IsUnique();
-
-                    b.ToTable("CommerceUser");
                 });
 
             modelBuilder.Entity("BankingApp.Core.Domain.Entities.CreditCard", b =>
@@ -310,9 +291,6 @@ namespace BankingApp.Infraestructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("AccountId")
-                        .HasColumnType("int");
-
                     b.Property<string>("AccountNumber")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -327,10 +305,6 @@ namespace BankingApp.Infraestructure.Persistence.Migrations
 
                     b.Property<DateTime>("DateTime")
                         .HasColumnType("datetime2");
-
-                    b.Property<int>("Description")
-                        .HasMaxLength(100)
-                        .HasColumnType("int");
 
                     b.Property<string>("Origin")
                         .IsRequired()
@@ -347,17 +321,6 @@ namespace BankingApp.Infraestructure.Persistence.Migrations
                     b.HasIndex("AccountNumber");
 
                     b.ToTable("Transaction");
-                });
-
-            modelBuilder.Entity("BankingApp.Core.Domain.Entities.CommerceUser", b =>
-                {
-                    b.HasOne("BankingApp.Core.Domain.Entities.Commerce", "Commerce")
-                        .WithMany("Users")
-                        .HasForeignKey("CommerceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Commerce");
                 });
 
             modelBuilder.Entity("BankingApp.Core.Domain.Entities.Installment", b =>
@@ -398,11 +361,6 @@ namespace BankingApp.Infraestructure.Persistence.Migrations
             modelBuilder.Entity("BankingApp.Core.Domain.Entities.Account", b =>
                 {
                     b.Navigation("Transactions");
-                });
-
-            modelBuilder.Entity("BankingApp.Core.Domain.Entities.Commerce", b =>
-                {
-                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("BankingApp.Core.Domain.Entities.CreditCard", b =>

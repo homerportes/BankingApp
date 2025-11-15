@@ -20,7 +20,7 @@ namespace BankingApp.Core.Application.Services
 
         public async Task<AccountDto?> GetAccountByClientId(string clientId)
         {
-            var entity = await _repo.GetAllQuery().Where(r => r.ClientId == clientId).FirstOrDefaultAsync();
+            var entity = await _repo.GetAllQuery().Where(r => r.UserId == clientId).FirstOrDefaultAsync();
             if (entity == null) return default;
             return _mapper.Map<AccountDto>(entity);
         }

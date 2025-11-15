@@ -37,7 +37,7 @@ namespace BankingApp.Core.Application.Services
             var totalActiveClients = await _userService.GetActiveClientsCount();
             return new AdminDashboardStatsDto
             {
-
+                ///fantan los pagos y transacciones
 
                 TotalTransactionsCount = 0,
                 DayPaysCount = 0,

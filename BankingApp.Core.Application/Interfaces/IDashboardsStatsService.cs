@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace BankingApp.Core.Application.Interfaces
 {
-    internal interface IDashboardsStatsService
+    public interface IDashboardsStatsService
     {
         Task<AdminDashboardStatsDto> GetAdminStats();
     }
