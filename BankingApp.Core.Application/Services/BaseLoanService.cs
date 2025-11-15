@@ -101,7 +101,7 @@ namespace BankingApp.Core.Application.Services
 
         public async Task<decimal> GetAverageLoanDebth()
         {
-            return await _repo.GetAllQuery().Where(r => r.IsActive).SumAsync(r => r.OutstandingBalance);
+            return await _repo.GetAllQuery().Where(r => r.IsActive).AverageAsync(r => r.OutstandingBalance);
         }
         public async Task<bool> ClientHasActiveLoan(string clientId)
         {
@@ -353,6 +353,9 @@ namespace BankingApp.Core.Application.Services
 
             return result;
         }
+
+
+
         public async Task<CreateLoanResult> Create(LoanRequest request)
         {
             var result = new CreateLoanResult();
@@ -400,7 +403,7 @@ namespace BankingApp.Core.Application.Services
                         Number = i + 1,
                         Value = constantPayment,
                         PayDate = dueDate,
-                        IsPaid = i == 0,
+                        IsPaid = false,
                         IsDelinquent = dueDate < DateOnly.FromDateTime(now)
                     });
                 }

@@ -14,6 +14,7 @@ namespace BankingApp.Core.Domain.Common.Enums
         Transaccion_A_Prestamo = 2,
         Trasaccion_A_Tarjeta = 3,
         Transaccion_A_Beneficiario = 4,
+        Cash_Advance = 5,
 
     }
 }

@@ -1,0 +1,68 @@
+﻿
+body {
+    background: linear-gradient(180deg, #f2f6fc, #e8eef7);
+    font-family: "Segoe UI", sans-serif;
+}
+
+
+.page-title {
+    color: var(--color-azul-oscuro);
+    letter-spacing: 0.5px;
+}
+
+
+.card-transaction {
+    border-radius: 1.4rem;
+    padding: 2rem;
+    background: #ffffff;
+    box-shadow: 0 8px 22px rgba(21, 77, 113, 0.15);
+    border: none;
+    transition: all 0.3s ease;
+}
+
+    .card-transaction:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 28px rgba(21, 77, 113, 0.20);
+    }
+
+
+form label {
+    font-weight: 600;
+    color: var(--color-azul-oscuro);
+}
+
+
+form .form-control, form .form-select {
+    border-radius: 12px;
+    border: 1px solid #cfd8e3;
+    padding: 0.65rem;
+    transition: all 0.25s ease;
+}
+
+    form .form-control:focus,
+    form .form-select:focus {
+        border-color: var(--color-azul-medio);
+        box-shadow: 0 0 0 0.20rem rgba(28, 110, 164, 0.25);
+    }
+
+
+.btn-cancel {
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+
+.btn-accept {
+    border-radius: 12px;
+    font-weight: 600;
+    background: linear-gradient(120deg, var(--color-azul-medio), var(--color-azul-claro));
+    border: none;
+    color: white;
+    transition: all 0.25s ease;
+}
+
+    .btn-accept:hover {
+        background: linear-gradient(120deg, var(--color-azul-oscuro), var(--color-azul-medio));
+        box-shadow: 0 4px 12px rgba(28, 110, 164, 0.35);
+        transform: translateY(-2px);
+    }

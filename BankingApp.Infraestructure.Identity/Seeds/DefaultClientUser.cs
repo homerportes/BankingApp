@@ -66,6 +66,39 @@ namespace BankingApp.Infraestructure.Identity.Seeds
             await userManager.AddPasswordAsync(Newuser!, "Cli$Pee1");
             await userManager.AddToRoleAsync(Newuser!, AppRoles.CLIENT.ToString());
 
+
+
+
+
+
+
+
+            await userManager.CreateAsync(new AppUser
+            {
+                DocumentIdNumber = "",
+                LastName = "",
+                Name = "Carlito",
+                UserName = "Car02T",
+                Email = "Carlitoramirez@gmail.com",
+                EmailConfirmed = true,
+                IsActive = true
+
+            });
+
+            var carlito = await userManager.FindByNameAsync("Car02T");
+            await userManager.AddPasswordAsync(carlito!, "Carl$Pe1");
+            await userManager.AddToRoleAsync(carlito!, AppRoles.CLIENT.ToString());
+
+
+
+
+
+
+
+
+
+
+
         }
 
 
