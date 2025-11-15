@@ -288,6 +288,9 @@ namespace BankingApp.Infraestructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int>("AccountId")
+                        .HasColumnType("int");
+
                     b.Property<string>("AccountNumber")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -302,6 +305,10 @@ namespace BankingApp.Infraestructure.Persistence.Migrations
 
                     b.Property<DateTime>("DateTime")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("Description")
+                        .HasMaxLength(100)
+                        .HasColumnType("int");
 
                     b.Property<string>("Origin")
                         .IsRequired()

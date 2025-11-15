@@ -23,8 +23,16 @@ namespace BankingApp.Core.Application.LayerConfigurations
             services.AddScoped<ICommerceService, CommerceService>();
             services.AddScoped<ICreditCardService, CreditCardService>();
             services.AddScoped<ISavingsAccountServiceForWebApp, SavingsAccountServiceForWebApp>();
+
+            services.AddScoped<ITransactionService, TransactionExpressService>();
+            services.AddScoped<ITransactionToCreditCardService, TransactionToCreditCardService>();
+            services.AddScoped<ITransactionToLoanService, TransactionToLoanService>();
+            services.AddScoped<ITransactionToBeneficiaryService, TransactionExpressService>();
+
+
             services.AddScoped<ISavingAccountServiceForApi, SavingAccountServiceForApi>();
             services.AddScoped<IUserAccountManagementService, UserAccountManagmentService>();
+
 
             services.AddAutoMapper(cfg => { }, Assembly.GetExecutingAssembly());
             EnumMappings.Initialize();

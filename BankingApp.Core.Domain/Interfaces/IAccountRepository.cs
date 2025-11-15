@@ -5,5 +5,13 @@ namespace BankingApp.Core.Domain.Interfaces
     public interface IAccountRepository : IGenericRepository<Account>
     {
         Task<bool> AccountExists(string accountNumber);
+        Task<Account?>  GetAccountByNumber(string accountNumber);
+        Task<List<Account>>  GetAllListByIdClienteAsync(string IdCliente);
+        Task<Account?> GetAccounByIdClienteAsync(string IdCliente);
+
+
+        //metodo para debitar monto o acreditar
+        Task<Account?> CreditBalance(string number, decimal amount);
+        Task<Account?> DebitBalance(string number, decimal amount);
     }
 }

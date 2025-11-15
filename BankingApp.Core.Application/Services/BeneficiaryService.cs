@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BankingApp.Core.Application.Dtos.Beneficiary;
 using BankingApp.Core.Application.Interfaces;
+using BankingApp.Core.Domain.Common.Enums;
 using BankingApp.Core.Domain.Entities;
 using BankingApp.Core.Domain.Interfaces;
 using System;
@@ -90,7 +91,7 @@ namespace BankingApp.Core.Application.Services
                     return response;
                 }
 
-                var account = entities.FirstOrDefault(s => s.Number == number);
+                var account = entities.FirstOrDefault(s => s.Number == number && s.Status == AccountStatus.ACTIVE);
 
                 if (account == null)
                 {
@@ -162,9 +163,6 @@ namespace BankingApp.Core.Application.Services
             }
 
         }
-
-
-
 
 
 

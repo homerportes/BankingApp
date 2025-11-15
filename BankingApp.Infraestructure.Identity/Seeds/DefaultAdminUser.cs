@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace BankingApp.Infraestructure.Identity.Seeds
 {
-    public class DefaultAdminUser
+    public static class DefaultAdminUser
     {
         public static async Task SeedAsync(UserManager<AppUser> userManager)
         {
@@ -25,46 +25,6 @@ namespace BankingApp.Infraestructure.Identity.Seeds
             await userManager.AddPasswordAsync(user!, "Pa$Word1");
 
             await userManager.AddToRoleAsync(user!, AppRoles.ADMIN.ToString());
-
-
-
-
-            //agregando un usuario de tipo cliente
-            await userManager.CreateAsync(new AppUser
-            {
-                DocumentIdNumber = "",
-                LastName = "",
-                Name = "BeeThree",
-                UserName = "Client02",
-                Email = "Client.bankingapp@gmail.com",
-                EmailConfirmed = true,
-                IsActive = true
-
-            });
-
-            var _user = await userManager.FindByNameAsync("Client02");
-            await userManager.AddPasswordAsync(_user!, "Cli$Pas1");
-            await userManager.AddToRoleAsync(_user!, AppRoles.CLIENT.ToString());
-
-
-         
-            //Agregando un usuario de tipo Teller 
-            await userManager.CreateAsync(new AppUser
-            {
-                DocumentIdNumber = "",
-                LastName = "",
-                Name = "DIKEY",
-                UserName = "TellerUser02",
-                Email = "Teller02.bankingapp@gmail.com",
-                EmailConfirmed = true,
-                IsActive = true
-
-            });
-
-
-            var Teller = await userManager.FindByNameAsync("TellerUser02");
-            await userManager.AddPasswordAsync(Teller!, "Tel$Pas2");
-            await userManager.AddToRoleAsync(Teller!, AppRoles.TELLER.ToString());
 
         }
     }
