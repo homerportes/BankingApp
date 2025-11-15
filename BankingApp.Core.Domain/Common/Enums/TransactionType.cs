@@ -9,6 +9,7 @@ namespace BankingApp.Core.Domain.Common.Enums
     public enum TransactionType
     {
         CREDIT=1,
-        DEBIT
+        DEBIT,
+        PURCHASE
     }
 }

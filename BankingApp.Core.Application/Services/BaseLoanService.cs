@@ -135,10 +135,13 @@ namespace BankingApp.Core.Application.Services
 
         public async Task<decimal> GetTotalLoanDebt()
         {
+            return await _repo.GetAllQuery().Where(r => r.IsActive).AverageAsync(r => r.OutstandingBalance);
+
             return await _repo
                 .GetAllQuery()
                 .Where(r => r.IsActive)
                 .SumAsync(r => r.OutstandingBalance);
+
         }
 
         public async Task<bool> ClientHasActiveLoan(string clientId)
@@ -345,6 +348,8 @@ namespace BankingApp.Core.Application.Services
 
             return result;
         }
+
+
 
         public async Task<CreateLoanResult> Create(LoanRequest request)
         {
