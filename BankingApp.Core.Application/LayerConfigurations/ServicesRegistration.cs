@@ -32,6 +32,7 @@ namespace BankingApp.Core.Application.LayerConfigurations
 
             services.AddScoped<ISavingAccountServiceForApi, SavingAccountServiceForApi>();
             services.AddScoped<IUserAccountManagementService, UserAccountManagmentService>();
+            services.AddScoped<IDashboardsStatsService, DashboardStatsService>();
 
 
             services.AddAutoMapper(cfg => { }, Assembly.GetExecutingAssembly());

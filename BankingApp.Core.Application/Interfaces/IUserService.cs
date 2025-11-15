@@ -17,5 +17,9 @@ namespace BankingApp.Core.Application.Interfaces
         Task ToogleState(string userId);
         Task<List<UserDto>> GetClientsWithDebtInfo(Dictionary<string, decimal> clientDebts, string? documentId);
         Task<UserDto?> GetCurrentUserAsync();
+        Task<int> GetActiveClientsCount();
+        Task<int> GetInactiveClientsCount();
+        Task<HashSet<string>> GetAllClientIds();
+        Task<HashSet<string>> GetActiveClientsIds();
     }
 }

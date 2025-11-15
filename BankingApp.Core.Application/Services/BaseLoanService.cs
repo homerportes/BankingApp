@@ -410,7 +410,7 @@ namespace BankingApp.Core.Application.Services
                 // Actualizar cuenta del cliente
                 var account = await _accountRepository
                     .GetAllQuery()
-                    .FirstOrDefaultAsync(a => a.ClientId == request.ClientId && a.Type == AccountType.PRIMARY);
+                    .FirstOrDefaultAsync(a => a.UserId == request.ClientId && a.Type == AccountType.PRIMARY);
 
                 if (account is not null)
                 {

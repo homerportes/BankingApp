@@ -401,5 +401,79 @@ namespace BankingApp.Infraestructure.Identity.Services
             };
         }
 
+
+        public async Task<int> GetActiveClientsCount()
+        {
+            var clientRoleId = await _identityContext.Roles
+        .Where(r => r.Name.ToLower() == AppRoles.CLIENT.ToString().ToLower())
+        .Select(r => r.Id)
+        .FirstOrDefaultAsync();
+
+            return await _identityContext.UserRoles
+                .Where(ur => ur.RoleId == clientRoleId)
+                .Join(
+                    _identityContext.Users,
+                    ur => ur.UserId,
+                    u => u.Id,
+                    (ur, u) => u
+                )
+                .Where(u => u.IsActive)
+                .Distinct()
+                .CountAsync();
+        }
+        public async Task<int> GetInactiveClientsCount()
+        {
+            var clientRoleId = await _identityContext.Roles
+        .Where(r => r.Name.ToLower() == AppRoles.CLIENT.ToString().ToLower())
+        .Select(r => r.Id)
+        .FirstOrDefaultAsync();
+
+            return await _identityContext.UserRoles
+                .Where(ur => ur.RoleId == clientRoleId)
+                .Join(
+                    _identityContext.Users,
+                    ur => ur.UserId,
+                    u => u.Id,
+                    (ur, u) => u
+                )
+                .Where(u => !u.IsActive)
+                .Distinct()
+                .CountAsync();
+        }
+
+
+        public async Task<HashSet<string>> GetAllClientIds()
+        {
+            var clientRoleId = await _identityContext.Roles
+                .Where(r => r.Name == AppRoles.CLIENT.ToString())
+                .Select(r => r.Id)
+                .FirstOrDefaultAsync();
+
+            return (await _identityContext.UserRoles
+                .Where(ur => ur.RoleId == clientRoleId)
+                .Select(ur => ur.UserId)
+                .ToListAsync())
+                .ToHashSet(); 
+        }
+        public async Task<HashSet<string>>  GetActiveClientsIds()
+        {
+            var clientRoleId = await _identityContext.Roles
+        .Where(r => r.Name.ToLower() == AppRoles.CLIENT.ToString().ToLower())
+        .Select(r => r.Id)
+        .FirstOrDefaultAsync();
+
+            return await _identityContext.UserRoles
+                .Where(ur => ur.RoleId == clientRoleId)
+                .Join(
+                    _identityContext.Users,
+                    ur => ur.UserId,
+                    u => u.Id,
+                    (ur, u) => u
+                )
+                .Where(u => u.IsActive)
+                .Distinct()
+                .Select(u=>u.Id).ToHashSetAsync();
+        }
+
     }
 }
