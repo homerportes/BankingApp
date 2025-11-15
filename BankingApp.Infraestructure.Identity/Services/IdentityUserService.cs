@@ -149,24 +149,24 @@ namespace BankingApp.Infraestructure.Identity.Services
                 }
             }
 
-            var commerceUsersQuery = from ur in _identityContext.UserRoles
-                                     where ur.RoleId == commerceRoleId
-                                     join u in _identityContext.Users on ur.UserId equals u.Id
-                                     select u;
+            var query = from ur in _identityContext.UserRoles
+                        where ur.RoleId == commerceRoleId
+                        join u in _identityContext.Users on ur.UserId equals u.Id
+                        select u;
+            var totalCount = await query.CountAsync();
 
             if (extraRoleId != null)
             {
-                var extraUsers = await _identityContext.UserRoles
+                var extraUserIds = await _identityContext.UserRoles
                     .Where(ur => ur.RoleId == extraRoleId)
                     .Select(ur => ur.UserId)
                     .ToListAsync();
 
-                commerceUsersQuery = commerceUsersQuery.Where(u => extraUsers.Contains(u.Id));
+                query = query.Where(u => extraUserIds.Contains(u.Id));
             }
 
-            var totalCount = await commerceUsersQuery.CountAsync();
 
-            var pagedUsers = await commerceUsersQuery
+            var pagedUsers = await query
                 .OrderByDescending(u => u.CreatedAt)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
@@ -174,7 +174,7 @@ namespace BankingApp.Infraestructure.Identity.Services
 
             var userIds = pagedUsers.Select(u => u.Id).ToList();
 
-            var otherRoles = await _identityContext.UserRoles
+            var roles = await _identityContext.UserRoles
                 .Where(ur => userIds.Contains(ur.UserId) && ur.RoleId != commerceRoleId)
                 .Join(_identityContext.Roles,
                       ur => ur.RoleId,
@@ -184,7 +184,7 @@ namespace BankingApp.Infraestructure.Identity.Services
                 .Select(g => new { UserId = g.Key, RoleName = g.Select(x => x.RoleName).FirstOrDefault() })
                 .ToListAsync();
 
-            var roleMap = otherRoles.ToDictionary(x => x.UserId, x => x.RoleName);
+            var roleMap = roles.ToDictionary(x => x.UserId, x => x.RoleName);
 
             var result = pagedUsers.Select(u =>
             {
@@ -203,7 +203,7 @@ namespace BankingApp.Infraestructure.Identity.Services
 
                 return new UserDto
                 {
-                    Id= u.Id,
+                    Id = u.Id,
                     Email = u.Email ?? "",
                     Name = u.Name,
                     LastName = u.LastName,
@@ -223,7 +223,11 @@ namespace BankingApp.Infraestructure.Identity.Services
             };
         }
 
-        public async Task<UserPaginationResultDto> GetAllExceptCommerce(int page = 1, int pageSize = 20, string? rol = null)
+
+        public async Task<UserPaginationResultDto> GetAllExceptCommerce(
+       int page = 1,
+       int pageSize = 20,
+       string? rol = null)
         {
             var commerceRoleId = await _identityContext.Roles
                 .Where(r => r.Name == AppRoles.COMMERCE.ToString())
@@ -240,7 +244,7 @@ namespace BankingApp.Infraestructure.Identity.Services
                     var enumName = enumValue.ToString();
 
                     extraRoleId = await _identityContext.Roles
-                        .Where(r => r.Name== enumName)
+                        .Where(r => r.Name == enumName)
                         .Select(r => r.Id)
                         .FirstOrDefaultAsync();
                 }
@@ -269,47 +273,46 @@ namespace BankingApp.Infraestructure.Identity.Services
                 .Take(pageSize)
                 .ToListAsync();
 
-
             var result = pagedUsers.Select(x =>
             {
-                var roleName = x.Role.Name ?? "";
                 string displayRole;
 
                 try
                 {
-                    var enumValue = EnumMapper<AppRoles>.FromString(roleName);
+                    var enumValue = EnumMapper<AppRoles>.FromString(x.Role.Name ?? "");
                     displayRole = EnumMapper<AppRoles>.ToString(enumValue);
                 }
                 catch
                 {
-                    displayRole = roleName;
+                    displayRole = x.Role.Name ?? "";
                 }
 
                 return new UserDto
                 {
-                    Id=x.User.Id,
+                    Id = x.User.Id,
                     Email = x.User.Email ?? "",
                     Name = x.User.Name,
                     LastName = x.User.LastName,
                     Role = displayRole,
                     DocumentIdNumber = x.User.DocumentIdNumber,
                     UserName = x.User.UserName ?? "",
-                    IsActive=x.User.IsActive,
-                    IsVerified= x.User.EmailConfirmed,
+                    IsActive = x.User.IsActive,
+                    IsVerified = x.User.EmailConfirmed,
                     Status = x.User.IsActive ? "activo" : "inactivo"
                 };
             }).ToList();
 
+            var PagesCount = (int)Math.Ceiling(totalCount / (double)pageSize);
             return new UserPaginationResultDto
             {
                 Data = result,
-                PagesCount = (int)Math.Ceiling((double)totalCount / pageSize),
-                CurrentPage = page,
+                PagesCount = PagesCount,
+                CurrentPage = PagesCount==0? 0 :page,
                 TotalCount = totalCount
             };
         }
 
-       
+
         public async Task<List<string>> GetActiveUserIdsAsync()
         {
             var activeUserIds = await _userManager.Users
@@ -400,6 +403,100 @@ namespace BankingApp.Infraestructure.Identity.Services
                 Role=""
             };
         }
+
+
+        public async Task<int> GetActiveClientsCount()
+        {
+            var clientRoleId = await _identityContext.Roles
+        .Where(r => r.Name.ToLower() == AppRoles.CLIENT.ToString().ToLower())
+        .Select(r => r.Id)
+        .FirstOrDefaultAsync();
+
+            return await _identityContext.UserRoles
+                .Where(ur => ur.RoleId == clientRoleId)
+                .Join(
+                    _identityContext.Users,
+                    ur => ur.UserId,
+                    u => u.Id,
+                    (ur, u) => u
+                )
+                .Where(u => u.IsActive)
+                .Distinct()
+                .CountAsync();
+        }
+        public async Task<int> GetInactiveClientsCount()
+        {
+            var clientRoleId = await _identityContext.Roles
+        .Where(r => r.Name.ToLower() == AppRoles.CLIENT.ToString().ToLower())
+        .Select(r => r.Id)
+        .FirstOrDefaultAsync();
+
+            return await _identityContext.UserRoles
+                .Where(ur => ur.RoleId == clientRoleId)
+                .Join(
+                    _identityContext.Users,
+                    ur => ur.UserId,
+                    u => u.Id,
+                    (ur, u) => u
+                )
+                .Where(u => !u.IsActive)
+                .Distinct()
+                .CountAsync();
+        }
+
+
+        public async Task<HashSet<string>> GetAllClientIds()
+        {
+            var clientRoleId = await _identityContext.Roles
+                .Where(r => r.Name == AppRoles.CLIENT.ToString())
+                .Select(r => r.Id)
+                .FirstOrDefaultAsync();
+
+            return (await _identityContext.UserRoles
+                .Where(ur => ur.RoleId == clientRoleId)
+                .Select(ur => ur.UserId)
+                .ToListAsync())
+                .ToHashSet(); 
+        }
+        public async Task<HashSet<string>>  GetActiveClientsIds()
+        {
+            var clientRoleId = await _identityContext.Roles
+        .Where(r => r.Name.ToLower() == AppRoles.CLIENT.ToString().ToLower())
+        .Select(r => r.Id)
+        .FirstOrDefaultAsync();
+
+            return await _identityContext.UserRoles
+                .Where(ur => ur.RoleId == clientRoleId)
+                .Join(
+                    _identityContext.Users,
+                    ur => ur.UserId,
+                    u => u.Id,
+                    (ur, u) => u
+                )
+                .Where(u => u.IsActive)
+                .Distinct()
+                .Select(u=>u.Id).ToHashSetAsync();
+        }
+
+
+        public async Task<List<UserBasicInfoDto>> GetUsersBasicInfoAsync(List<string> ids)
+        {
+            if (ids == null || ids.Count == 0)
+                return new List<UserBasicInfoDto>();
+
+            var users = await _userManager.Users
+                .Where(u => ids.Contains(u.Id))
+                .Select(u => new UserBasicInfoDto
+                {
+                    Id = u.Id,
+                    FullName = u.Name+" "+u.LastName,
+                    DocumentId = u.DocumentIdNumber
+                })
+                .ToListAsync();
+
+            return users;
+        }
+
 
     }
 }

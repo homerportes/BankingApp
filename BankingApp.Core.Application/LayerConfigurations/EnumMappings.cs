@@ -31,6 +31,7 @@ namespace BankingApp.Core.Application.LayerConfigurations
             EnumMapper<LoanStatus>.AddAliases(new()
             {
                 { "al_dia", LoanStatus.ONTIME },
+                { "al dia", LoanStatus.ONTIME },
                 { "ontime", LoanStatus.ONTIME },
                 { "atrasado", LoanStatus.DELIQUENT },
                 { "deliquent", LoanStatus.DELIQUENT },

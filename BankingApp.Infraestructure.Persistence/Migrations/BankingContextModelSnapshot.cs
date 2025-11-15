@@ -37,10 +37,6 @@ namespace BankingApp.Infraestructure.Persistence.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<string>("ClientId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -53,6 +49,10 @@ namespace BankingApp.Infraestructure.Persistence.Migrations
 
                     b.Property<int>("Type")
                         .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -114,12 +114,34 @@ namespace BankingApp.Infraestructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasKey("Id");
 
                     b.ToTable("Commerce");
+                });
+
+            modelBuilder.Entity("BankingApp.Core.Domain.Entities.CommerceUser", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CommerceId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CommerceId");
+
+                    b.HasIndex("UserId", "CommerceId")
+                        .IsUnique();
+
+                    b.ToTable("CommerceUser");
                 });
 
             modelBuilder.Entity("BankingApp.Core.Domain.Entities.CreditCard", b =>
@@ -327,6 +349,17 @@ namespace BankingApp.Infraestructure.Persistence.Migrations
                     b.ToTable("Transaction");
                 });
 
+            modelBuilder.Entity("BankingApp.Core.Domain.Entities.CommerceUser", b =>
+                {
+                    b.HasOne("BankingApp.Core.Domain.Entities.Commerce", "Commerce")
+                        .WithMany("Users")
+                        .HasForeignKey("CommerceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Commerce");
+                });
+
             modelBuilder.Entity("BankingApp.Core.Domain.Entities.Installment", b =>
                 {
                     b.HasOne("BankingApp.Core.Domain.Entities.Loan", "Loan")
@@ -365,6 +398,11 @@ namespace BankingApp.Infraestructure.Persistence.Migrations
             modelBuilder.Entity("BankingApp.Core.Domain.Entities.Account", b =>
                 {
                     b.Navigation("Transactions");
+                });
+
+            modelBuilder.Entity("BankingApp.Core.Domain.Entities.Commerce", b =>
+                {
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("BankingApp.Core.Domain.Entities.CreditCard", b =>

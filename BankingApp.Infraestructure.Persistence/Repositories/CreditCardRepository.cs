@@ -1,3 +1,4 @@
+using BankingApp.Core.Domain.Common.Enums;
 using BankingApp.Core.Domain.Entities;
 using BankingApp.Core.Domain.Interfaces;
 using BankingApp.Infraestructure.Persistence.Contexts;
@@ -90,6 +91,52 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
             return await _context.Set<CreditCard>().Where( c => c.ClientId == clientId && c.Status == CardStatus.ACTIVE)
                 .ToListAsync();
         }
+
+
+
+        public async Task< int> GetTotalIssuedCreditCards()
+        {
+
+            return await _context.Set<CreditCard>().CountAsync();
+        }
+        public async Task<int> GetTotalActiveCreditCards()
+        {
+
+            return await _context.Set<CreditCard>().Where(r=>r.Status==CardStatus.ACTIVE).CountAsync();
+        }
+
+        public async Task<int> GetTotalActiveCreditCardsWithClient()
+        {
+
+            return await _context.Set<CreditCard>().Where(r => r.ClientId !=null && r.Status== CardStatus.ACTIVE).CountAsync();
+        }
+
+        public async Task<int> GetTotalCreditCardsWithClient()
+        {
+
+            return await _context.Set<CreditCard>().Where(r => r.ClientId != null).CountAsync();
+        }
+
+
+        public async Task<decimal> GetActiveClientsCreditCardDebt(HashSet<string> ids)
+        {
+            return await _context.Set<CreditCard>()
+                  .Where(r => r.Status==CardStatus.ACTIVE && ids.Contains(r.ClientId)).
+                  SumAsync(l => l.TotalAmountOwed);
+        }
+
+        public async Task<decimal> GetTotalClientsCreditCardDebt()
+        {
+            return await _context.Set<CreditCard>()
+                  .SumAsync(l => l.TotalAmountOwed);
+        }
+        public async Task<decimal> GetClientTotalCreditCardDebt(string ClientId)
+        {
+            return await _context.Set<CreditCard>()
+                .Where(r=>r.ClientId==ClientId)
+                  .SumAsync(l => l.TotalAmountOwed);
+        }
+
 
 
     }

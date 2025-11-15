@@ -105,7 +105,7 @@ namespace YourNamespace.Areas.Admin.Controllers
             var vm = new ClientsPageViewModel
             {
                 Clients = _mapper.Map<List<UserViewModel>>(dtos),
-                ClientsDebt = await _service.GetAverageLoanDebth(),
+                ClientsDebt = await _service.GetTotalLoanDebt(),
                 DocumentIdFilter = documentIdFilter
             };
             return View(vm);

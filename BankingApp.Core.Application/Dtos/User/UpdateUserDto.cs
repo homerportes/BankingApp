@@ -17,7 +17,7 @@ namespace BankingApp.Core.Application.Dtos.User
         [JsonProperty("contrasena")]
         public string? Password { get; set; }
 
-        [JsonProperty("ConfirmContrasena")]
+        [JsonProperty("ConfirmarContrasena")]
         public string? ConfirmPassword { get; set; }
 
 

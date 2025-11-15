@@ -15,6 +15,8 @@ namespace BankingApp.Core.Application.Mappings.Dtos
                 .ForMember(dest=>dest.Password, opt=>opt.MapFrom(dest=>dest.Password));
             CreateMap<RegisterUserResponseDto, RegisterUserWithAccountResponseDto>()
                 .ForMember(r => r.IsSuccesful, opt => opt.Ignore())
+              .ForMember(r => r.EntityId, opt => opt.MapFrom(src=>src.Id))
+
                 .ForMember(r => r.UserAlreadyHasAccount, opt => opt.Ignore());
             CreateMap<EditUserDto, RegisterUserWithAccountResponseDto>()
                .ForMember(r => r.IsSuccesful, opt => opt.Ignore())
