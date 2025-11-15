@@ -53,7 +53,7 @@ namespace BankingApi.Controllers.v1
                     var result = await _creditCardService.GetByClientDocumentAsync(cedula, estado);
                     return Ok(JsonConvert.SerializeObject(result));
                 }
-                
+
                 // Si no hay cédula, obtener todas las tarjetas
                 var allCards = await _creditCardService.GetAllAsync(page, pageSize, estado);
                 return Ok(JsonConvert.SerializeObject(allCards));
@@ -94,7 +94,7 @@ namespace BankingApi.Controllers.v1
                 }
 
                 var purchases = await _creditCardService.GetPurchasesByCardIdAsync(card.Id);
-                
+
                 var response = new
                 {
                     consumos = purchases

@@ -16,7 +16,7 @@ namespace BankingApi.Controllers.v1
         private readonly IUserService _userService;
 
         public SavingsAccountController(
-            ISavingAccountServiceForApi savingsAccountService, 
+            ISavingAccountServiceForApi savingsAccountService,
             IUserService userService)
         {
             _savingsAccountService = savingsAccountService;
@@ -31,8 +31,8 @@ namespace BankingApi.Controllers.v1
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetAll(
-            [FromQuery] int page = 1, 
-            [FromQuery] int pageSize = 20, 
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
             [FromQuery] string? cedula = null,
             [FromQuery] string? estado = null,
             [FromQuery] string? tipo = null)
@@ -73,7 +73,7 @@ namespace BankingApi.Controllers.v1
 
                 // Obtener todas las cuentas
                 var allAccounts = await _savingsAccountService.GetAllList();
-                
+
                 if (allAccounts == null)
                 {
                     return Ok(JsonConvert.SerializeObject(new
