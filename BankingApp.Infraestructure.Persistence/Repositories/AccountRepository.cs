@@ -37,18 +37,15 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
 
         public async Task<Account?> CreditBalance(string number, decimal amount)
         {
-
             var entry = await _context.Set<Account>().FirstOrDefaultAsync(s => s.Number == number);
 
             if (entry != null)
             {
-
-                entry.Balance = entry.Balance + amount;
-                await _context.SaveChangesAsync();
+                entry.Balance += amount;
+                _context.Set<Account>().Update(entry);
             }
 
             return entry;
-
         }
 
 
@@ -59,13 +56,11 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
 
             if (entry != null)
             {
-
-                entry.Balance = entry.Balance - amount ;
-                await _context.SaveChangesAsync();
+                entry.Balance -= amount;
+                _context.Set<Account>().Update(entry);
             }
 
             return entry;
-
         }
 
 

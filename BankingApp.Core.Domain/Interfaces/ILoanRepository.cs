@@ -14,6 +14,7 @@ namespace BankingApp.Core.Domain.Interfaces
         Task<List<Loan>> GetLoanListByIdClient(string idCliente);
         Task<Loan?> PayLoan( Guid idLoan, decimal amount,int value);
         Task<Loan?> GetLoanByPublicId( string publicId);
+        Task<Loan?> GetByNumberAsync(string loanNumber);
        
 
     }

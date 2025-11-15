@@ -28,8 +28,9 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
             {
                 _bankingContext.Entry(entry).CurrentValues.SetValues(entity);
                 await _bankingContext.SaveChangesAsync();
+                return entry;
             }
-            return entry;
+            return entity;
         }
 
 
@@ -76,6 +77,19 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
 
            return  await _bankingContext.Set<Loan>().FirstOrDefaultAsync(c => c.PublicId == publicId);
 
+        }
+
+        public async Task<Loan?> GetByNumberAsync(string loanNumber)
+        {
+            try
+            {
+                return await _bankingContext.Set<Loan>()
+                    .FirstOrDefaultAsync(l => l.PublicId == loanNumber);
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
 }

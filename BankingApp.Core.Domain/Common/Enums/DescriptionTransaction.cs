@@ -8,12 +8,14 @@ namespace BankingApp.Core.Domain.Common.Enums
 {
     public enum DescriptionTransaction
     {
-
-
         Transaccion_Express = 1,
         Transaccion_A_Prestamo = 2,
         Trasaccion_A_Tarjeta = 3,
         Transaccion_A_Beneficiario = 4,
-
+        DEPOSIT = 5,
+        WITHDRAWAL = 6,
+        CREDITCARDPAYMENT = 7,
+        LOANPAYMENT = 8,
+        TRANSFER = 9
     }
 }
