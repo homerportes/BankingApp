@@ -78,7 +78,7 @@ namespace BankingApp.Areas.Client.Controllers
                 //registrar transaccion en caso de ser rechazada
                 var Transaccion = mapper.Map<CreateTransactionDto>(vm);
                 Transaccion.Status = OperationStatus.DECLINED;
-                Transaccion.Type = TransactionType.DEBIT;
+                Transaccion.Type = TransactionType.CREDIT;
                 Transaccion.AccountId = validateAmount!.AccounId;
                 Transaccion.AccountNumber = vm.Account;
                 Transaccion.DateTime = DateTime.UtcNow;

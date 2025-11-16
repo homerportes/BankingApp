@@ -1,0 +1,113 @@
+﻿
+:root {
+    --azul-oscuro: #154D71;
+    --azul-medio: #1C6EA4;
+    --azul-claro: #33A1E0;
+    --azul-intenso: #0046FF;
+    --bg-body: #F3F6FA;
+    --texto-oscuro: #1f1f1f;
+    --texto-claro: #ffffff;
+    --gradient-azul: linear-gradient(160deg, #154D71, #1C6EA4, #33A1E0);
+    --gradient-card: linear-gradient(160deg, #154D71, #1C6EA4);
+    --gradient-rosado: linear-gradient(160deg, #ff7eb3, #ff758c);
+}
+
+
+body {
+    background: var(--bg-body);
+    font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+    color: var(--texto-oscuro);
+}
+
+
+.accounts-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--azul-oscuro);
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+
+.account-card {
+    background: var(--gradient-card);
+    color: var(--texto-claro);
+    border-radius: 18px;
+    padding: 1.8rem;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+    transition: transform .25s ease, box-shadow .25s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+
+    .account-card::before {
+        content: "";
+        position: absolute;
+        top: -40%;
+        right: -40%;
+        width: 250px;
+        height: 250px;
+        background: var(--gradient-rosado);
+        opacity: 0.35;
+        border-radius: 50%;
+        filter: blur(50px);
+        z-index: 0;
+    }
+
+    .account-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+    }
+
+/* CONTENIDO DE LA CARD */
+.account-header {
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 0.6px;
+    margin-bottom: .5rem;
+    z-index: 5;
+    position: relative;
+}
+
+.account-number {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: .7rem;
+    z-index: 5;
+    position: relative;
+}
+
+.balance-label {
+    opacity: .85;
+    font-size: .95rem;
+    z-index: 5;
+}
+
+.balance-amount {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 1.2rem;
+    z-index: 5;
+}
+
+/* BOTÓN DETALLES */
+.btn-details {
+    background: var(--azul-intenso);
+    border: none;
+    color: var(--texto-claro);
+    font-weight: 600;
+    padding: .55rem 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,80,255,0.35);
+    transition: all .2s ease;
+    z-index: 5;
+    position: relative;
+}
+
+    .btn-details:hover {
+        background: #0034c5;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 14px rgba(0,80,255,0.55);
+    }

@@ -1,4 +1,54 @@
-﻿@{
-    ViewData["Title"] = "Mis Beneficiarios";
+﻿@model DataAccountHomeClientListViewModel
+
+@{
+    ViewData["Title"] = "Home cliente";
     Layout = "_LayoutClient";
 }
+
+
+<link rel="stylesheet" href="~/css/HomeClientStyle.css" />
+
+<div class="container mt-4">
+
+    <h2 class="accounts-title text-center">Mis Cuentas</h2>
+
+    <div class="row g-4 mt-3">
+
+        @foreach (var item in Model.ListAccountClient)
+        {
+            <div class="col-md-4 col-sm-6">
+                <div class="account-card">
+
+                    <div class="account-header">
+                       Cuenta: @item.Number
+                    </div>
+
+                    <div class="balance-label">Balance disponible</div>
+
+                    <div class="balance-amount">
+                        @(item.Banlace < 0 ? "0 RD$" : $"{item.Banlace} RD$")
+                    </div>
+
+
+                    <div class="account-header">
+                        Type: @item.Type
+                    </div>
+
+
+                    <div class="text-center">
+                        <a asp-area="Client" asp-controller="Home" asp-action="DetailsTransaction"
+                           asp-route-number="@item.Number"
+                           class="btn btn-details">
+                            Ver Detalles
+                         </a>
+                    </div>
+
+                </div>
+            </div>
+        }
+
+    </div>
+
+</div>
+
+

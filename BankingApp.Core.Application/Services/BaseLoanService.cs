@@ -111,7 +111,7 @@ namespace BankingApp.Core.Application.Services
 
 
 
-        //metodo que quizas tenga problema de logica
+
         public async Task<CreateLoanResult> HandleCreateRequestApi(LoanRequest request)
         {
             var result = new CreateLoanResult();

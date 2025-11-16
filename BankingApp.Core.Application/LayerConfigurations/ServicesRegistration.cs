@@ -29,6 +29,7 @@ namespace BankingApp.Core.Application.LayerConfigurations
             services.AddScoped<ITransactionToLoanService, TransactionToLoanService>();
             services.AddScoped<ITransactionToBeneficiaryService, TransactionExpressService>();
             services.AddScoped<ICashAdvancesServices, CashAdvanceService>();
+            services.AddScoped<IHomeClietService, HomeClientService>();
 
             services.AddScoped<ISavingAccountServiceForApi, SavingAccountServiceForApi>();
             services.AddScoped<IUserAccountManagementService, UserAccountManagmentService>();

@@ -2,9 +2,11 @@
 
 using AutoMapper;
 using BankingApp.Core.Application.Dtos.Transaction;
+using BankingApp.Core.Application.ViewModels.HomeClient;
 using BankingApp.Core.Application.ViewModels.TransaccionExpres;
 using BankingApp.Core.Application.ViewModels.TransactionToCreditCard;
 using BankingApp.Core.Application.ViewModels.TransactionToLoan;
+using System.Transactions;
 
 namespace BankingApp.Core.Application.Mappings.DtosAndViewModels
 {
@@ -101,7 +103,12 @@ namespace BankingApp.Core.Application.Mappings.DtosAndViewModels
 
 
 
-            
+            CreateMap<DataTransactionHomeClientDto, DataTransactionHomeClientViewModel>()
+               .ReverseMap();
+
+
+
+
 
 
 
