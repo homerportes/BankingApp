@@ -188,12 +188,27 @@ namespace BankingApp.Areas.Admin.Controllers
         [HttpPost]
         public async Task<IActionResult> EditPost(EditUserWithAmountViewModel vm)
         {
-            var currentUser = await _userService.GetCurrentUserAsync();
-            bool isClient = currentUser != null && currentUser.Role.ToLower() == AppRoles.CLIENT.ToString().ToLower();
-
-            if (isClient && (vm.AditionalAmount == null || vm.AditionalAmount <= 0))
+            if (string.IsNullOrEmpty(vm.Id))
             {
-                ModelState.AddModelError("AditionalAmount", "El monto adicional es obligatorio para clientes.");
+                vm.HasError = true;
+                vm.Error = "El ID del usuario es requerido.";
+                return View("Edit", vm);
+            }
+
+            var userToEdit = await _userService.GetUserById(vm.Id);
+            if (userToEdit == null)
+            {
+                vm.HasError = true;
+                vm.Error = "Usuario no encontrado.";
+                return View("Edit", vm);
+            }
+
+            bool isClient = userToEdit.Role.ToLower() == AppRoles.CLIENT.ToString().ToLower();
+            vm.IsClient = isClient;
+
+            if (isClient && (!vm.AditionalAmount.HasValue || vm.AditionalAmount <= 0))
+            {
+                ModelState.AddModelError("AditionalAmount", "El monto adicional es obligatorio para clientes y debe ser mayor a cero.");
             }
 
             if (!ModelState.IsValid)
@@ -202,16 +217,22 @@ namespace BankingApp.Areas.Admin.Controllers
                 return View("Edit", vm);
             }
 
+            var currentUser = await _userService.GetCurrentUserAsync();
             var dto = _mapper.Map<UpdateUserDto>(vm);
             var result = await _managementService.EditUserAndAmountAsync(dto, currentUser?.Id ?? "");
 
             if (!result.IsSuccesful)
             {
                 vm.HasError = true;
-                vm.Error = "No se pudo actualizar el usuario.";
+                vm.Error = !string.IsNullOrEmpty(result.StatusMessage) 
+                    ? result.StatusMessage 
+                    : "No se pudo actualizar el usuario.";
+                ViewBag.UserIsClient = isClient;
+                return View("Edit", vm);
             }
 
-            return View("Edit", vm);
+            TempData["SuccessMessage"] = "Usuario actualizado exitosamente.";
+            return RedirectToAction("Index");
         }
     }
 }

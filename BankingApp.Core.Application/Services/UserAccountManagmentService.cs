@@ -39,37 +39,28 @@ namespace BankingApp.Core.Application.Services
                 var saveUserDto = _mapper.Map<SaveUserDto>(request);
                 var user = await _accountUserService.RegisterUser(saveUserDto, origin, ForApi);
 
-                if (user.HasError)
-                {
-                    response.IsSuccesful = false;
-                    response.UserAlreadyExists = true;
-                    response.StatusMessage = user.Message;
+            if (user.HasError)
+            {
+                response.IsSuccesful = false;
+                response.UserAlreadyExists = true;
+                response.StatusMessage = user.Message;
 
-                    await _unitOfWork.RollbackAsync();
-                    return response;
-                }
+                await _unitOfWork.RollbackAsync();
+                return response;
+            }
 
-                var accountDto = new AccountDto
-                {
-                    UserId = user.Id,
-                    Id = 0,
-                    Type = AccountType.PRIMARY,
-                    Number = await _SavingAccountService.GenerateAccountNumber(),
-                    Balance = request.InitialAmount ?? 0,
-                    AdminId = AdminId
-                };
+            var accountDto = new AccountDto
+            {
+                UserId = user.Id,
+                Id = 0,
+                Type = AccountType.PRIMARY,
+                Number = await _SavingAccountService.GenerateAccountNumber(),
+                Balance = request.InitialAmount ?? 0,
+                AdminId = AdminId
+            };                await _SavingAccountService.AddAsync(accountDto);
 
-                var accountResult=await _SavingAccountService.AddAsync(accountDto);
-                if(accountResult==null)
-                {
-                    response.IsSuccesful = false;
-                    response.IsInternalError = true;
-                    await _unitOfWork.RollbackAsync();
-
-                }
-                var reponsemap = _mapper.Map<RegisterUserWithAccountResponseDto>(user);
-                response = reponsemap;
-                response.EntityId = reponsemap.EntityId;
+                response = _mapper.Map<RegisterUserWithAccountResponseDto>(user);
+                response.EntityId = user.Id;
                 response.IsSuccesful = true;
                 response.StatusMessage = "Usuario y cuenta creados exitosamente.";
 
@@ -78,7 +69,15 @@ namespace BankingApp.Core.Application.Services
             }
             catch (Exception ex)
             {
-                await _unitOfWork.RollbackAsync();
+                // Solo hacer rollback si la transacción aún está activa
+                try
+                {
+                    await _unitOfWork.RollbackAsync();
+                }
+                catch
+                {
+                    // La transacción ya fue completada
+                }
 
                 response.IsSuccesful = false;
                 response.IsInternalError = true;
@@ -97,7 +96,7 @@ namespace BankingApp.Core.Application.Services
             {
                 // Editar usuario
                 var saveUserDto = _mapper.Map<SaveUserDto>(request);
-                 var editDto =await _accountUserService.EditUser(saveUserDto, null, true, ForApi);
+                var editDto = await _accountUserService.EditUser(saveUserDto, null, true, ForApi);
 
                 if (editDto.HasError)
                 {
@@ -107,36 +106,63 @@ namespace BankingApp.Core.Application.Services
                     await _unitOfWork.RollbackAsync();
                     return response;
                 }
-                // Obtener cuenta y actualizar balance
-                var account = await _SavingAccountService.GetAccountByClientId(request.Id??"");
 
-                if (request.AdditionalBalance > 0 && account!=null)
+                // Si hay monto adicional, obtener cuenta y actualizar balance
+                if (request.AdditionalBalance.HasValue && request.AdditionalBalance > 0)
                 {
+                    if (string.IsNullOrEmpty(request.Id))
+                    {
+                        response.IsSuccesful = false;
+                        response.StatusMessage = "El ID del usuario es requerido para agregar monto adicional.";
+                        await _unitOfWork.RollbackAsync();
+                        return response;
+                    }
+
+                    var account = await _SavingAccountService.GetAccountByClientId(request.Id);
+
+                    if (account == null)
+                    {
+                        response.IsSuccesful = false;
+                        response.StatusMessage = "No se encontró una cuenta asociada al usuario.";
+                        await _unitOfWork.RollbackAsync();
+                        return response;
+                    }
+
                     account.Balance += request.AdditionalBalance.Value;
-                 await _SavingAccountService.UpdateAsync(account.Id, account);
+                    await _SavingAccountService.UpdateAsync(account.Id, account);
                 }
 
                 await _unitOfWork.CommitAsync();
 
                 response = _mapper.Map<RegisterUserWithAccountResponseDto>(editDto);
                 response.IsSuccesful = true;
+                response.StatusMessage = "Usuario actualizado exitosamente.";
                 return response;
 
             }
-            catch
+            catch (Exception ex)
             {
-                await _unitOfWork.RollbackAsync();
+                // Solo hacer rollback si la transacción aún está activa
+                try
+                {
+                    await _unitOfWork.RollbackAsync();
+                }
+                catch
+                {
+                    // La transacción ya fue completada (commit o rollback)
+                }
+
                 response.IsSuccesful = false;
                 response.IsInternalError = true;
+                response.StatusMessage = $"Error interno: {ex.Message}";
                 return response;
             }
         }
 
 
-        public async Task<AccountDto?> GetMainSavingAccount (string clientId)
+        public async Task<AccountDto> GetMainSavingAccount (string clientId)
         {
             var account= await _SavingAccountService.GetAccountByClientId (clientId);
-            if (account == null) return null;
             return _mapper.Map<AccountDto>(account);
         }
 
@@ -144,6 +170,12 @@ namespace BankingApp.Core.Application.Services
         public async Task ChangeBalanceForClient(string id, decimal AdditionalBalance)
         {
             var account = await _SavingAccountService.GetAccountByClientId(id);
+            
+            if (account == null)
+            {
+                throw new InvalidOperationException($"No se encontró cuenta para el cliente con ID: {id}");
+            }
+
             await _unitOfWork.BeginTransactionAsync();
 
             try
@@ -155,7 +187,6 @@ namespace BankingApp.Core.Application.Services
                 }
               
                 await _unitOfWork.CommitAsync();
-
             }
             catch
             {

@@ -2,20 +2,17 @@
 
 @{
     ViewData["Title"] = "Editar Usuario";
-    Layout = "_LayoutAnonymous";
 }
 
-<div class="container d-flex align-items-center justify-content-center min-vh-100">
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-10 col-lg-8 col-xl-6">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-header bg-primary text-white text-center py-3">
+                    <h5 class="mb-0"><i class="bi bi-pencil-square me-2"></i>Editar Cuenta de Usuario</h5>
+                </div>
 
-    <div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5">
-        <div class="card shadow border-0 rounded-4">
-
-            <div class="card-header bg-primary text-white text-center py-3 rounded-top-4">
-                <h5 class="mb-0 fw-semibold">Editar Usuario</h5>
-            </div>
-
-            <div class="card-body p-4">
-
+                <div class="card-body p-4">
                 @if (Model?.HasError == true)
                 {
                     <div class="alert alert-danger alert-dismissible fade show mb-3">
@@ -25,6 +22,7 @@
                 }
 
                 <form asp-controller="Users" asp-action="EditPost" method="post" id="editForm">
+                    <input type="hidden" asp-for="Id" />
                     <input type="hidden" asp-for="IsClient" />
 
                     <div class="row">
@@ -42,8 +40,9 @@
                     </div>
 
                     <div class="mb-3">
-                        <label asp-for="DocumentIdNumber" class="form-label fw-semibold">Cédula</label>
-                        <input asp-for="DocumentIdNumber" class="form-control rounded-3" />
+                        <label asp-for="DocumentIdNumber" class="form-label">Cédula</label>
+                        <input asp-for="DocumentIdNumber" class="form-control" maxlength="11" placeholder="00112345678" />
+                        <small class="form-text text-muted">Formato: 11 dígitos numéricos (ej: 00112345678)</small>
                         <span asp-validation-for="DocumentIdNumber" class="text-danger small"></span>
                     </div>
 
@@ -61,8 +60,18 @@
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label asp-for="Password" class="form-label fw-semibold">Contraseña</label>
-                            <input asp-for="Password" type="password" class="form-control rounded-3" />
+                            <label asp-for="Password" class="form-label">Contraseña (dejar vacío para no cambiar)</label>
+                            <input asp-for="Password" type="password" class="form-control" />
+                            <small class="form-text text-muted">
+                                Requisitos:
+                                <ul class="mb-0 ps-3" style="font-size: 0.85rem;">
+                                    <li>Mínimo 8 caracteres</li>
+                                    <li>Al menos una mayúscula</li>
+                                    <li>Al menos una minúscula</li>
+                                    <li>Al menos un número</li>
+                                    <li>Al menos un carácter especial (@@, #, $, %, &)</li>
+                                </ul>
+                            </small>
                             <span asp-validation-for="Password" class="text-danger small"></span>
                         </div>
 
@@ -95,6 +104,7 @@
             </div>
         </div>
     </div>
+</div>
 </div>
 
 @section Scripts {

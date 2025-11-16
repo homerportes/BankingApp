@@ -9,7 +9,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-
 namespace BankingApp.Infraestructure.Persistence.Repositories
 {
     public class InstallmentRepository : GenericRepository<Installment>, IInstallmentRepository
@@ -67,6 +66,21 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
 
             return null;
 
+        }
+
+        public async Task<List<Installment>> GetPendingInstallmentsByLoanIdAsync(Guid loanId)
+        {
+            try
+            {
+                return await context.Set<Installment>()
+                    .Where(i => i.LoanId == loanId && !i.IsPaid)
+                    .OrderBy(i => i.PayDate)
+                    .ToListAsync();
+            }
+            catch
+            {
+                return new List<Installment>();
+            }
         }
     }
 }

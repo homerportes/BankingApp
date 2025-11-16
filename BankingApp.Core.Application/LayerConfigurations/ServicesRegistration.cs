@@ -31,13 +31,15 @@ namespace BankingApp.Core.Application.LayerConfigurations
 
             services.AddScoped<ICashAdvancesServices, CashAdvanceService>();
 
+            services.AddScoped<ITellerService, TellerService>();
+            services.AddScoped<IDashboardsStatsService, DashboardStatsService>();
+
+
 
             services.AddScoped<ISavingAccountServiceForApi, SavingAccountServiceForApi>();
             services.AddScoped<IUserAccountManagementService, UserAccountManagmentService>();
             services.AddScoped<IDashboardsStatsService, DashboardStatsService>();
             services.AddScoped<IPaymentService, PaymentService>();
-
-
             services.AddAutoMapper(cfg => { }, Assembly.GetExecutingAssembly());
             EnumMappings.Initialize();
         }
