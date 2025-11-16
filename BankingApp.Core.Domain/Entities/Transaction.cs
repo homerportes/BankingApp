@@ -29,5 +29,8 @@ namespace BankingApp.Core.Domain.Entities
         public required string Beneficiary { get; set; }
         public OperationStatus Status { get; set; }
         public DescriptionTransaction Description { get; set; }
+        
+        // Campo para identificar al cajero que realizó la transacción (si aplica)
+        public string? TellerId { get; set; }
     }
 }

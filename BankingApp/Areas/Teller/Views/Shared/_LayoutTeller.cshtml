@@ -16,7 +16,7 @@
     <header>
         <nav class="navbar navbar-expand-lg custom-navbar shadow-sm">
             <div class="container-fluid">
-                <a class="navbar-brand d-flex align-items-center" asp-area="Teller" asp-controller="Teller" asp-action="Index">
+                <a class="navbar-brand d-flex align-items-center" asp-area="Teller" asp-controller="Home" asp-action="Index">
                     <i class="bi bi-house-check-fill"></i> Home
                 </a>
 
@@ -29,27 +29,27 @@
                 <div class="collapse navbar-collapse" id="navbarATM">
                     <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="Teller" asp-controller="Teller" asp-action="Deposito">
+                            <a class="nav-link" asp-area="Teller" asp-controller="Teller" asp-action="Deposit">
                                 <i class="bi bi-wallet2"></i> Depósito
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="Teller" asp-controller="Teller" asp-action="Retiro">
+                            <a class="nav-link" asp-area="Teller" asp-controller="Teller" asp-action="Withdrawal">
                                 <i class="bi bi-cash-stack"></i> Retiro
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="Teller" asp-controller="Teller" asp-action="PagoTarjeta">
+                            <a class="nav-link" asp-area="Teller" asp-controller="Teller" asp-action="CreditCardPayment">
                                 <i class="bi bi-credit-card-2-front"></i> Pago de tarjeta
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="Teller" asp-controller="Teller" asp-action="PagoPrestamo">
+                            <a class="nav-link" asp-area="Teller" asp-controller="Teller" asp-action="LoanPayment">
                                 <i class="bi bi-cash-coin"></i> Pago de préstamo
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="Teller" asp-controller="Teller" asp-action="Transferencias">
+                            <a class="nav-link" asp-area="Teller" asp-controller="Teller" asp-action="ThirdPartyTransactions">
                                 <i class="bi bi-arrow-left-right"></i> Transferencias a terceros
                             </a>
                         </li>

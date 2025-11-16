@@ -13,17 +13,24 @@ namespace BankingApp.Core.Application.Mappings.Dtos
 
             CreateMap<UpdateUserDto, SaveUserDto>()
                 .ForMember(dest=>dest.Password, opt=>opt.MapFrom(dest=>dest.Password));
+            
             CreateMap<RegisterUserResponseDto, RegisterUserWithAccountResponseDto>()
                 .ForMember(r => r.IsSuccesful, opt => opt.Ignore())
-              .ForMember(r => r.EntityId, opt => opt.MapFrom(src=>src.Id))
-
                 .ForMember(r => r.UserAlreadyHasAccount, opt => opt.Ignore());
+            
+            CreateMap<EditUserResponseDto, RegisterUserWithAccountResponseDto>()
+                .ForMember(r => r.IsSuccesful, opt => opt.Ignore())
+                .ForMember(r => r.UserAlreadyHasAccount, opt => opt.Ignore())
+                .ForMember(r => r.UserAlreadyExists, opt => opt.Ignore())
+                .ForMember(r => r.IsInternalError, opt => opt.Ignore())
+                .ForMember(r => r.StatusMessage, opt => opt.Ignore());
+            
             CreateMap<EditUserDto, RegisterUserWithAccountResponseDto>()
                .ForMember(r => r.IsSuccesful, opt => opt.Ignore())
                .ForMember(r => r.UserAlreadyHasAccount, opt => opt.Ignore());
 
             CreateMap<EditUserWithAmountDto, UpdateUserDto>()
-       .ForMember(r => r.AdditionalBalance, opt => opt.MapFrom(src => src.AditionalAmount));
+                .ForMember(r => r.AdditionalBalance, opt => opt.MapFrom(src => src.AditionalAmount));
         }
     }
 }

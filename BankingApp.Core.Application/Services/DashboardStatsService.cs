@@ -64,17 +64,16 @@ namespace BankingApp.Core.Application.Services
         }
 
 
-       private async Task<decimal> GetActiveClientsDebt()
-        {
-            var activeUserIds = await _userService.GetActiveClientsIds();
-            if (activeUserIds == null || !activeUserIds.Any())
-                return 0;
 
-            var loanDebts= await _loanRepository.GetActiveClientsLoanDebt(activeUserIds);
-            var creditCardDebts = await _creditCardRepository.GetActiveClientsCreditCardDebt(activeUserIds);
-            return loanDebts + creditCardDebts;
-        }
+    private async Task<decimal> GetActiveClientsDebt()
+    {
+        var activeUserIds = await _userService.GetActiveClientsIds();
+        if (activeUserIds == null || !activeUserIds.Any())
+            return 0;
 
-
+        var loanDebts= await _loanRepository.GetActiveClientsLoanDebt();
+        var creditCardDebts = await _creditCardRepository.GetActiveClientsCreditCardDebt(activeUserIds);
+        return loanDebts + creditCardDebts;
+    }
     }
 }
