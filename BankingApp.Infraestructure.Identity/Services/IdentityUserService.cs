@@ -139,7 +139,7 @@ namespace BankingApp.Infraestructure.Identity.Services
                     var enumName = enumValue.ToString();
 
                     extraRoleId = await _identityContext.Roles
-                        .Where(r => r.Name.Equals(enumName, StringComparison.OrdinalIgnoreCase))
+                        .Where(r => r.Name!.Equals(enumName, StringComparison.OrdinalIgnoreCase))
                         .Select(r => r.Id)
                         .FirstOrDefaultAsync();
                 }
@@ -326,9 +326,13 @@ namespace BankingApp.Infraestructure.Identity.Services
         public async Task ToogleState(string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
-            user.IsActive = !user.IsActive;
+            if (user != null)
+            {
+                user.IsActive = !user.IsActive;
 
-            await _userManager.UpdateAsync(user);
+                await _userManager.UpdateAsync(user);
+            }
+         
 
         }
 
@@ -362,13 +366,13 @@ namespace BankingApp.Infraestructure.Identity.Services
                 .Select(u => new UserDto
                 {
                     DocumentIdNumber = u.DocumentIdNumber,
-                    Email = u.Email,
+                    Email = u.Email ?? "",
                     Id = u.Id,
                     LastName = u.LastName,
                     Name = u.Name,
                     Role = "",
                     Status = u.IsActive ? "Activo" : "Inactivo",
-                    UserName = u.UserName,
+                    UserName = u.UserName ?? "",
                     IsActive = u.IsActive,
                     TotalDebt = clientDebts.ContainsKey(u.Id) ? clientDebts[u.Id] : 0m
                 })
@@ -397,8 +401,8 @@ namespace BankingApp.Infraestructure.Identity.Services
                 Name = user.Name,
                 LastName = user.LastName,
                 DocumentIdNumber = user.DocumentIdNumber,
-                Email = user.Email,
-                UserName = user.UserName,
+                Email = user.Email ?? "",
+                UserName = user.UserName ?? "",
                 Status= user.IsActive? "Activo": "Inactivo",
                 Role=""
             };
@@ -408,7 +412,7 @@ namespace BankingApp.Infraestructure.Identity.Services
         public async Task<int> GetActiveClientsCount()
         {
             var clientRoleId = await _identityContext.Roles
-        .Where(r => r.Name.ToLower() == AppRoles.CLIENT.ToString().ToLower())
+        .Where(r => r.Name!.ToLower() == AppRoles.CLIENT.ToString().ToLower())
         .Select(r => r.Id)
         .FirstOrDefaultAsync();
 
@@ -427,7 +431,7 @@ namespace BankingApp.Infraestructure.Identity.Services
         public async Task<int> GetInactiveClientsCount()
         {
             var clientRoleId = await _identityContext.Roles
-        .Where(r => r.Name.ToLower() == AppRoles.CLIENT.ToString().ToLower())
+        .Where(r => r.Name!.ToLower() == AppRoles.CLIENT.ToString().ToLower())
         .Select(r => r.Id)
         .FirstOrDefaultAsync();
 
@@ -461,7 +465,7 @@ namespace BankingApp.Infraestructure.Identity.Services
         public async Task<HashSet<string>>  GetActiveClientsIds()
         {
             var clientRoleId = await _identityContext.Roles
-        .Where(r => r.Name.ToLower() == AppRoles.CLIENT.ToString().ToLower())
+        .Where(r => r.Name!.ToLower() == AppRoles.CLIENT.ToString().ToLower())
         .Select(r => r.Id)
         .FirstOrDefaultAsync();
 

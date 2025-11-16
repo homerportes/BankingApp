@@ -5,6 +5,7 @@ using BankingApp.Core.Application.ViewModels.SavingsAccount;
 using BankingApp.Core.Domain.Common.Enums;
 using BankingApp.Core.Domain.Entities;
 using BankingApp.Core.Domain.Interfaces;
+using BankingApp.Infraestructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace BankingApp.Core.Application.Services
@@ -18,7 +19,7 @@ namespace BankingApp.Core.Application.Services
         public SavingsAccountServiceForWebApp(
             IAccountRepository accountRepository,
             IUserService userService,
-            IMapper mapper):base(accountRepository,mapper)
+            IMapper mapper, IUnitOfWork unitOfWork, ITransacctionRepository transacctionRepository):base(accountRepository,mapper,transacctionRepository, unitOfWork)
         {
             _accountRepository = accountRepository;
             _userService = userService;
@@ -30,13 +31,10 @@ namespace BankingApp.Core.Application.Services
             var accounts = await _accountRepository.GetAllList();
             var accountsList = accounts?.ToList() ?? new List<Account>();
 
-            // Obtener todos los usuarios activos para filtrar las cuentas
             var activeUserIds = await _userService.GetActiveUserIdsAsync();
 
-            // Filtrar solo cuentas de usuarios activos
             accountsList = accountsList.Where(a => activeUserIds.Contains(a.UserId)).ToList();
 
-            // Filtrar por cédula si se proporciona
             if (!string.IsNullOrEmpty(cedula))
             {
                 cedula = cedula.Trim().Replace("-", "");
@@ -51,7 +49,6 @@ namespace BankingApp.Core.Application.Services
                 }
             }
 
-            // Filtrar por estado
             if (!string.IsNullOrEmpty(estado))
             {
                 if (Enum.TryParse<AccountStatus>(estado, out var statusEnum))
@@ -61,12 +58,10 @@ namespace BankingApp.Core.Application.Services
             }
             else
             {
-                // Si NO se especifica filtro de estado, por defecto solo mostrar cuentas ACTIVAS
-                // Las cuentas CANCELADAS no aparecen en el listado
+                
                 accountsList = accountsList.Where(a => a.Status == AccountStatus.ACTIVE).ToList();
             }
 
-            // Filtrar por tipo
             if (!string.IsNullOrEmpty(tipo))
             {
                 if (Enum.TryParse<AccountType>(tipo, out var typeEnum))
@@ -75,7 +70,6 @@ namespace BankingApp.Core.Application.Services
                 }
             }
 
-            // Ordenar: primero activas, luego canceladas, siempre de más reciente a más antigua
             var sortedAccounts = accountsList
                 .OrderByDescending(a => a.Status == AccountStatus.ACTIVE)
                 .ThenByDescending(a => a.CreatedAt)
@@ -117,7 +111,6 @@ namespace BankingApp.Core.Application.Services
 
         public async Task<AccountDto> CreateSecondaryAccountAsync(AccountDto accountDto, string adminId)
         {
-            // Generar número de cuenta único
             var accountNumber = await GenerateAccountNumber();
             
             var account = _mapper.Map<Account>(accountDto);
@@ -139,13 +132,11 @@ namespace BankingApp.Core.Application.Services
             if (account == null || account.Type == AccountType.PRIMARY)
                 return false;
 
-            // Si tiene balance, transferir a cuenta principal
             if (account.Balance > 0)
             {
                 var primaryAccount = await GetPrimaryAccountByClientIdAsync(account.UserId);
                 if (primaryAccount != null)
                 {
-                    // Transferir fondos
                     var primaryAccountEntity = await _accountRepository.GetByIdAsync(primaryAccount.Id);
                     if (primaryAccountEntity != null)
                     {
@@ -153,12 +144,10 @@ namespace BankingApp.Core.Application.Services
                         await _accountRepository.UpdateAsync(primaryAccount.Id, primaryAccountEntity);
                     }
                     
-                    // Dejar en cero la cuenta a cancelar
                     account.Balance = 0;
                 }
             }
 
-            // Marcar como cancelada
             account.Status = AccountStatus.CANCELLED;
             await _accountRepository.UpdateAsync(accountId, account);
 
@@ -178,14 +167,12 @@ namespace BankingApp.Core.Application.Services
             if (account == null)
                 return new List<TransactionViewModel>();
 
-            // Obtener las cuentas con sus transacciones incluidas
             var accounts = await _accountRepository.GetAllListWithInclude(new List<string> { "Transactions" });
             var accountWithTransactions = accounts?.FirstOrDefault(a => a.Id == accountId);
             
             if (accountWithTransactions?.Transactions == null || !accountWithTransactions.Transactions.Any())
                 return new List<TransactionViewModel>();
 
-            // Mapear y ordenar transacciones por fecha (más reciente primero)
             var transactions = _mapper.Map<List<TransactionViewModel>>(accountWithTransactions.Transactions);
             return transactions.OrderByDescending(t => t.TransactionDate).ToList();
         }

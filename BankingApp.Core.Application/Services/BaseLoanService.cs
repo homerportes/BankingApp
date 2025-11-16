@@ -171,7 +171,7 @@ namespace BankingApp.Core.Application.Services
             {
                 var loans = await _repo
                     .GetAllQueryWithInclude(new List<string> { "Installments" })
-                    .Where(l => l.Installments.Any(i => !i.IsPaid && i.PayDate < DateOnly.FromDateTime(DateTime.Now)))
+                    .Where(l => l.Installments!.Any(i => !i.IsPaid && i.PayDate < DateOnly.FromDateTime(DateTime.Now)))
                     .Skip(skip)
                     .Take(batchSize)
                     .ToListAsync();
@@ -182,7 +182,7 @@ namespace BankingApp.Core.Application.Services
                 {
                     bool hasDelay = false;
 
-                    foreach (var installment in loan.Installments)
+                    foreach (var installment in loan.Installments!)
                     {
                         if (!installment.IsPaid && installment.PayDate < DateOnly.FromDateTime(DateTime.Now))
                         {
@@ -276,7 +276,7 @@ namespace BankingApp.Core.Application.Services
                 return result;
             }
 
-            var pendingInstallments = loan.Installments
+            var pendingInstallments = loan.Installments!
                 .Where(i => !i.IsPaid && i.PayDate > DateOnly.FromDateTime(DateTime.Today))
                 .OrderBy(i => i.Number)
                 .ToList();
@@ -323,7 +323,7 @@ namespace BankingApp.Core.Application.Services
                 string emailBody = $@"
 <html>
     <body>
-        <p>Estimado/a {user.Name} {user.LastName},</p>
+        <p>Estimado/a {user!.Name??""} {user.LastName},</p>
         <p>Su préstamo con ID {loan.PublicId} ha tenido una actualización en la tasa de interés.</p>
         <p>Nueva tasa anual: {newRate}%</p>
         <p>Valor actualizado de cada cuota pendiente: {newInstallmentValue:C}</p>
@@ -416,7 +416,7 @@ namespace BankingApp.Core.Application.Services
 
                 await _transacctionRepository.AddAsync(new Transaction
                 {
-                    AccountId = account.Id,
+                    AccountId = account!.Id,
                     AccountNumber = account.Number,
                     Type = TransactionType.CREDIT,
                     Status = OperationStatus.APPROVED,
@@ -448,7 +448,7 @@ namespace BankingApp.Core.Application.Services
             string emailBody = $@"
         <html>
             <body>
-                <p>Estimado/a {user.Name} {user.LastName},</p>
+                <p>Estimado/a {user!.Name??""} {user.LastName},</p>
                 <p>Nos complace informarle que su solicitud de préstamo ha sido aprobada.</p>
                 <table style='border-collapse: collapse;'>
                     <tr>

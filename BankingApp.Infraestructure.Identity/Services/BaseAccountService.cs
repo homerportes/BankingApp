@@ -69,7 +69,7 @@ namespace InvestmentApp.Infrastructure.Identity.Services
             if (result.Succeeded)
             {
                 // Agregar todos los roles especificados
-                foreach (var role in saveDto.Roles)
+                foreach (var role in saveDto.Roles!)
                 {
                     var rol = EnumMapper<AppRoles>.FromString(role);
                     await _userManager.AddToRoleAsync(user, rol.ToString());
@@ -218,7 +218,7 @@ namespace InvestmentApp.Infrastructure.Identity.Services
                 return response;
             }
 
-            var user = await _userManager.FindByIdAsync(saveDto.Id);
+            var user = await _userManager.FindByIdAsync(saveDto.Id??"");
 
             if (user == null)
             {
