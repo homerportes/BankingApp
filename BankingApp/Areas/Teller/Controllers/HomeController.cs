@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using BankingApp.Core.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace BankingApp.Areas.Teller.Controllers
 {
@@ -7,9 +9,18 @@ namespace BankingApp.Areas.Teller.Controllers
     [Authorize(Roles = "TELLER")]
     public class HomeController : Controller
     {
-        public IActionResult Index()
+        private readonly ITellerService _tellerService;
+
+        public HomeController(ITellerService tellerService)
         {
-            return View();
+            _tellerService = tellerService;
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            var tellerId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+            var dashboardData = await _tellerService.GetTellerDashboardDataAsync(tellerId);
+            return View(dashboardData);
         }
     }
 }

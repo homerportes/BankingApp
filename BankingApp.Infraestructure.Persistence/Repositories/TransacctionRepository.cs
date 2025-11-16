@@ -1,6 +1,7 @@
 ﻿using BankingApp.Core.Domain.Common.Enums;
 using BankingApp.Core.Domain.Entities;
 using BankingApp.Infraestructure.Persistence.Contexts;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -88,6 +89,20 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
             }
 
             return false;
+        }
+
+        public async Task<List<Transaction>> GetTransactionsByTellerAndDateAsync(string tellerId, DateTime startDate, DateTime endDate)
+        {
+            try
+            {
+                return await context.Set<Transaction>()
+                    .Where(t => t.TellerId == tellerId && t.DateTime >= startDate && t.DateTime < endDate)
+                    .ToListAsync();
+            }
+            catch
+            {
+                return new List<Transaction>();
+            }
         }
 
 

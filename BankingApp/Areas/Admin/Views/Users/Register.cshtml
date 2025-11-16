@@ -2,19 +2,19 @@
 @model BankingApp.Core.Application.ViewModels.User.CreateUserViewModel
 
 @{
-    ViewData["Title"] = "Registrarse";
-    Layout = "_LayoutAnonymous";
+    ViewData["Title"] = "Crear Usuario";
     var ClientRoleName = AppRoles.CLIENT.ToString().ToUpper();
 }
 
-<div class="container d-flex align-items-center justify-content-center min-vh-100">
-    <div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5">
-        <div class="card shadow-lg border-0 rounded-4">
-            <div class="card-header bg-primary text-white text-center py-3 rounded-top-4">
-                <h5 class="mb-0">Crear Cuenta</h5>
-            </div>
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-10 col-lg-8 col-xl-6">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-header bg-primary text-white text-center py-3">
+                    <h5 class="mb-0"><i class="bi bi-person-plus-fill me-2"></i>Crear Nueva Cuenta de Usuario</h5>
+                </div>
 
-            <div class="card-body p-4">
+                <div class="card-body p-4">
                 @if (Model?.HasError == true)
                 {
                     <div id="AlertMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -40,7 +40,10 @@
 
                     <div class="mb-3">
                         <label asp-for="DocumentIdNumber" class="form-label">Cédula</label>
-                        <input asp-for="DocumentIdNumber" class="form-control" placeholder="00000000000" required />
+                        <input asp-for="DocumentIdNumber" class="form-control" placeholder="00112345678" maxlength="11" required />
+                        <small class="form-text text-muted">
+                            <i class="bi bi-info-circle"></i> Debe contener exactamente 11 dígitos numéricos (ej: 00112345678)
+                        </small>
                         <span asp-validation-for="DocumentIdNumber" class="text-danger small"></span>
                     </div>
 
@@ -67,6 +70,16 @@
                         <div class="col-md-6 mb-3">
                             <label asp-for="Password" class="form-label">Contraseña</label>
                             <input asp-for="Password" type="password" class="form-control" placeholder="••••••••" required />
+                            <small class="form-text text-muted">
+                                Requisitos:
+                                <ul class="mb-0 ps-3" style="font-size: 0.85rem;">
+                                    <li>Mínimo 8 caracteres</li>
+                                    <li>Al menos una mayúscula</li>
+                                    <li>Al menos una minúscula</li>
+                                    <li>Al menos un número</li>
+                                    <li>Al menos un carácter especial (@@, #, $, %, &)</li>
+                                </ul>
+                            </small>
                             <span asp-validation-for="Password" class="text-danger small"></span>
                         </div>
 
@@ -79,7 +92,7 @@
 
                     <div class="mb-3" id="InitialAmountField" style="display:none;">
                         <label class="form-label">Monto Inicial</label>
-                        <input type="number" name="InitialAmount" asp-for="@Model!.InitialAmount" class="form-control" placeholder="0.00" min="0" step="0.01" />
+                        <input type="number" name="InitialAmount" value="@(Model?.InitialAmount ?? 0)" class="form-control" placeholder="0.00" min="0" step="0.01" />
                         <span class="text-danger small" id="InitialAmountError"></span>
                     </div>
 
@@ -91,6 +104,7 @@
             </div>
         </div>
     </div>
+</div>
 </div>
 
 @section Scripts {

@@ -1,0 +1,146 @@
+@model BankingApp.Core.Application.ViewModels.Teller.CreditCardPaymentViewModel
+@{
+    ViewData["Title"] = "Confirmar Pago de Tarjeta";
+    Layout = "_LayoutTeller";
+    var cardHolderName = TempData["CardHolderName"]?.ToString() ?? "N/A";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            
+            @* Mostrar mensajes de error si existen *@
+            @if (Model?.HasError == true || !string.IsNullOrEmpty(Model?.ErrorMessage))
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <h5 class="alert-heading">
+                        <i class="bi bi-exclamation-triangle-fill"></i> Error al procesar el pago
+                    </h5>
+                    <hr>
+                    <p class="mb-0">@Model.ErrorMessage</p>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <h5 class="alert-heading">
+                        <i class="bi bi-exclamation-triangle-fill"></i> Error
+                    </h5>
+                    <hr>
+                    <p class="mb-0">@TempData["ErrorMessage"]</p>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            <div class="card shadow border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-exclamation-triangle"></i> Confirmar Pago de Tarjeta
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning" role="alert">
+                        <i class="bi bi-info-circle-fill"></i> 
+                        Por favor, revise los datos antes de confirmar la operación.
+                    </div>
+
+                    <div class="mb-4">
+                        <h5 class="text-muted mb-3">Detalles de la Operación:</h5>
+                        
+                        <div class="row mb-3">
+                            <div class="col-6 text-muted">
+                                <i class="bi bi-person-circle"></i> Titular:
+                            </div>
+                            <div class="col-6">
+                                <strong>@cardHolderName</strong>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-6 text-muted">
+                                <i class="bi bi-hash"></i> Cuenta Origen:
+                            </div>
+                            <div class="col-6">
+                                <strong>@Model.AccountNumber</strong>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-6 text-muted">
+                                <i class="bi bi-credit-card"></i> Tarjeta:
+                            </div>
+                            <div class="col-6">
+                                <strong>**** **** **** @Model.CardNumber.Substring(Model.CardNumber.Length - 4)</strong>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-6 text-muted">
+                                <i class="bi bi-exclamation-circle"></i> Deuda Actual:
+                            </div>
+                            <div class="col-6">
+                                <strong class="text-danger">RD$ @Model.CurrentDebt.ToString("N2")</strong>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-6 text-muted">
+                                <i class="bi bi-currency-dollar"></i> Monto Solicitado:
+                            </div>
+                            <div class="col-6">
+                                <strong>RD$ @Model.Amount.ToString("N2")</strong>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-6 text-muted">
+                                <i class="bi bi-check-circle"></i> Monto a Pagar:
+                            </div>
+                            <div class="col-6">
+                                <strong class="text-success fs-4">RD$ @Model.ActualAmountToPay.ToString("N2")</strong>
+                            </div>
+                        </div>
+
+                        @if (Model.ActualAmountToPay < Model.Amount)
+                        {
+                            <div class="alert alert-info small" role="alert">
+                                <i class="bi bi-info-circle"></i> El monto a pagar es menor que el solicitado porque excede la deuda actual.
+                            </div>
+                        }
+
+                        <div class="row mb-3">
+                            <div class="col-6 text-muted">
+                                <i class="bi bi-calculator"></i> Deuda Restante:
+                            </div>
+                            <div class="col-6">
+                                <strong>RD$ @((Model.CurrentDebt - Model.ActualAmountToPay).ToString("N2"))</strong>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-6 text-muted">
+                                <i class="bi bi-calendar-check"></i> Fecha:
+                            </div>
+                            <div class="col-6">
+                                <strong>@DateTime.Now.ToString("dd/MM/yyyy HH:mm")</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form asp-area="Teller" asp-controller="Teller" asp-action="ConfirmCreditCardPayment" method="post">
+                        <div class="d-grid gap-2">
+                            <button type="submit" name="confirm" value="true" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check-circle-fill"></i> Confirmar Pago
+                            </button>
+                            <button type="submit" name="confirm" value="false" class="btn btn-outline-danger">
+                                <i class="bi bi-x-circle"></i> Cancelar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

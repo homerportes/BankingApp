@@ -13,13 +13,13 @@ namespace BankingApp.Controllers
     {
         private readonly IAccountServiceForWebAPP _accountServiceForWebApp;
         private readonly UserManager<AppUser> _userManager;
-      
+
 
         public LoginController(IAccountServiceForWebAPP accountServiceForWebApp, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager)
         {
             _accountServiceForWebApp = accountServiceForWebApp;
             _userManager = userManager;
-         
+
         }
 
         public async Task<IActionResult> Index()
