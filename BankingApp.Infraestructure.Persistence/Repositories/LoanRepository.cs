@@ -91,5 +91,22 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
                 return null;
             }
         }
+
+        public async Task<int> GetActiveLoansCount()
+        {
+           return await _bankingContext.Set<Loan>().Where(r=>r.IsActive && r.ClientId!=null).CountAsync();
+        }
+        public async Task<int> GetAllLoansCount()
+        {
+            return await _bankingContext.Set<Loan>().Where(r => r.ClientId != null).CountAsync();
+        }
+
+        public async Task<decimal> GetActiveClientsLoanDebt(HashSet<string> ids)
+        {
+           return await _bankingContext.Set<Loan>()
+                 .Where(r => r.IsActive && ids.Contains(r.ClientId)).
+                 SumAsync(l => l.OutstandingBalance);
+        }
+
     }
 }

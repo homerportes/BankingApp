@@ -12,10 +12,12 @@ namespace BankingApp.Core.Domain.Common.Enums
         Transaccion_A_Prestamo = 2,
         Trasaccion_A_Tarjeta = 3,
         Transaccion_A_Beneficiario = 4,
-        DEPOSIT = 5,
-        WITHDRAWAL = 6,
-        CREDITCARDPAYMENT = 7,
-        LOANPAYMENT = 8,
-        TRANSFER = 9
+        Cash_Advance = 5,
+
+        DEPOSIT = 6,
+        WITHDRAWAL = 7,
+        CREDITCARDPAYMENT = 8,
+        LOANPAYMENT = 9,
+        TRANSFER = 10
     }
 }

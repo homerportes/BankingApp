@@ -77,7 +77,7 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
         public async Task<List<Account>> GetAllListByIdClienteAsync(string IdCliente)
         {
 
-            return  await _context.Set<Account>().Where(s => s.ClientId == IdCliente).ToListAsync();
+            return  await _context.Set<Account>().Where(s => s.UserId == IdCliente).ToListAsync();
 
         }
 
@@ -87,10 +87,18 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
         public async Task<Account?> GetAccounByIdClienteAsync(string IdCliente)
         {
 
-            return await _context.Set<Account>().FirstOrDefaultAsync(s => s.ClientId == IdCliente && s.Status == AccountStatus.ACTIVE);
+            return await _context.Set<Account>().FirstOrDefaultAsync(s => s.UserId == IdCliente && s.Status == AccountStatus.ACTIVE);
 
         }
 
+
+
+        public async Task<int> CountSavingAccountsByUserIds(HashSet<string> userIds)
+        {
+            return await _context.Set<Account>()
+                .Where(a => userIds.Contains(a.UserId))
+                .CountAsync();
+        }
 
     }
 }

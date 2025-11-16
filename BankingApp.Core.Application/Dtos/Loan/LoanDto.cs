@@ -12,6 +12,8 @@ namespace BankingApp.Core.Application.Dtos.Loan
 {
     public class LoanDto
     {
+        [JsonIgnore]
+
         public Guid Id { get; set; }
 
         [JsonIgnore]
@@ -60,8 +62,11 @@ namespace BankingApp.Core.Application.Dtos.Loan
 
         public required int LoanTermInMonths { get; set; }
 
-        [JsonProperty("estadoPago")]
 
+
+        [JsonProperty("estadoPago")]
+        public required string LoanStatus { get; set; }
+        [JsonIgnore]
         public required LoanStatus Status { get; set; }
     }
 }

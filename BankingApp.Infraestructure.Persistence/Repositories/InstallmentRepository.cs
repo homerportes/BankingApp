@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+
 namespace BankingApp.Infraestructure.Persistence.Repositories
 {
     public class InstallmentRepository : GenericRepository<Installment>, IInstallmentRepository

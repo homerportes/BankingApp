@@ -28,12 +28,14 @@ namespace BankingApp.Core.Application.LayerConfigurations
             services.AddScoped<ITransactionToCreditCardService, TransactionToCreditCardService>();
             services.AddScoped<ITransactionToLoanService, TransactionToLoanService>();
             services.AddScoped<ITransactionToBeneficiaryService, TransactionExpressService>();
+            services.AddScoped<ICashAdvancesServices, CashAdvanceService>();
 
             services.AddScoped<ITellerService, TellerService>();
 
 
             services.AddScoped<ISavingAccountServiceForApi, SavingAccountServiceForApi>();
             services.AddScoped<IUserAccountManagementService, UserAccountManagmentService>();
+            services.AddScoped<IDashboardsStatsService, DashboardStatsService>();
 
 
             services.AddAutoMapper(cfg => { }, Assembly.GetExecutingAssembly());

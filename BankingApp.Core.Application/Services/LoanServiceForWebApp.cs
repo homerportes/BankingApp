@@ -2,9 +2,9 @@
 using BankingApp.Core.Application.Dtos.Loan;
 using BankingApp.Core.Application.Dtos.User;
 using BankingApp.Core.Application.Interfaces;
-using BankingApp.Core.Domain.Common.Enums;
 using BankingApp.Core.Domain.Entities;
 using BankingApp.Core.Domain.Interfaces;
+using BankingApp.Infraestructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
@@ -15,6 +15,8 @@ using System.Threading.Tasks;
 
 namespace BankingApp.Core.Application.Services
 {
+
+    //Revisar para el web app
     public class LoanServiceForWebApp : BaseLoanService, ILoanServiceForWebApp
     {
         private readonly IUserService _userService;
@@ -31,9 +33,12 @@ namespace BankingApp.Core.Application.Services
             IUnitOfWork unitOfWork, 
             IInstallmentRepository installmentRepository,
             IAccountRepository accountRepository,
-            IEmailService emailService
-            ) 
-            : base(repo, mapper, logger, unitOfWork, installmentRepository, accountRepository, emailService, userService)
+            IEmailService emailService,
+            ICreditCardRepository creditCardRepository,
+          ITransacctionRepository transacctionRepository
+
+            )
+            : base(repo, mapper, logger, unitOfWork, installmentRepository, accountRepository, emailService, userService, creditCardRepository, transacctionRepository)
         {
             _repo = repo;
             _userService= userService;
@@ -41,6 +46,8 @@ namespace BankingApp.Core.Application.Services
             _unitOfWork = unitOfWork;
             _installmentRepository = installmentRepository;
             _accountRepository = accountRepository;
+
+
 
 
         }
@@ -68,10 +75,14 @@ namespace BankingApp.Core.Application.Services
                 .Select(r => r.OutstandingBalance)
                 .SumAsync();
 
-            var systemDebt = await GetAverageLoanDebth();
+            var systemDebt = await GetTotalLoanDebt();
 
-            result.ClientIsHighRisk = userDebt > systemDebt ||
-                (userDebt + ((request.LoanAmount * request.AnualInterest / 100) * (request.LoanTermInMonths / 12))) > systemDebt;
+            if (systemDebt > 0)
+            {
+                result.ClientIsHighRisk = userDebt > systemDebt ||
+                    (userDebt + ((request.LoanAmount * request.AnualInterest / 100) * (request.LoanTermInMonths / 12))) > systemDebt;
+            }
+
 
             if (result.ClientIsHighRisk)
             {
