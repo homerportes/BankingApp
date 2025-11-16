@@ -3,6 +3,8 @@ using BankingApp.Core.Domain.Entities;
 using BankingApp.Core.Domain.Interfaces;
 using BankingApp.Infraestructure.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualBasic;
+using System.ComponentModel.DataAnnotations;
 
 namespace BankingApp.Infraestructure.Persistence.Repositories
 {
@@ -36,7 +38,57 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
                 .AnyAsync(c => c.Number == cardNumber);
         }
 
+        public async Task<bool> CardDataIsValidForPaymentAsync(string cardNumber, int monthExpiration, int yearExpiration, string cvc)
+        {
+            if (string.IsNullOrWhiteSpace(cardNumber) || string.IsNullOrWhiteSpace(cvc))
+                return false;
 
+            var card = await _context.Set<CreditCard>()
+                                     .FirstOrDefaultAsync(c => c.Number == cardNumber);
+
+            if (card == null)
+                return false;
+
+            if (card.Status != CardStatus.ACTIVE)
+                return false;
+
+            DateTime providedExpiration;
+            try
+            {
+                providedExpiration = new DateTime(yearExpiration, monthExpiration, DateTime.DaysInMonth(yearExpiration, monthExpiration));
+            }
+            catch
+            {
+                return false; 
+            }
+
+            if (card.ExpirationDate < DateTime.Now || card.ExpirationDate != providedExpiration)
+                return false;
+
+            if (card.CVC != cvc)
+                return false;
+
+            return true;
+        }
+
+        public async Task<bool> CreditCardHasEnoughFunds(string cardNumber, decimal amount)
+        {
+            if (string.IsNullOrWhiteSpace(cardNumber) || amount <= 0)
+                return false;
+
+            var card = await _context.Set<CreditCard>()
+                                     .FirstOrDefaultAsync(r => r.Number == cardNumber);
+
+            if (card == null)
+                return false;
+
+            if (card.TotalAmountOwed < 0 || card.TotalAmountOwed >= card.CreditLimitAmount)
+                return false;
+
+            var availableAmount = card.CreditLimitAmount - card.TotalAmountOwed;
+
+            return availableAmount >= amount && card.TotalAmountOwed+amount<=card.CreditLimitAmount;
+        }
 
         public async Task<CreditCard?> DebitTotalAmountOwedAsync(string number,decimal Amount)
         {

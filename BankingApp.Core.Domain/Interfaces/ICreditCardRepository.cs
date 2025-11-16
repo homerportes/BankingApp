@@ -20,5 +20,7 @@ namespace BankingApp.Core.Domain.Interfaces
         Task<decimal> GetActiveClientsCreditCardDebt(HashSet<string> ids);
         Task<decimal> GetTotalClientsCreditCardDebt();
         Task<decimal> GetClientTotalCreditCardDebt(string ClientId);
+        Task<bool> CreditCardHasEnoughFunds(string cardNumber, decimal amount);
+        Task<bool> CardDataIsValidForPaymentAsync(string cardNumber, int monthExpiration, int yearExpiration, string cvc);
     }
 }

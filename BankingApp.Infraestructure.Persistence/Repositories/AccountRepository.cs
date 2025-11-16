@@ -80,7 +80,7 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
 
 
 
-        public async Task<List<Account>> GetAllListByIdClienteAsync(string IdCliente)
+        public async Task<List<Account>> GetAllListByIdAsync(string IdCliente)
         {
 
             return  await _context.Set<Account>().Where(s => s.UserId == IdCliente).ToListAsync();
@@ -90,7 +90,7 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
 
 
 
-        public async Task<Account?> GetAccounByIdClienteAsync(string IdCliente)
+        public async Task<Account?> GetAccounByIdAsync(string IdCliente)
         {
 
             return await _context.Set<Account>().FirstOrDefaultAsync(s => s.UserId == IdCliente && s.Status == AccountStatus.ACTIVE);
