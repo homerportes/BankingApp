@@ -8,8 +8,8 @@ namespace BankingApp.Core.Domain.Interfaces
         Task<int> CountSavingAccountsByUserIds(HashSet<string> userIds);
 
         Task<Account?>  GetAccountByNumber(string accountNumber);
-        Task<List<Account>>  GetAllListByIdClienteAsync(string IdCliente);
-        Task<Account?> GetAccounByIdClienteAsync(string IdCliente);
+        Task<List<Account>> GetAllListByIdAsync(string IdCliente);
+        Task<Account?> GetAccounByIdAsync(string IdCliente);
 
 
         Task<Account?> CreditBalance(string number, decimal amount);

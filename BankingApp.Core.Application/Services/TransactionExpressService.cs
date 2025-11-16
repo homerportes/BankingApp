@@ -337,7 +337,7 @@ namespace BankingApp.Core.Application.Services
                 foreach (var item in beneficiaryList)
                 {
 
-                  var accountBeneficiary =  await  accountRepository.GetAccounByIdClienteAsync(item.BeneficiaryId);
+                  var accountBeneficiary =  await  accountRepository.GetAccounByIdAsync(item.BeneficiaryId);
                   var UserBeneficiary =   await  serviceForWebAPP.GetUserById(item.BeneficiaryId);
 
 
