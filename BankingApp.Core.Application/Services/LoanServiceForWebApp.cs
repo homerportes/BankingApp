@@ -77,8 +77,12 @@ namespace BankingApp.Core.Application.Services
 
             var systemDebt = await GetTotalLoanDebt();
 
-            result.ClientIsHighRisk = userDebt > systemDebt ||
-                (userDebt + ((request.LoanAmount * request.AnualInterest / 100) * (request.LoanTermInMonths / 12))) > systemDebt;
+            if (systemDebt > 0)
+            {
+                result.ClientIsHighRisk = userDebt > systemDebt ||
+                    (userDebt + ((request.LoanAmount * request.AnualInterest / 100) * (request.LoanTermInMonths / 12))) > systemDebt;
+            }
+
 
             if (result.ClientIsHighRisk)
             {
