@@ -9,7 +9,7 @@ using System.Linq.Expressions;
 namespace BankingApi.Controllers.v1
 {
 
-    [Authorize(AuthenticationSchemes = "Bearer", Roles = "ADMIN")]
+    [Authorize(AuthenticationSchemes = "Bearer", Roles = "ADMIN,COMMERCE")]
 
     [Route("api/v{version::apiVersion}/pay")]
 
