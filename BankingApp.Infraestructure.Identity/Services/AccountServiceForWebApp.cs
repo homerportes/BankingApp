@@ -66,9 +66,13 @@ namespace BankingApp.Infraestructure.Identity.Services
         public async Task ToogleState(string userId, string origin)
         {
             var user = await _userManager.FindByIdAsync(userId);
-            user.EmailConfirmed = !user.EmailConfirmed;
+            if (user != null) {
 
-            await _userManager.UpdateAsync(user);
+                user.EmailConfirmed = !user.EmailConfirmed;
+
+                await _userManager.UpdateAsync(user);
+            }
+        
            
         }
         public async Task SignOutAsync()

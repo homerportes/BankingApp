@@ -3,7 +3,6 @@ using BankingApp.Core.Domain.Entities;
 using BankingApp.Core.Domain.Interfaces;
 using BankingApp.Infraestructure.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
-using BankingApp.Core.Domain.Common.Enums;
 
 namespace BankingApp.Infraestructure.Persistence.Repositories
 {

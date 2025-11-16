@@ -105,7 +105,7 @@ namespace BankingApi.Controllers.v1
         public async Task<IActionResult> SetRate([FromRoute]string id, [FromBody] UpdateLoanRateDto dto)
         {
 
-            if (dto.Rate <= 0 || dto.Rate==null) return BadRequest("Tasa invalida");
+            if (dto.Rate <= 0 ) return BadRequest("Tasa invalida");
 
             
             if (string.IsNullOrEmpty(id) || id == "string")

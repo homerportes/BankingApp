@@ -53,13 +53,13 @@ namespace BankingApp.Infraestructure.Identity.Services
             if (user == null)
             {
                 responseDto.HasError = true;
-                responseDto.Errors.Add($"No hay ningun usuario el nombre de usuario {loginDto.Username}");
+                responseDto.Errors!.Add($"No hay ningun usuario el nombre de usuario {loginDto.Username}");
                 return responseDto;
             }
             if (!user.EmailConfirmed)
             {
                 responseDto.HasError = true;
-                responseDto.Errors.Add($"Esta cuenta no esta activa. Actívala mediante un link que ha sido enviado a tu correo");
+                responseDto.Errors!.Add($"Esta cuenta no esta activa. Actívala mediante un link que ha sido enviado a tu correo");
                 return responseDto;
             }
 
@@ -67,7 +67,7 @@ namespace BankingApp.Infraestructure.Identity.Services
             if (!result.Succeeded)
             {
                 responseDto.HasError = true;
-                responseDto.Errors.Add($"Usuario o contraseña incorrectos");
+                responseDto.Errors!.Add($"Usuario o contraseña incorrectos");
                 return responseDto;
 
             }

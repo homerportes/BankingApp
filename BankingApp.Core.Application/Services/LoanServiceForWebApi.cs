@@ -161,14 +161,14 @@ namespace BankingApp.Core.Application.Services
                 loan.InterestRate = newRate;
                 loan.UpdatedAt = DateTime.Now;
 
-                foreach (var installment in loan.Installments.Where(i => !i.IsPaid))
+                foreach (var installment in loan.Installments!.Where(i => !i.IsPaid))
                 {
                     installment.Value = newInstallmentValue;
                     installment.IsModified = true;
                 }
 
                 await _loanRepository.UpdateByObjectAsync(loan);
-                await _installmentRepo.UpdateRangeAsync(loan.Installments.ToList());
+                await _installmentRepo.UpdateRangeAsync(loan.Installments!.ToList());
 
                 await _unitOfWork.CommitAsync();
 
