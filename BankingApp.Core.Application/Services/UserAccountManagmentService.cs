@@ -106,9 +106,7 @@ namespace BankingApp.Core.Application.Services
                     await _unitOfWork.RollbackAsync();
                     return response;
                 }
-                // Obtener cuenta y actualizar balance
-                var account = await _SavingAccountService.GetAccountByClientId(request.Id??"");
-                
+
                 // Si hay monto adicional, obtener cuenta y actualizar balance
                 if (request.AdditionalBalance.HasValue && request.AdditionalBalance > 0)
                 {
@@ -122,8 +120,6 @@ namespace BankingApp.Core.Application.Services
 
                     var account = await _SavingAccountService.GetAccountByClientId(request.Id);
 
-                if (request.AdditionalBalance > 0 && account!=null)
-                {
                     if (account == null)
                     {
                         response.IsSuccesful = false;
@@ -220,16 +216,6 @@ namespace BankingApp.Core.Application.Services
         public async Task<TransferenceResponseDto> TransferAmountToAccount(TransferenceRequestDto tranferenceRequest)
         {
             return await _SavingAccountService.ExecuteTransference(tranferenceRequest);
-                try
-                {
-                    await _unitOfWork.RollbackAsync();
-                }
-                catch
-                {
-                    // La transacción ya fue completada
-                }
-                throw;
-            }
         }
 
     }
