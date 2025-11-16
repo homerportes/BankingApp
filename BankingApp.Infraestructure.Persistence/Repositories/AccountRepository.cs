@@ -1,4 +1,4 @@
-﻿using BankingApp.Core.Domain.Common.Enums;
+using BankingApp.Core.Domain.Common.Enums;
 using BankingApp.Core.Domain.Entities;
 using BankingApp.Core.Domain.Interfaces;
 using BankingApp.Infraestructure.Persistence.Contexts;
@@ -30,6 +30,12 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
             return await _context.Set<Account>().AnyAsync(r => r.Number == accountNumber);
 
 
+        }
+
+        public async Task<int> CountSavingAccountsByUserIds(HashSet<string> userIds)
+        {
+            return await _context.Set<Account>()
+                .CountAsync(a => userIds.Contains(a.UserId) && a.Type == AccountType.PRIMARY);
         }
 
 
@@ -91,14 +97,6 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
 
         }
 
-
-
-        public async Task<int> CountSavingAccountsByUserIds(HashSet<string> userIds)
-        {
-            return await _context.Set<Account>()
-                .Where(a => userIds.Contains(a.UserId))
-                .CountAsync();
-        }
 
     }
 }

@@ -36,37 +36,28 @@ namespace BankingApp.Core.Application.Services
                 var saveUserDto = _mapper.Map<SaveUserDto>(request);
                 var user = await _accountUserService.RegisterUser(saveUserDto, origin, ForApi);
 
-                if (user.HasError)
-                {
-                    response.IsSuccesful = false;
-                    response.UserAlreadyExists = true;
-                    response.StatusMessage = user.Message;
+            if (user.HasError)
+            {
+                response.IsSuccesful = false;
+                response.UserAlreadyExists = true;
+                response.StatusMessage = user.Message;
 
-                    await _unitOfWork.RollbackAsync();
-                    return response;
-                }
+                await _unitOfWork.RollbackAsync();
+                return response;
+            }
 
-                var accountDto = new AccountDto
-                {
-                    UserId = user.Id,
-                    Id = 0,
-                    Type = AccountType.PRIMARY,
-                    Number = await _SavingAccountService.GenerateAccountNumber(),
-                    Balance = request.InitialAmount ?? 0,
-                    AdminId = AdminId
-                };
+            var accountDto = new AccountDto
+            {
+                UserId = user.Id,
+                Id = 0,
+                Type = AccountType.PRIMARY,
+                Number = await _SavingAccountService.GenerateAccountNumber(),
+                Balance = request.InitialAmount ?? 0,
+                AdminId = AdminId
+            };                await _SavingAccountService.AddAsync(accountDto);
 
-                var accountResult=await _SavingAccountService.AddAsync(accountDto);
-                if(accountResult==null)
-                {
-                    response.IsSuccesful = false;
-                    response.IsInternalError = true;
-                    await _unitOfWork.RollbackAsync();
-
-                }
-                var reponsemap = _mapper.Map<RegisterUserWithAccountResponseDto>(user);
-                response = reponsemap;
-                response.EntityId = reponsemap.EntityId;
+                response = _mapper.Map<RegisterUserWithAccountResponseDto>(user);
+                response.EntityId = user.Id;
                 response.IsSuccesful = true;
                 response.StatusMessage = "Usuario y cuenta creados exitosamente.";
 
@@ -166,10 +157,9 @@ namespace BankingApp.Core.Application.Services
         }
 
 
-        public async Task<AccountDto?> GetMainSavingAccount (string clientId)
+        public async Task<AccountDto> GetMainSavingAccount (string clientId)
         {
             var account= await _SavingAccountService.GetAccountByClientId (clientId);
-            if (account == null) return null;
             return _mapper.Map<AccountDto>(account);
         }
 

@@ -79,22 +79,22 @@ namespace BankingApp.Core.Application.Services
 
                 if (account == null)
                 {
-                    return (false, string.Empty, "El número de cuenta ingresado no es válido.");
-                }
+                return (false, string.Empty, "El número de cuenta ingresado no es válido.");
+            }
 
-                if (account.Status != AccountStatus.ACTIVE)
-                {
-                    return (false, string.Empty, "La cuenta está inactiva.");
-                }
+            if (account.Status != AccountStatus.ACTIVE)
+            {
+                return (false, string.Empty, "La cuenta está inactiva.");
+            }
 
-                var user = await _userService.GetUserById(account.ClientId);
-                if (user == null)
-                {
-                    return (false, string.Empty, "No se encontró el titular de la cuenta.");
-                }
+            var user = await _userService.GetUserById(account.UserId);
+            if (user == null)
+            {
+                return (false, string.Empty, "No se encontró el titular de la cuenta.");
+            }
 
-                var accountHolderName = $"{user.Name} {user.LastName}";
-                return (true, accountHolderName, string.Empty);
+            var accountHolderName = $"{user.Name} {user.LastName}";
+            return (true, accountHolderName, string.Empty);
             }
             catch
             {
@@ -118,7 +118,7 @@ namespace BankingApp.Core.Application.Services
                     return (false, string.Empty, 0, "La cuenta está inactiva.");
                 }
 
-                var user = await _userService.GetUserById(account.ClientId);
+                var user = await _userService.GetUserById(account.UserId);
                 if (user == null)
                 {
                     return (false, string.Empty, 0, "No se encontró el titular de la cuenta.");
@@ -216,7 +216,7 @@ namespace BankingApp.Core.Application.Services
                     return (false, string.Empty, "La cuenta destino no es válida o está inactiva.");
                 }
 
-                var user = await _userService.GetUserById(destinationAccount.ClientId);
+                var user = await _userService.GetUserById(destinationAccount.UserId);
                 if (user == null)
                 {
                     return (false, string.Empty, "No se encontró el titular de la cuenta destino.");
@@ -271,7 +271,7 @@ namespace BankingApp.Core.Application.Services
                 // Enviar correo al cliente (no bloquear si falla)
                 try
                 {
-                    var user = await _userService.GetUserById(account.ClientId);
+                    var user = await _userService.GetUserById(account.UserId);
                     if (user != null)
                     {
                         var last4Digits = model.AccountNumber.Substring(model.AccountNumber.Length - 4);
@@ -340,7 +340,7 @@ namespace BankingApp.Core.Application.Services
                 await _unitOfWork.CommitAsync();
 
                 // Enviar correo al cliente
-                var user = await _userService.GetUserById(account.ClientId);
+                var user = await _userService.GetUserById(account.UserId);
                 if (user != null)
                 {
                     var last4Digits = model.AccountNumber.Substring(model.AccountNumber.Length - 4);
@@ -623,11 +623,11 @@ namespace BankingApp.Core.Application.Services
                     return (false, "El monto excede el saldo disponible.");
                 }
 
-                // Debitar de la cuenta origen
-                await _accountRepository.DebitBalance(model.SourceAccountNumber, model.Amount);
+                // Debitar de la cuenta origen (modificación directa, ya está rastreada por EF)
+                sourceAccount.Balance -= model.Amount;
 
-                // Acreditar a la cuenta destino
-                await _accountRepository.CreditBalance(model.DestinationAccountNumber, model.Amount);
+                // Acreditar a la cuenta destino (modificación directa, ya está rastreada por EF)
+                destinationAccount.Balance += model.Amount;
 
                 // Registrar transacción DÉBITO en cuenta origen
                 var debitTransaction = new Transaction
@@ -661,14 +661,12 @@ namespace BankingApp.Core.Application.Services
                     TellerId = tellerId
                 };
 
-                await _transactionRepository.AddAsync(creditTransaction);
-                await _unitOfWork.CommitAsync();
+            await _transactionRepository.AddAsync(creditTransaction);
+            await _unitOfWork.CommitAsync();
 
-                // Enviar correos
-                var sourceUser = await _userService.GetUserById(sourceAccount.ClientId);
-                var destinationUser = await _userService.GetUserById(destinationAccount.ClientId);
-
-                if (sourceUser != null)
+            // Enviar correos
+            var sourceUser = await _userService.GetUserById(sourceAccount.UserId);
+            var destinationUser = await _userService.GetUserById(destinationAccount.UserId);                if (sourceUser != null)
                 {
                     var destLast4 = model.DestinationAccountNumber.Substring(model.DestinationAccountNumber.Length - 4);
                     await _emailService.SendAsync(new EmailRequestDto
