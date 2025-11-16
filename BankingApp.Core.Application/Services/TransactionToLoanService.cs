@@ -121,7 +121,7 @@ namespace BankingApp.Core.Application.Services
 
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 
                 return new List<string>();
@@ -149,7 +149,7 @@ namespace BankingApp.Core.Application.Services
                 var map = _mapper.Map<LoanDto>(entity); 
                 return map;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 
                 return null;

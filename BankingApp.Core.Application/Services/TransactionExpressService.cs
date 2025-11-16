@@ -131,7 +131,7 @@ namespace BankingApp.Core.Application.Services
                 return false;
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 
 
@@ -173,7 +173,7 @@ namespace BankingApp.Core.Application.Services
                 return _DTO;
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 
 
@@ -223,7 +223,7 @@ namespace BankingApp.Core.Application.Services
 
 
             }
-            catch (Exception ex)
+            catch (Exception )
             {
 
                 return new List<string>();
@@ -264,7 +264,7 @@ namespace BankingApp.Core.Application.Services
                 return _DTO;
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 
 
@@ -313,7 +313,7 @@ namespace BankingApp.Core.Application.Services
                 return false;
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 
 
@@ -353,7 +353,7 @@ namespace BankingApp.Core.Application.Services
 
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 
                 return new List<BeneficiaryToTransactionDto>();
@@ -402,7 +402,7 @@ namespace BankingApp.Core.Application.Services
                 return response;
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 
                 return null;
@@ -451,7 +451,7 @@ namespace BankingApp.Core.Application.Services
                 return null;
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 
                 return null;

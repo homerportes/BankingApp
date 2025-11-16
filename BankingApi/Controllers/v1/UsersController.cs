@@ -266,7 +266,7 @@ namespace BankingApi.Controllers.v1
                 if (!result.IsSuccesful && !result.IsInternalError)
                     return Conflict("Usuario o correo ya registrado.");
 
-                var resultCommerce = await _commerceService.SetUser(commerceId.Value, result.EntityId);
+                var resultCommerce = await _commerceService.SetUser(commerceId!.Value , result.EntityId ?? "");
 
                 if (resultCommerce.IsSuccessful)
                 {
@@ -392,17 +392,13 @@ namespace BankingApi.Controllers.v1
             }
 
 
-            if (dto.Status == null)
-            {
-                return BadRequest("Estructura inválida");
-
-            }
+           
             try
 
 
             {
                 var currentUser = await _userService.GetCurrentUserAsync();
-                if (currentUser.Id == id)
+                if (currentUser?.Id == id)
                     return StatusCode(StatusCodes.Status403Forbidden,
                         new { message = "Un usuario no puede modificar su propio estado" });
 

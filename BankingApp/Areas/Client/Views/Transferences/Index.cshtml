@@ -1,0 +1,138 @@
+﻿@using BankingApp.Core.Application.ViewModels.Transferences
+@model TransferenceOperationViewModel
+
+<style>
+    .bank-container {
+        max-width: 600px;
+        margin: 40px auto;
+        background: #ffffff;
+        padding: 30px;
+        border-radius: 20px;
+        box-shadow: 0 4px 18px rgba(0,0,0,0.1);
+        font-family: Arial, sans-serif;
+    }
+
+    .bank-title {
+        font-size: 24px;
+        margin-bottom: 20px;
+        font-weight: bold;
+        color: #0B3A75;
+        text-align: center;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    label {
+        font-weight: 600;
+        color: #333;
+        display: block;
+        margin-bottom: 6px;
+    }
+
+    select, input[type="text"] {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 15px;
+    }
+
+    .btn-primary {
+        width: 100%;
+        background: #0B3A75;
+        color: white;
+        padding: 12px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 16px;
+        margin-top: 10px;
+    }
+
+        .btn-primary:hover {
+            background: #09406D;
+        }
+
+    .btn-back {
+        margin-top: 15px;
+        display: inline-block;
+        padding: 10px 18px;
+        background: #e0e0e0;
+        color: #333;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 14px;
+    }
+
+    .error-card, .success-card {
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 10px;
+        opacity: 0;
+        animation: fadeIn 0.6s forwards;
+    }
+
+    .error-card {
+        background: #ffdddd;
+        color: #a10000;
+        border-left: 5px solid #d10000;
+    }
+
+    .success-card {
+        background: #ddffdd;
+        color: #006600;
+        border-left: 5px solid #00aa00;
+    }
+
+
+    
+</style>
+
+<div class="bank-container">
+
+    @if (Model.HasError == true)
+    {
+        <div class="error-card">
+            @Model.Error
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(Model.Message))
+    {
+        <div class="success-card">
+            @Model.Message
+        </div>
+    }
+
+    <h2 class="bank-title">Transferencia Bancaria</h2>
+
+    <form asp-controller="Transferences" asp-action="Transfer" method="post">
+        <div class="form-group">
+            <label>Cuenta de origen</label>
+            <select asp-for="AccountNumberFrom" asp-items="new SelectList(Model.AvailableAccounts)">
+                <option value="">Selecciona una cuenta de origen</option>
+            </select>
+            <span asp-validation-for="AccountNumberFrom" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label>Cuenta de destino</label>
+            <select asp-for="AccountNumberTo" asp-items="new SelectList(Model.AvailableAccounts)">
+                <option value="">Selecciona una cuenta de destino</option>
+            </select>
+            <span asp-validation-for="AccountNumberTo" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label>Monto</label>
+            <input asp-for="Amount" type="text" />
+            <span asp-validation-for="Amount" class="text-danger"></span>
+        </div>
+
+        <button class="btn-primary">Transferir monto</button>
+    </form>
+
+    <a class="btn-back" asp-controller="Home" asp-action="Index">Volver atrás</a>
+</div>

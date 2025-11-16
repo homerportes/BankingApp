@@ -105,7 +105,7 @@ namespace BankingApp.Core.Application.Services
                 return map;
 
             }
-            catch(Exception ex)
+            catch (Exception)
             {
 
 
@@ -145,7 +145,7 @@ namespace BankingApp.Core.Application.Services
                 return CreditCards;
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 
                 return new List<string>();

@@ -1,8 +1,11 @@
 ﻿using AutoMapper;
 using BankingApp.Core.Application.Dtos.Account;
+using BankingApp.Core.Application.Dtos.Transaction.Transference;
 using BankingApp.Core.Application.Dtos.User;
 using BankingApp.Core.Application.Interfaces;
 using BankingApp.Core.Domain.Common.Enums;
+using BankingApp.Core.Domain.Interfaces;
+using BankingApp.Infraestructure.Persistence.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,9 +19,9 @@ namespace BankingApp.Core.Application.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IAccountServiceForWebAPP _accountUserService;
-        private readonly ISavingAccountServiceForApi _SavingAccountService;
+        private readonly ISavingsAccountServiceForWebApp _SavingAccountService;
 
-        public UserAccountManagmentService(IUnitOfWork unitOfWork, IMapper mapper, IAccountServiceForWebAPP accountUserService, ISavingAccountServiceForApi SavingAccountService)
+        public UserAccountManagmentService(IUnitOfWork unitOfWork, IMapper mapper, IAccountServiceForWebAPP accountUserService , ISavingsAccountServiceForWebApp SavingAccountService)
         {
            _unitOfWork = unitOfWork;
             _mapper = mapper;
@@ -103,6 +106,8 @@ namespace BankingApp.Core.Application.Services
                     await _unitOfWork.RollbackAsync();
                     return response;
                 }
+                // Obtener cuenta y actualizar balance
+                var account = await _SavingAccountService.GetAccountByClientId(request.Id??"");
                 
                 // Si hay monto adicional, obtener cuenta y actualizar balance
                 if (request.AdditionalBalance.HasValue && request.AdditionalBalance > 0)
@@ -117,6 +122,8 @@ namespace BankingApp.Core.Application.Services
 
                     var account = await _SavingAccountService.GetAccountByClientId(request.Id);
 
+                if (request.AdditionalBalance > 0 && account!=null)
+                {
                     if (account == null)
                     {
                         response.IsSuccesful = false;
@@ -177,12 +184,42 @@ namespace BankingApp.Core.Application.Services
 
             try
             {
-                account.Balance += AdditionalBalance;
-                await _SavingAccountService.UpdateAsync(account.Id, account);
+                if (account != null)
+                {
+                    account!.Balance += AdditionalBalance;
+                    await _SavingAccountService.UpdateAsync(account.Id, account);
+                }
+              
                 await _unitOfWork.CommitAsync();
             }
             catch
             {
+                await _unitOfWork.RollbackAsync();
+            }
+        }
+
+
+        public async Task<List<string>> GetCurrentUserActiveAccounts(string currentUserName)
+        {
+            var accounts = new List<string>();
+
+            var user = await _accountUserService.GetUserByUserName(currentUserName);
+            if (user == null) return accounts;
+
+            accounts = await _SavingAccountService.GetActiveAccountsByClientId(user.Id);
+
+            return accounts ?? new List<string>();
+        }
+
+        public async Task<bool> AccountHasEnoughFounds(string accountNumber, decimal requestAmount)
+        {
+            return await _SavingAccountService.AccountHasEnoughFounds (accountNumber, requestAmount);
+        }
+
+
+        public async Task<TransferenceResponseDto> TransferAmountToAccount(TransferenceRequestDto tranferenceRequest)
+        {
+            return await _SavingAccountService.ExecuteTransference(tranferenceRequest);
                 try
                 {
                     await _unitOfWork.RollbackAsync();
@@ -194,5 +231,6 @@ namespace BankingApp.Core.Application.Services
                 throw;
             }
         }
+
     }
 }

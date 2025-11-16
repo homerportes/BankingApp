@@ -67,7 +67,7 @@ namespace BankingApp.Core.Application.Services
 
                 return listBeneficiaries;
             }
-            catch (Exception ex)
+            catch (Exception )
             {
 
                 return new List<DataBeneficiaryDto>();
@@ -153,7 +153,7 @@ namespace BankingApp.Core.Application.Services
 
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 
 

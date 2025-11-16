@@ -44,8 +44,12 @@ namespace BankingApp.Areas.Admin.Controllers
 
             var enumMappings = EnumMapper<AppRoles>.GetAliasEnumPairs()
                 .Where(r => r.Value != AppRoles.COMMERCE)
-                .Select(e => new { Value = e.Alias, Text = e.Alias })
-                .ToList();
+                    .Select(e => new
+                    {
+                        Value = e.Alias,
+                        Text = char.ToUpper(e.Alias[0]) + e.Alias.Substring(1)
+                    });
+
 
             ViewBag.Filters = new SelectList(enumMappings, "Value", "Text", filter);
 
@@ -65,8 +69,11 @@ namespace BankingApp.Areas.Admin.Controllers
             vm.MaxPages = dtos.PagesCount;
 
             var enumMappings = EnumMapper<AppRoles>.GetAliasEnumPairs()
-                .Select(e => new { Value = e.Value, Text = e.Alias })
-                .ToList();
+                .Select(e => new
+                {
+                    Value = e.Value,
+                    Text = char.ToUpper(e.Alias[0]) + e.Alias.Substring(1)
+                });
 
             ViewBag.Filters = new SelectList(enumMappings, "Value", "Text");
 
@@ -136,7 +143,7 @@ namespace BankingApp.Areas.Admin.Controllers
                     return View("Register", vm);
                 }
                 dto.Roles = new List<string> { vm.Role.ToString().ToLower() };
-                var result = await _managementService.CreateUserWithAmount(dto, user?.Id ?? user.Id,false,origin);
+                var result = await _managementService.CreateUserWithAmount(dto, user?.Id ?? user!.Id,false,origin);
                 if (result.UserAlreadyExists || !result.IsSuccesful)
                 {
                     vm.HasError = true;
@@ -149,7 +156,7 @@ namespace BankingApp.Areas.Admin.Controllers
             else
             {
                 var saveDto = _mapper.Map<SaveUserDto>(vm);
-                saveDto.Roles.Add(vm.Role.ToString().ToLower());
+                saveDto.Roles?.Add(vm.Role.ToString().ToLower());
 
                 var registerResult = await _accountService.RegisterUser(saveDto, origin, false);
 

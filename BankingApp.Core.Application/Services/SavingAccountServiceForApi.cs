@@ -3,6 +3,7 @@ using BankingApp.Core.Application.Dtos.Account;
 using BankingApp.Core.Application.Interfaces;
 using BankingApp.Core.Domain.Entities;
 using BankingApp.Core.Domain.Interfaces;
+using BankingApp.Infraestructure.Persistence.Repositories;
 
 
 namespace BankingApp.Core.Application.Services
@@ -12,7 +13,7 @@ namespace BankingApp.Core.Application.Services
 
         private readonly IAccountRepository _repo;
         private readonly IMapper _mapper;
-        public SavingAccountServiceForApi(IAccountRepository repo, IMapper mapper) : base(repo, mapper)
+        public SavingAccountServiceForApi(IAccountRepository repo, IMapper mapper, ITransacctionRepository transactionRepository,IUnitOfWork unitOfWork) : base(repo, mapper, transactionRepository, unitOfWork)
         {
             _repo = repo;
             _mapper = mapper;

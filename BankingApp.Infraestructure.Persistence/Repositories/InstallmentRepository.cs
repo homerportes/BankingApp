@@ -27,7 +27,7 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
         public async Task<Installment?> GetByIdLoan(Guid loanId)
         {
 
-            return context.Set<Installment>().FirstOrDefault(s => s.LoanId == loanId);
+            return await context.Set<Installment>().FirstOrDefaultAsync(s => s.LoanId == loanId);
           
         }
 
