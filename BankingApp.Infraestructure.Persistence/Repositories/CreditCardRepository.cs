@@ -111,6 +111,32 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
         }
 
 
+
+
+        public async Task<CreditCard?> CreditTotalAmountOwedAsync(string number, decimal Amount)
+        {
+
+            var entity = await _context.Set<CreditCard>().FirstOrDefaultAsync(c => c.Number == number);
+
+
+            if (entity is not null)
+            {
+
+                entity.TotalAmountOwed = entity.TotalAmountOwed + Amount;
+                _context.Update(entity);
+                await _context.SaveChangesAsync();
+                return entity;
+
+            }
+
+            return entity;
+
+        }
+
+
+
+
+
         public async Task<List<CreditCard>> GetActiveByClientIdAsync(string clientId)
         {
             return await _context.Set<CreditCard>().Where( c => c.ClientId == clientId && c.Status == CardStatus.ACTIVE)

@@ -86,9 +86,25 @@ namespace BankingApp.Core.Application.Mappings.DtosAndViewModels
 
 
 
+            CreateMap<CreateTransactionDto, CreateTransactionCashAvancesViewModel>()
+               .ReverseMap()
+               .ForMember(s => s.Origin, opt => opt.MapFrom(src => src.CreditCard))
+               .ForMember(s => s.Amount, opt => opt.MapFrom(src => src.Amount))
+               .ForMember(s => s.Beneficiary, opt => opt.MapFrom(src => src.Account))
+               .ForMember(s => s.Status, opt => opt.Ignore())
+               .ForMember(s => s.DateTime, opt => opt.Ignore())
+               .ForMember(s => s.AccountId, opt => opt.Ignore())
+               .ForMember(s => s.Description, opt => opt.Ignore())
+               .ForMember(s => s.Type, opt => opt.Ignore())
+               .ForMember(s => s.AccountNumber, opt => opt.Ignore());
+
+
 
 
             
+
+
+
         }
 
 
