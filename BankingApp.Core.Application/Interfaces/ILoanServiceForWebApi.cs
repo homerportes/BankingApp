@@ -10,6 +10,5 @@ namespace BankingApp.Core.Application.Interfaces
 {
     public interface ILoanServiceForWebApi : IBaseLoanService
     {
-        Task<CreateLoanResult> HandleCreateRequestApi(LoanRequest request);
     }
 }

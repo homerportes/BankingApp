@@ -102,7 +102,7 @@ namespace BankingApp.Core.Application.Services
                 await _repo.UpdateAsync(accountTo.Id, accountTo);
 
                 var now = DateTime.Now;
-
+                var operationId = _transactionRepo.GenerateOperationId();
                 await _transactionRepo.AddAsync(new Transaction
                 {
                     Id = Guid.NewGuid(),
@@ -112,6 +112,7 @@ namespace BankingApp.Core.Application.Services
                     Origin = accountFrom.Number,
                     Amount = tranferenceRequest.Amount,
                     Status = OperationStatus.APPROVED,
+                    OperationId= operationId,
                     DateTime = now
                 });
 
@@ -122,9 +123,11 @@ namespace BankingApp.Core.Application.Services
                     Beneficiary = accountTo.Number,
                     Type = TransactionType.CREDIT,
                     Origin = accountFrom.Number,
+
                     Amount = tranferenceRequest.Amount,
                     Status = OperationStatus.APPROVED,
-                    DateTime = now
+                    DateTime = now,
+                     OperationId= operationId
                 });
 
                 await _unitOfWork.CommitAsync();

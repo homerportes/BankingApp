@@ -27,20 +27,27 @@ namespace YourNamespace.Areas.Admin.Controllers
             _userService = userService;
         }
 
-        // Index: listado con filtros y paginación
         public async Task<IActionResult> Index(
-            [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 20,
-            [FromQuery] LoanStatus? status = null,
-            [FromQuery] string? documentId = null)
+     [FromQuery] int page = 1,
+     [FromQuery] int pageSize = 20,
+     [FromQuery] LoanStatus? status = null,
+     [FromQuery] string? documentId = null)
         {
+      
             var user = string.IsNullOrWhiteSpace(documentId)
                 ? null
                 : await _userService.GetByDocumentId(documentId);
 
-            var statusString = status.HasValue ? EnumMapper<LoanStatus>.ToString(status.Value) : null;
+        
+            var clientId = (!string.IsNullOrWhiteSpace(documentId) && user == null)
+                ? "__NO_MATCH__"
+                : user?.Id;
 
-            var pag = await _service.GetAllFiltered(page, pageSize, statusString, user?.Id);
+            var statusString = status.HasValue
+                ? EnumMapper<LoanStatus>.ToString(status.Value)
+                : null;
+
+            var pag = await _service.GetAllFiltered(page, pageSize, statusString, clientId);
             pag ??= new LoanPaginationResultDto { Data = new List<LoanDto>(), PagesCount = 0 };
 
             var vm = new LoanPageViewModel
@@ -56,6 +63,7 @@ namespace YourNamespace.Areas.Admin.Controllers
             var enumMappings = EnumMapper<LoanStatus>.GetAliasEnumPairs()
                 .Select(e => new { Value = e.Value, Text = e.Alias })
                 .ToList();
+
             ViewBag.Filters = new SelectList(enumMappings, "Value", "Text", statusString);
 
             return View(vm);
@@ -88,7 +96,7 @@ namespace YourNamespace.Areas.Admin.Controllers
                 return View("Edit", vm);
             }
 
-            await _service.UpdateLoanRate(vm.PublicId, vm.Rate);
+            var result=await _service.UpdateLoanRate(vm.PublicId, vm.Rate);
 
             TempData["Success"] = "Tasa actualizada correctamente.";
             return RedirectToAction(nameof(Index));
@@ -99,18 +107,19 @@ namespace YourNamespace.Areas.Admin.Controllers
             return RedirectToAction(nameof(Clients));
         }
 
-        public async Task<IActionResult> Clients([FromQuery] string? documentIdFilter = null)
+        public async Task<IActionResult> Clients([FromQuery] string? cedula = null)
         {
-            var dtos = await _service.GetClientsAvailableForLoan(documentIdFilter);
+            var dtos = await _service.GetClientsAvailableForLoan(cedula);
+
             var vm = new ClientsPageViewModel
             {
                 Clients = _mapper.Map<List<UserViewModel>>(dtos),
                 ClientsDebt = await _service.GetTotalLoanDebt(),
-                DocumentIdFilter = documentIdFilter
+                DocumentIdFilter = cedula
             };
+
             return View(vm);
         }
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Terms(string clientId)
@@ -130,7 +139,7 @@ namespace YourNamespace.Areas.Admin.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SetLoan(TermPageViewModel vm)
+        public async Task<IActionResult> CreateLoan(TermPageViewModel vm)
         {
             if (!ModelState.IsValid)
             {
@@ -145,7 +154,7 @@ namespace YourNamespace.Areas.Admin.Controllers
                 LoanTermInMonths = vm.TermInMonths
             };
 
-            var result = await _service.HandleCreateRequest(request);
+            var result = await _service.HandleCreateRequestApp(request);
 
             if (result.ClientIsAlreadyHighRisk || result.ClientIsHighRisk)
             {
@@ -158,8 +167,12 @@ namespace YourNamespace.Areas.Admin.Controllers
                 return View("Warning", vm);
             }
 
-            await _service.Create(request);
-            TempData["Success"] = "Préstamo asignado correctamente.";
+            var loanResult=await _service.Create(request);
+            if (loanResult.LoanCreated)
+            {
+                TempData["Success"] = "Préstamo asignado correctamente.";
+
+            }
             return RedirectToAction(nameof(Index));
         }
 

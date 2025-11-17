@@ -205,7 +205,7 @@ namespace BankingApp.Core.Application.Services
 
 
 
-                var Accounts = await accountRepository.GetAllListByIdClienteAsync(idUser);
+                var Accounts = await accountRepository.GetAllListByIdAsync(idUser);
                 if (Accounts != null && Accounts.Any())
                 {
 

@@ -56,7 +56,7 @@ namespace BankingApp.Core.Application.Dtos.Loan
         //Tasa aplicada
         [JsonProperty("Interes")]
 
-        public required int InterestRate { get; set; }
+        public required decimal InterestRate { get; set; }
         //Plazo del prestamo en meses
         [JsonProperty("Plazo")]
 

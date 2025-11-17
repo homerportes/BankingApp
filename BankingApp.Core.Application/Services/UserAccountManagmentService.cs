@@ -69,14 +69,12 @@ namespace BankingApp.Core.Application.Services
             }
             catch (Exception ex)
             {
-                // Solo hacer rollback si la transacción aún está activa
                 try
                 {
                     await _unitOfWork.RollbackAsync();
                 }
                 catch
                 {
-                    // La transacción ya fue completada
                 }
 
                 response.IsSuccesful = false;
@@ -94,7 +92,6 @@ namespace BankingApp.Core.Application.Services
 
             try
             {
-                // Editar usuario
                 var saveUserDto = _mapper.Map<SaveUserDto>(request);
                 var editDto = await _accountUserService.EditUser(saveUserDto, null, true, ForApi);
 
@@ -107,7 +104,6 @@ namespace BankingApp.Core.Application.Services
                     return response;
                 }
 
-                // Si hay monto adicional, obtener cuenta y actualizar balance
                 if (request.AdditionalBalance.HasValue && request.AdditionalBalance > 0)
                 {
                     if (string.IsNullOrEmpty(request.Id))
@@ -142,14 +138,12 @@ namespace BankingApp.Core.Application.Services
             }
             catch (Exception ex)
             {
-                // Solo hacer rollback si la transacción aún está activa
                 try
                 {
                     await _unitOfWork.RollbackAsync();
                 }
                 catch
                 {
-                    // La transacción ya fue completada (commit o rollback)
                 }
 
                 response.IsSuccesful = false;
