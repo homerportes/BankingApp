@@ -169,7 +169,7 @@ namespace BankingApp.Controllers
 
         public async Task<IActionResult> ConfirmEmail(string userId, string token)
         {
-            UserResponseDto response = await _accountServiceForWebApp.ConfirmAccountAsync(userId, token);
+            UserResponseDto response = await _accountServiceForWebApp.ConfirmAccountAsync( token, userId);
             return View("ConfirmEmail", response.Message);
         }
 

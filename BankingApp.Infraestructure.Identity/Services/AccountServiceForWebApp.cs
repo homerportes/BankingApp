@@ -36,6 +36,8 @@ namespace BankingApp.Infraestructure.Identity.Services
                 responseDto.HasError = true;
                 responseDto.Error = $"Esta cuenta no está activa. Actívala mediante el link que ha sido enviado a tu correo";
                 return responseDto;
+
+
             }
 
             if (!user.IsActive)
