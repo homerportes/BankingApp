@@ -10,7 +10,7 @@ namespace BankingApp.Infraestructure.Persistence.EntitiesConfigurations
         public void Configure(EntityTypeBuilder<Transaction> builder)
         {
             builder.HasKey(x => x.Id);
-            builder.Property(x=>x.Status).IsRequired();
+            builder.Property(x => x.Status).IsRequired();
             builder.Property(x => x.Origin).IsRequired();
             builder.Property(x => x.Beneficiary).IsRequired();
             builder.Property(x => x.Type).IsRequired();
@@ -18,6 +18,9 @@ namespace BankingApp.Infraestructure.Persistence.EntitiesConfigurations
             builder.Property(x => x.DateTime).IsRequired();
             builder.Property(x => x.AccountNumber).IsRequired();
             builder.Property(x => x.AccountId);
+            builder.Property(x => x.TellerId).IsRequired(false);
+            builder.Property(x => x.OperationId).IsRequired(true);
+
             builder.Property(x => x.Description).IsRequired().HasMaxLength(100);
 
         }

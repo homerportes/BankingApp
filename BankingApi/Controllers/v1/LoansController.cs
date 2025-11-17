@@ -61,17 +61,17 @@ namespace BankingApi.Controllers.v1
                 return BadRequest("El ID del usuario es requerido");
             }
             if (request.LoanAmount <= 0)
-                return BadRequest("El prestamos debe ser masyor a 0");
+                return BadRequest("El monto del  prestamo debe ser mayor a 0");
 
                     if (request.AnualInterest <= 0)
-                return BadRequest("El prestamos debe ser masyor a 0");
+                return BadRequest("El interés del prestamo debe ser mayor a 0");
             if (request.LoanTermInMonths < 6)
-                return BadRequest("El prestamos debe ser masyor a 0");
+                return BadRequest("El intervalo  de tiempo debe ser mayor a 0");
             var user = await _userService.GetUserById(request.ClientId);
             if (user == null) return BadRequest("No existe ningun cliente asociado a ese Id");
 
             
-                var requestResult = await _loanService.HandleCreateRequestApi(request);
+                var requestResult = await _loanService.HandleCreateRequest(request);
                 if (requestResult.ClientHasActiveLoan) return BadRequest("El usuario ya tiene un prestamo activo");
                 if (requestResult.ClientIsHighRisk) return Conflict("El usuario es de alto riesgo");
             if (requestResult.LoanCreated) return Created();

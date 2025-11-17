@@ -8,8 +8,6 @@ namespace BankingApp.Core.Application.Interfaces
     public interface ILoanServiceForWebApp : IGenericService<Loan, LoanDto>, IBaseLoanService
     {
         Task<List<UserDto>> GetClientsAvailableForLoan(string? DocumentId = null);
-
-        Task<CreateLoanResult> HandleCreateRequest(LoanRequest request);
-
+        Task<CreateLoanResult> HandleCreateRequestApp(LoanRequest request);
     }
 }

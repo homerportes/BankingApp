@@ -336,7 +336,10 @@ namespace BankingApp.Infraestructure.Identity.Services
 
         }
 
-        public async Task<List<UserDto>> GetClientsWithDebtInfo(Dictionary<string, decimal> clientDebts, string? DocumentId = null)
+        public async Task<List<UserDto>> GetClientsWithDebtInfo(
+     Dictionary<string, decimal> clientDebts,
+     HashSet<string> clientsWithActiveLoan,
+     string? DocumentId = null)
         {
             var clientRole = await _identityContext.Roles
                 .FirstOrDefaultAsync(r => r.Name == AppRoles.CLIENT.ToString());
@@ -349,7 +352,9 @@ namespace BankingApp.Infraestructure.Identity.Services
                 .ToListAsync();
 
             var usersId = userRoles
-                .Where(r => !clientDebts.ContainsKey(r.UserId))
+                .Where(r =>
+                    !clientDebts.ContainsKey(r.UserId) &&
+                    !clientsWithActiveLoan.Contains(r.UserId))   
                 .Select(r => r.UserId)
                 .Distinct()
                 .ToList();
@@ -357,9 +362,12 @@ namespace BankingApp.Infraestructure.Identity.Services
             var query = _userManager.Users
                 .Where(u => u.IsActive && usersId.Contains(u.Id));
 
-            if (!string.IsNullOrEmpty(DocumentId))
+            if (!string.IsNullOrWhiteSpace(DocumentId))
             {
-                query = query.Where(r => r.DocumentIdNumber == DocumentId);
+                DocumentId = DocumentId.Trim();
+                query = query.Where(r =>
+                    r.DocumentIdNumber == DocumentId ||
+                    r.DocumentIdNumber.Contains(DocumentId));
             }
 
             var users = await query
@@ -374,7 +382,7 @@ namespace BankingApp.Infraestructure.Identity.Services
                     Status = u.IsActive ? "Activo" : "Inactivo",
                     UserName = u.UserName ?? "",
                     IsActive = u.IsActive,
-                    TotalDebt = clientDebts.ContainsKey(u.Id) ? clientDebts[u.Id] : 0m
+                    TotalDebt = clientDebts.GetValueOrDefault(u.Id, 0m)
                 })
                 .ToListAsync();
 
@@ -480,6 +488,24 @@ namespace BankingApp.Infraestructure.Identity.Services
                 .Where(u => u.IsActive)
                 .Distinct()
                 .Select(u=>u.Id).ToHashSetAsync();
+        }
+        public async Task<int> GetAllClientsCount()
+        {
+            var clientRoleId = await _identityContext.Roles
+        .Where(r => r.Name!.ToLower() == AppRoles.CLIENT.ToString().ToLower())
+        .Select(r => r.Id)
+        .FirstOrDefaultAsync();
+
+            return await _identityContext.UserRoles
+                .Where(ur => ur.RoleId == clientRoleId)
+                .Join(
+                    _identityContext.Users,
+                    ur => ur.UserId,
+                    u => u.Id,
+                    (ur, u) => u
+                )
+                .Distinct()
+                .CountAsync();
         }
 
 

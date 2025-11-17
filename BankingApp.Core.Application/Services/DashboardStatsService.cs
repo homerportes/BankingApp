@@ -1,6 +1,9 @@
 ﻿using BankingApp.Core.Application.Dtos.Stats;
 using BankingApp.Core.Application.Interfaces;
+using BankingApp.Core.Domain.Common.Enums;
 using BankingApp.Core.Domain.Interfaces;
+using BankingApp.Infraestructure.Persistence.Repositories;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Net.WebSockets;
 
@@ -13,6 +16,7 @@ namespace BankingApp.Core.Application.Services
         private readonly ILoanRepository _loanRepository;
         private readonly IAccountRepository _accountRepository;
         private readonly ICreditCardRepository _creditCardRepository;
+        private readonly ITransacctionRepository _transacctionRepository;
 
         public DashboardStatsService(
             IUserService userService,
@@ -20,13 +24,15 @@ namespace BankingApp.Core.Application.Services
             IAccountRepository accountRepository
             ,
 
-            ICreditCardRepository creditCardRepository
+            ICreditCardRepository creditCardRepository,
+            ITransacctionRepository transacctionRepository
             )
         {
             _userService = userService;
             _loanRepository = loanRepository;
             _accountRepository = accountRepository;
             _creditCardRepository = creditCardRepository;
+            _transacctionRepository = transacctionRepository;
         }
 
 
@@ -35,13 +41,14 @@ namespace BankingApp.Core.Application.Services
 
             var totalAccounts = await _accountRepository.CountSavingAccountsByUserIds(await _userService.GetAllClientIds());
             var totalActiveClients = await _userService.GetActiveClientsCount();
+
+            var Payments = _transacctionRepository.GetAllQuery().Where(r => r.Description == DescriptionTransaction.LOANPAYMENT || r.Description == DescriptionTransaction.CREDITCARDPAYMENT);
             return new AdminDashboardStatsDto
             {
-                ///fantan los pagos y transacciones
 
-                TotalTransactionsCount = 0,
-                DayPaysCount = 0,
-                TotalPaysCount = 0,
+                TotalTransactionsCount = await _transacctionRepository.GetAllQuery().DistinctBy(r=>r.OperationId).CountAsync(),
+                DayPaysCount = await Payments.Where(p=>p.DateTime.Day==DateTime.Now.Day).CountAsync(),
+                TotalPaysCount = await Payments.CountAsync(),
                 TotalActiveClientsCount = await _userService.GetActiveClientsCount(),
                 TotalInactiveClientsCount = totalActiveClients,
                 TotalAsignedProductsCount = totalAccounts + await _loanRepository.GetAllLoansCount() + await _creditCardRepository.GetTotalCreditCardsWithClient(),
@@ -53,7 +60,7 @@ namespace BankingApp.Core.Application.Services
 
                 TotalSavingAccountsCount = totalAccounts,
 
-                AverageClientsDebt = await GetActiveClientsDebt()/ totalActiveClients
+                AverageClientsDebt = await GetActiveClientsDebt() / totalActiveClients
 
             };
 
@@ -71,7 +78,7 @@ namespace BankingApp.Core.Application.Services
         if (activeUserIds == null || !activeUserIds.Any())
             return 0;
 
-        var loanDebts= await _loanRepository.GetActiveClientsLoanDebt();
+        var loanDebts= await _loanRepository.GetActiveClientsLoanDebt(activeUserIds);
         var creditCardDebts = await _creditCardRepository.GetActiveClientsCreditCardDebt(activeUserIds);
         return loanDebts + creditCardDebts;
     }

@@ -250,6 +250,8 @@ namespace BankingApp.Core.Application.Services
                 // Acreditar el monto a la cuenta
                 await _accountRepository.CreditBalance(model.AccountNumber, model.Amount);
 
+
+                var operationId = _transactionRepository.GenerateOperationId();
                 // Registrar la transacción
                 var transaction = new Transaction
                 {
@@ -262,13 +264,13 @@ namespace BankingApp.Core.Application.Services
                     AccountId = account.Id,
                     Status = OperationStatus.APPROVED,
                     Description = DescriptionTransaction.DEPOSIT,
-                    TellerId = tellerId
+                    TellerId = tellerId,
+                    OperationId = operationId
                 };
 
                 await _transactionRepository.AddAsync(transaction);
                 await _unitOfWork.CommitAsync();
 
-                // Enviar correo al cliente (no bloquear si falla)
                 try
                 {
                     var user = await _userService.GetUserById(account.UserId);
@@ -320,6 +322,7 @@ namespace BankingApp.Core.Application.Services
 
                 // Debitar el monto de la cuenta
                 await _accountRepository.DebitBalance(model.AccountNumber, model.Amount);
+                var operationId = _transactionRepository.GenerateOperationId();
 
                 // Registrar la transacción
                 var transaction = new Transaction
@@ -333,6 +336,8 @@ namespace BankingApp.Core.Application.Services
                     AccountId = account.Id,
                     Status = OperationStatus.APPROVED,
                     Description = DescriptionTransaction.WITHDRAWAL,
+                    OperationId = operationId,
+
                     TellerId = tellerId
                 };
 
@@ -417,6 +422,8 @@ namespace BankingApp.Core.Application.Services
                 // Reducir la deuda de la tarjeta
                 await _creditCardRepository.DebitTotalAmountOwedAsync(model.CardNumber, actualAmountToPay);
 
+
+                var operationId = _transactionRepository.GenerateOperationId();
                 // Registrar la transacción
                 var transaction = new Transaction
                 {
@@ -429,8 +436,11 @@ namespace BankingApp.Core.Application.Services
                     AccountId = account.Id,
                     Status = OperationStatus.APPROVED,
                     Description = DescriptionTransaction.CREDITCARDPAYMENT,
-                    TellerId = tellerId
+                    TellerId = tellerId,
+                    OperationId = operationId
                 };
+
+       
 
                 await _transactionRepository.AddAsync(transaction);
                 await _unitOfWork.CommitAsync();
@@ -548,6 +558,7 @@ namespace BankingApp.Core.Application.Services
                 }
 
                 await _loanRepository.UpdateByObjectAsync(loan);
+                var operationId = _transactionRepository.GenerateOperationId();
 
                 // Registrar la transacción
                 var transaction = new Transaction
@@ -562,8 +573,10 @@ namespace BankingApp.Core.Application.Services
                     Status = OperationStatus.APPROVED,
                     Description = DescriptionTransaction.LOANPAYMENT,
                     TellerId = tellerId
+                    ,OperationId = operationId
                 };
 
+         
                 await _transactionRepository.AddAsync(transaction);
                 await _unitOfWork.CommitAsync();
 
@@ -629,6 +642,8 @@ namespace BankingApp.Core.Application.Services
                 // Acreditar a la cuenta destino (modificación directa, ya está rastreada por EF)
                 destinationAccount.Balance += model.Amount;
 
+
+                var operationId = _transactionRepository.GenerateOperationId();
                 // Registrar transacción DÉBITO en cuenta origen
                 var debitTransaction = new Transaction
                 {
@@ -641,7 +656,8 @@ namespace BankingApp.Core.Application.Services
                     AccountId = sourceAccount.Id,
                     Status = OperationStatus.APPROVED,
                     Description = DescriptionTransaction.TRANSFER,
-                    TellerId = tellerId
+                    TellerId = tellerId,
+                    OperationId=operationId
                 };
 
                 await _transactionRepository.AddAsync(debitTransaction);
@@ -658,7 +674,9 @@ namespace BankingApp.Core.Application.Services
                     AccountId = destinationAccount.Id,
                     Status = OperationStatus.APPROVED,
                     Description = DescriptionTransaction.TRANSFER,
-                    TellerId = tellerId
+                    TellerId = tellerId,
+                    OperationId = operationId
+
                 };
 
             await _transactionRepository.AddAsync(creditTransaction);

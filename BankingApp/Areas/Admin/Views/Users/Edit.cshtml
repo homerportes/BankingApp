@@ -86,8 +86,12 @@
                     {
                         <div class="mb-3">
                             <label asp-for="AditionalAmount" class="form-label fw-semibold">Monto adicional</label>
-                            <input asp-for="AditionalAmount" type="number" min="0" step="0.01" class="form-control rounded-3" required />
-                            <span asp-validation-for="AditionalAmount" class="text-danger small"></span>
+                                <input asp-for="AditionalAmount"
+                                       type="text"
+                                       inputmode="decimal"
+                                       class="form-control" />
+
+                                <span asp-validation-for="AditionalAmount" class="text-danger small"></span>
                         </div>
                     }
 
@@ -106,6 +110,21 @@
     </div>
 </div>
 </div>
+<script>
+    document.getElementById("editForm").addEventListener("submit", function () {
+
+        let input = document.querySelector('input[name="AditionalAmount"]');
+
+        if (!input) return;
+
+        if (input.offsetParent === null) return;
+
+        if (input.value) {
+            input.value = input.value.replace(",", ".");
+        }
+    });
+</script>
+
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

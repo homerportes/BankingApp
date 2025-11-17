@@ -25,6 +25,7 @@ namespace BankingApp.Core.Application.Services
         private readonly IInstallmentRepository _installmentRepository;
         private readonly IAccountRepository _accountRepository;
         private ILogger<Loan> _logger;
+        private ICreditCardRepository _cardRepository;
         public LoanServiceForWebApp(
             ILoanRepository repo,
             IMapper mapper,
@@ -46,36 +47,64 @@ namespace BankingApp.Core.Application.Services
             _unitOfWork = unitOfWork;
             _installmentRepository = installmentRepository;
             _accountRepository = accountRepository;
-
+            _cardRepository = creditCardRepository;
 
 
 
         }
-              public async Task<List<UserDto>> GetClientsAvailableForLoan(string? DocumentId = null)
+        public async Task<List<UserDto>> GetClientsAvailableForLoan(string? DocumentId = null)
         {
-            var clientDebts = await _repo.GetAllQuery()
+            var clientsWithActiveLoan = await _repo.GetAllQuery()
                 .Where(r => r.IsActive)
+                .Select(r => r.ClientId)
+                .Distinct()
+                .ToListAsync();
+
+            var activeLoanSet = new HashSet<string>(clientsWithActiveLoan);
+
+            var clientDebts = await _repo.GetAllQuery()
+                .Where(r => r.IsActive && !activeLoanSet.Contains(r.ClientId))
                 .GroupBy(r => r.ClientId)
-                .Select(g => new { ClientId = g.Key, TotalDebt = g.Sum(r => r.OutstandingBalance) })
+                .Select(g => new {
+                    ClientId = g.Key,
+                    TotalDebt = g.Sum(r => r.OutstandingBalance)
+                })
                 .ToDictionaryAsync(x => x.ClientId, x => x.TotalDebt);
 
-            var clientsWithDebt = await _userService.GetClientsWithDebtInfo(clientDebts, DocumentId);
+            var result = await _userService.GetClientsWithDebtInfo(
+                clientDebts,
+                activeLoanSet, 
+                DocumentId);
 
-            return clientsWithDebt;
+            return result;
         }
 
 
-        public async Task<CreateLoanResult> HandleCreateRequest(LoanRequest request)
+
+        public async Task<CreateLoanResult> HandleCreateRequestApp(LoanRequest request)
         {
             var result = new CreateLoanResult();
 
-            var userDebt = await _repo
-                .GetAllQuery()
-                .Where(r => r.IsActive && r.ClientId == request.ClientId)
-                .Select(r => r.OutstandingBalance)
-                .SumAsync();
 
-            var systemDebt = await GetTotalLoanDebt();
+            var clientLoansDebt = await GetClientLoansDebt(request.ClientId);
+            var cardDebt = await _cardRepository.GetClientTotalCreditCardDebt(request.ClientId);
+
+            var userDebt = clientLoansDebt + cardDebt;
+
+            var systemLoansDebt = await GetTotalLoanDebt();
+            var systemCardDebt = await _cardRepository.GetTotalClientsCreditCardDebt();
+
+            var clientsCount = await _userService.GetAllClientsCount();
+            var systemDebt = systemLoansDebt + systemCardDebt / clientsCount;
+
+
+            if (userDebt > systemDebt)
+            {
+                result.ClientIsAlreadyHighRisk = true;
+                return result;
+            }
+
+         
 
             if (systemDebt > 0)
             {

@@ -156,7 +156,7 @@ namespace BankingApp.Areas.Admin.Controllers
             else
             {
                 var saveDto = _mapper.Map<SaveUserDto>(vm);
-                saveDto.Roles?.Add(vm.Role.ToString().ToLower());
+                saveDto.Roles = new List<string>() { vm.Role.ToString().ToLower() };
 
                 var registerResult = await _accountService.RegisterUser(saveDto, origin, false);
 
@@ -188,6 +188,11 @@ namespace BankingApp.Areas.Admin.Controllers
         [HttpPost]
         public async Task<IActionResult> EditPost(EditUserWithAmountViewModel vm)
         {
+
+            var userToEdit = await _userService.GetUserById(vm.Id);
+            bool isClient = userToEdit.Role.ToLower() == AppRoles.CLIENT.ToString().ToLower();
+            vm.IsClient = isClient;
+
             if (string.IsNullOrEmpty(vm.Id))
             {
                 vm.HasError = true;
@@ -195,7 +200,7 @@ namespace BankingApp.Areas.Admin.Controllers
                 return View("Edit", vm);
             }
 
-            var userToEdit = await _userService.GetUserById(vm.Id);
+
             if (userToEdit == null)
             {
                 vm.HasError = true;
@@ -203,8 +208,7 @@ namespace BankingApp.Areas.Admin.Controllers
                 return View("Edit", vm);
             }
 
-            bool isClient = userToEdit.Role.ToLower() == AppRoles.CLIENT.ToString().ToLower();
-            vm.IsClient = isClient;
+            
 
             if (isClient && (!vm.AditionalAmount.HasValue || vm.AditionalAmount <= 0))
             {
@@ -226,7 +230,7 @@ namespace BankingApp.Areas.Admin.Controllers
                 vm.HasError = true;
                 vm.Error = !string.IsNullOrEmpty(result.StatusMessage) 
                     ? result.StatusMessage 
-                    : "No se pudo actualizar el usuario.";
+                    : "Usuario o correo asociados a otra cuenta.";
                 ViewBag.UserIsClient = isClient;
                 return View("Edit", vm);
             }
