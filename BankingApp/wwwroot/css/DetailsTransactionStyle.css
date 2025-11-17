@@ -1,119 +1,49 @@
-﻿:root {
-    --azul-oscuro: #154D71;
-    --azul-medio: #1C6EA4;
-    --azul-claro: #33A1E0;
-    --azul-intenso: #0046FF;
-    --rosado: #ff7eb3;
-    --gradient-card: linear-gradient(150deg, #154D71, #1C6EA4);
-}
-
-body {
-    background: #F4F7FB;
-    font-family: "Segoe UI", Roboto, sans-serif;
-}
-
-.page-title {
-    text-align: center;
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--azul-oscuro);
-    margin-bottom: 2rem;
-}
-
-
-.transaction-card {
-    max-width: 600px;
-    margin: 0 auto;
-    background: var(--gradient-card);
-    padding: 2rem;
-    border-radius: 18px;
+﻿
+.blue-gradient-card {
+    background: linear-gradient(135deg, var(--color-azul-oscuro), var(--color-azul-medio), var(--color-azul-claro) );
+    border-radius: var(--radius);
+    padding: 20px;
     color: white;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
-    position: relative;
+    box-shadow: var(--shadow);
+    animation: fadeIn .4s ease-in-out;
 }
 
-  
-    .transaction-card::before {
-        content: "";
-        position: absolute;
-        bottom: -20%;
-        right: -25%;
-        width: 300px;
-        height: 300px;
-        background: var(--rosado);
-        opacity: 0.3;
-        filter: blur(70px);
-        border-radius: 50%;
-    }
 
-.detail-row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 1.2rem;
-    position: relative;
-    z-index: 5;
-}
-
-.detail-label {
-    font-weight: 600;
+.card-header-custom {
     font-size: 1rem;
-    opacity: .9;
-}
-
-
-.detail-value {
-    font-size: 1.05rem;
     font-weight: 700;
+    margin-bottom: 12px;
 }
 
 
-.amount {
-    font-size: 1.5rem;
+.blue-gradient-card .detail-row {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
 }
 
-.amount-credit {
-    color: #92ff92;
+.blue-gradient-card .detail-label {
+    font-weight: 600;
+    color: #f0f0f0;
 }
 
-.amount-debit {
-    color: #ff8585;
+.blue-gradient-card .detail-value {
+    font-weight: 600;
+}
+
+
+.blue-gradient-card .amount {
+    font-size: 1.3rem;
+    font-weight: bold;
 }
 
 
 .status-approved {
-    color: #7affd8;
+    background: #28a745 !important;
+    padding: 5px 14px;
+    border-radius: 12px;
 }
 
 .status-rejected {
-    color: #ff6f6f;
-}
-
-
-.btn-back {
-    background: var(--azul-intenso);
-    padding: .6rem 2rem;
-    color: white;
-    border-radius: 10px;
-    font-weight: 600;
-    text-decoration: none;
-    transition: .2s;
-}
-
-    .btn-back:hover {
-        background: #0034c7;
-        transform: translateY(-2px);
-    }
-
-
-
-.no-transactions i {
-    opacity: 0.6;
-}
-
-.no-transactions h4 {
-    font-weight: 600;
-}
-
-.no-transactions p {
-    font-size: 14px;
+    background: #dc3545 !important;
+    padding: 5px 14px;
+    border-radius: 12px;
 }

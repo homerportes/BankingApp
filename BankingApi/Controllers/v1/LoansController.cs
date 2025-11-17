@@ -1,5 +1,6 @@
 ﻿using BankingApp.Core.Application.Dtos.Loan;
 using BankingApp.Core.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,19 +8,24 @@ using Microsoft.AspNetCore.Mvc;
 namespace BankingApi.Controllers.v1
 {
     [Route("api/v{version::apiVersion}/loan")]
+    [Authorize(AuthenticationSchemes = "Bearer", Roles = "ADMIN")]
 
     public class LoansController : BaseApiController
     {
-        private readonly ILoanServiceForWebApp _loanService;
+        private readonly ILoanServiceForWebApi _loanService;
         private readonly IUserService _userService;
         
-        public LoansController(ILoanServiceForWebApp loanService, IUserService userService)
+        public LoansController(ILoanServiceForWebApi loanService, IUserService userService)
         {
             _loanService = loanService;
             _userService = userService;
         }
 
         [HttpGet(Name = "GetAllLoans")]
+
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAll (int page = 1, int pageSize = 20, string? state = null, string? DocumentId = null)
         {
             string? clientId = null;
@@ -28,15 +34,22 @@ namespace BankingApi.Controllers.v1
             {
                 var user = await _userService.GetByDocumentId(DocumentId);
                 if (user == null) return BadRequest("No existe ningun usuario asociado a esa cedula");
-                clientId = user.DocumentIdNumber;
+                clientId = user.Id;
             }
-            var all= _loanService.GetAllFiltered(page, pageSize, state,clientId);
+            var all=await  _loanService.GetAllFiltered(page, pageSize, state,clientId);
 
             return Ok(all);
         }
 
+
         [HttpPost(Name = "CreateLoan")]
-        public async Task<IActionResult> SetLoan(LoanRequest request)
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> CreateLoan(LoanRequest request)
         {
             if (!ModelState.IsValid)
             {
@@ -47,12 +60,18 @@ namespace BankingApi.Controllers.v1
             {
                 return BadRequest("El ID del usuario es requerido");
             }
+            if (request.LoanAmount <= 0)
+                return BadRequest("El prestamos debe ser masyor a 0");
 
+                    if (request.AnualInterest <= 0)
+                return BadRequest("El prestamos debe ser masyor a 0");
+            if (request.LoanTermInMonths < 6)
+                return BadRequest("El prestamos debe ser masyor a 0");
             var user = await _userService.GetUserById(request.ClientId);
-            if (user == null) return BadRequest("No existe ningun usuario asociado a ese Id");
+            if (user == null) return BadRequest("No existe ningun cliente asociado a ese Id");
 
             
-                var requestResult = await _loanService.HandleCreateRequest(request);
+                var requestResult = await _loanService.HandleCreateRequestApi(request);
                 if (requestResult.ClientHasActiveLoan) return BadRequest("El usuario ya tiene un prestamo activo");
                 if (requestResult.ClientIsHighRisk) return Conflict("El usuario es de alto riesgo");
             if (requestResult.LoanCreated) return Created();
@@ -63,6 +82,10 @@ namespace BankingApi.Controllers.v1
 
 
         [HttpGet("{id}", Name = "GetLoanDetails")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> GetDetails([FromRoute]string id)
         {
 
@@ -74,17 +97,22 @@ namespace BankingApi.Controllers.v1
 
 
         [HttpPatch("{id}/rate", Name = "UpdateLoanRate")]
-        public async Task<IActionResult> SetRate([FromRoute]string publicId ,[FromBody] decimal rate)
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> SetRate([FromRoute]string id, [FromBody] UpdateLoanRateDto dto)
         {
 
-            if (rate <= 0) return BadRequest("Tasa invalida");
+            if (dto.Rate <= 0 ) return BadRequest("Tasa invalida");
 
             
-            if (string.IsNullOrEmpty(publicId) || publicId == "string")
+            if (string.IsNullOrEmpty(id) || id == "string")
             {
                 return BadRequest();
             }
-            var result = await _loanService.UpdateLoanRate(publicId,rate);
+            var result = await _loanService.UpdateLoanRate(id, dto.Rate);
             if (!result.IsSuccessful) return NotFound();
             if (result.IsSuccessful) return NoContent();
             if (result == null) return NotFound();

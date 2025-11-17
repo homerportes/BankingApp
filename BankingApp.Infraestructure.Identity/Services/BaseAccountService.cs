@@ -50,7 +50,7 @@ namespace InvestmentApp.Infrastructure.Identity.Services
             if (userWithSameEmail != null)
             {
                 response.HasError = true;
-                response.Errors.Add($"this email: {saveDto.Email} is already taken.");
+                response.Errors.Add($"this email: {saveDto.Email} ya esta asociado al usuario.");
                 return response;
             }
 
@@ -69,7 +69,7 @@ namespace InvestmentApp.Infrastructure.Identity.Services
             if (result.Succeeded)
             {
                 // Agregar todos los roles especificados
-                foreach (var role in saveDto.Roles)
+                foreach (var role in saveDto.Roles!)
                 {
                     var rol = EnumMapper<AppRoles>.FromString(role);
                     await _userManager.AddToRoleAsync(user, rol.ToString());
@@ -218,7 +218,7 @@ namespace InvestmentApp.Infrastructure.Identity.Services
                 return response;
             }
 
-            var user = await _userManager.FindByIdAsync(saveDto.Id);
+            var user = await _userManager.FindByIdAsync(saveDto.Id??"");
 
             if (user == null)
             {

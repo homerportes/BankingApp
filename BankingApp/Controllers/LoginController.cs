@@ -13,13 +13,13 @@ namespace BankingApp.Controllers
     {
         private readonly IAccountServiceForWebAPP _accountServiceForWebApp;
         private readonly UserManager<AppUser> _userManager;
-      
+
 
         public LoginController(IAccountServiceForWebAPP accountServiceForWebApp, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager)
         {
             _accountServiceForWebApp = accountServiceForWebApp;
             _userManager = userManager;
-         
+
         }
 
         public async Task<IActionResult> Index()
@@ -165,59 +165,6 @@ namespace BankingApp.Controllers
             }
 
             TempData["ErrorMessage"] = "No tienes permisos para acceder a esta página o tu sesión ha expirado. Por favor, inicia sesión nuevamente.";
-            return RedirectToRoute(new { controller = "Login", action = "Index" });
-        }
-
-
-        public IActionResult Register()
-        {
-            return View(new RegisterViewModel()
-            {
-                ConfirmPassword = "",
-                Email = "",
-                LastName = "",
-                Name = "",
-                Password = "",
-                UserName = "",
-                DocumentIdNumber = ""
-            });
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Register(RegisterViewModel vm)
-        {
-            if (!ModelState.IsValid)
-            {
-                vm.Password = "";
-                vm.ConfirmPassword = "";
-                return View(vm);
-            }
-
-            SaveUserDto dto = new SaveUserDto
-            {
-                Name = vm.Name,
-                LastName = vm.LastName,
-                DocumentIdNumber = vm.DocumentIdNumber,
-                Email = vm.Email,
-                UserName = vm.UserName,
-                Password = vm.Password,
-                Roles = new List<string> { "CLIENT" } // Rol por defecto para nuevos usuarios
-            };
-
-            string origin = $"{Request.Scheme}://{Request.Host}";
-
-            RegisterUserResponseDto returnUser = await _accountServiceForWebApp.RegisterUser(dto, origin);
-
-            if (returnUser.HasError)
-            {
-                vm.HasError = true;
-                vm.Error = string.Join(", ", returnUser.Errors ?? new List<string>());
-                vm.Password = "";
-                vm.ConfirmPassword = "";
-                return View(vm);
-            }
-
-            TempData["Success"] = $"¡Cuenta creada exitosamente! Hemos enviado un correo de confirmación a {vm.Email}. Por favor revisa tu bandeja de entrada y también la carpeta de SPAM.";
             return RedirectToRoute(new { controller = "Login", action = "Index" });
         }
 

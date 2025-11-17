@@ -13,16 +13,18 @@ namespace BankingApp.Core.Application.Services
 
         private readonly IMapper _mapper;
         private readonly ICreditCardRepository _cardRepository;
-        private readonly ITransacctionRepository _transacctionRepository;   
-        private readonly IUnitOfWork _unitOfWork;    
+        private readonly IPurchaseRepository _purchaseRepository;
+        private readonly ITransacctionRepository _transacctionRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
 
 
-        public CashAdvanceService(IGenericRepository<Transaction> repo, 
-                                 IMapper mapper, 
-                                 ICreditCardRepository cardRepository, 
-                                 IUnitOfWork _unitOfWork, 
-                                 ITransacctionRepository _transacctionRepository
+        public CashAdvanceService(IGenericRepository<Transaction> repo,
+                                 IMapper mapper,
+                                 ICreditCardRepository cardRepository,
+                                 IUnitOfWork _unitOfWork,
+                                 ITransacctionRepository _transacctionRepository,
+                                 IPurchaseRepository _repo
                                  ) : base(repo, mapper)
         {
 
@@ -30,7 +32,8 @@ namespace BankingApp.Core.Application.Services
             _cardRepository = cardRepository;
             this._unitOfWork = _unitOfWork;
             this._transacctionRepository = _transacctionRepository;
-            
+            this._purchaseRepository = _repo;
+
         }
 
 
@@ -45,7 +48,7 @@ namespace BankingApp.Core.Application.Services
             try
             {
 
-                var _validatelAmountOwedCreditCard = await ValidateTotalAmountOwedCreditCard(Dto.Origin,Dto.Amount);
+                var _validatelAmountOwedCreditCard = await ValidateTotalAmountOwedCreditCard(Dto.Origin, Dto.Amount);
                 if (_validatelAmountOwedCreditCard == null)
                 {
                     return null;
@@ -53,12 +56,38 @@ namespace BankingApp.Core.Application.Services
                 }
 
 
-               
+
                 var entity = _mapper.Map<Transaction>(Dto);
                 if (entity is not null)
                 {
+                    entity.TellerId = null;
                     var transac = await _transacctionRepository.AddAsync(entity);
                     var dto = _mapper.Map<CreateTransactionDto>(transac);
+
+
+
+                    bool existsPurchase = await _purchaseRepository.ExistsAsync(
+                                                 cardNumber: dto.Origin,
+                                                 amountSpent: dto.Amount,
+                                                 merchantName: "CASH AVANCES"
+                                             
+                                                    );
+                    if (!existsPurchase)
+                    {
+                        var purchase = new Purchase
+                        {
+                            MerchantName = "CASH AVANCES",
+                            AmountSpent = dto.Amount,
+                            CardNumber = dto.Origin,
+                            DateTime = DateTime.Now,
+                            Status = transac.Status,
+                            Id = Guid.NewGuid()
+                        };
+
+                        await _purchaseRepository.AddAsync(purchase);
+                    }
+
+
                     await _unitOfWork.CommitAsync();
                     return dto;
                 }
@@ -90,26 +119,27 @@ namespace BankingApp.Core.Application.Services
 
 
 
-                var entity = await _cardRepository.CreditTotalAmountOwedAsync(number,amount);
+                var entity = await _cardRepository.CreditTotalAmountOwedAsync(number, amount);
 
-                if(entity == null)
+                if (entity == null)
                 {
-                 
-                     return false;
-                
+
+                    return false;
+
                 }
 
 
                 return true;
 
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
 
 
                 return false;
-             
-            
-            
+
+
+
             }
 
         }
@@ -133,17 +163,17 @@ namespace BankingApp.Core.Application.Services
 
                 if (creditCard == null)
                 {
-                   
-                     response.HasError = true;
-                     response.Error = "Ocurrio un error, no pudo encontrar una tarjeta con el numero indicado";
-                    
+
+                    response.HasError = true;
+                    response.Error = "Ocurrio un error, no pudo encontrar una tarjeta con el numero indicado";
+
                 }
 
 
                 if (creditCard!.CreditLimitAmount < amount * interest)
                 {
-                       response.HasError = true;
-                       response.Error = "EL avance no se pudo realizar, El monto digitado  mas los intereses superan el limite de credito de la tarjeta";
+                    response.HasError = true;
+                    response.Error = "EL avance no se pudo realizar, El monto digitado  mas los intereses superan el limite de credito de la tarjeta";
 
                 }
 
@@ -155,7 +185,7 @@ namespace BankingApp.Core.Application.Services
 
                     decimal AmountValidate = creditCard.TotalAmountOwed + amount * interest;
 
-                    if(AmountValidate > creditCard.CreditLimitAmount)
+                    if (AmountValidate > creditCard.CreditLimitAmount)
                     {
 
                         response.HasError = true;
@@ -171,15 +201,16 @@ namespace BankingApp.Core.Application.Services
                 return response;
 
 
-                
-            }catch(Exception ex)
+
+            }
+            catch (Exception ex)
             {
 
 
                 response.HasError = true;
                 response.Error = ex.Message;
                 return response;
-            
+
             }
 
         }

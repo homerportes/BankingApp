@@ -1,0 +1,109 @@
+﻿/* Tarjeta resumen */
+.loan-summary-card {
+    background: linear-gradient(135deg, var(--color-azul-oscuro), var(--color-azul-medio), var(--color-azul-claro) );
+    border-radius: var(--radius);
+    color: white;
+    box-shadow: var(--shadow);
+}
+
+.summary-item {
+    margin: 10px 15px;
+    min-width: 120px;
+}
+
+.summary-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.summary-value {
+    display: block;
+    font-size: 1.6rem;
+    font-weight: 700;
+}
+
+/* Tabla */
+.table-custom {
+    background: white;
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+}
+
+    .table-custom th {
+        background: var(--color-azul-oscuro);
+        color: white;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .table-custom tr:hover {
+        background-color: #eef7ff !important;
+    }
+
+.amount {
+    font-weight: 700;
+    color: var(--color-azul-medio);
+}
+
+/* BADGES de ESTADO */
+.badge-status {
+    padding: 6px 14px;
+    border-radius: 18px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: white;
+    display: inline-flex;
+    align-items: center;
+}
+
+    .badge-status i {
+        font-size: 1rem;
+    }
+
+/* Pagada */
+.paid {
+    background: #28a745;
+}
+
+/* Pendiente */
+.pending {
+    background: #ffc107;
+    color: #212529 !important;
+}
+
+/* En Mora */
+.delinquent {
+    background: #dc3545;
+}
+
+
+.clear {
+    background: #6c757d;
+}
+
+
+.btn-back {
+    border-color: var(--color-secondary);
+    color: var(--color-secondary);
+    border-radius: var(--radius);
+    padding: 6px 20px;
+    font-weight: 600;
+}
+
+    .btn-back:hover {
+        background: var(--color-secondary);
+        color: white;
+    }
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

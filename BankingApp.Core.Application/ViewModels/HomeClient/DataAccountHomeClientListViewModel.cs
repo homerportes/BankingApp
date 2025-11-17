@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
 
 namespace BankingApp.Core.Application.ViewModels.HomeClient
 {
@@ -11,6 +7,8 @@ namespace BankingApp.Core.Application.ViewModels.HomeClient
 
 
         public List<DataAccountHomeClientViewModel> ListAccountClient { get; set; } = new();
+        public List<DataLoanHomeClientViewModel> ListLoanHomeClient { get; set; } = new();
+        public List<DataCreditCardHomeClientViewModel> ListCredtiCardHomeClient { get; set; } = new();
 
 
     }

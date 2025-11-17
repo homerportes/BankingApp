@@ -13,7 +13,7 @@ namespace BankingApp.Core.Application.ViewModels.Loan
         public int TermInMonths { get; set; }
         [Required(ErrorMessage = "El cliente  es requerido")]
 
-        public string ClientId { get; set; }
+        public string ?ClientId { get; set; }
         [Required(ErrorMessage = "El monto del prestamo es requerido")]
 
         public decimal Amount { get; set; }

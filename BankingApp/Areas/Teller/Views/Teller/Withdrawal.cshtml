@@ -1,5 +1,73 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model BankingApp.Core.Application.ViewModels.Teller.WithdrawalViewModel
 @{
+    ViewData["Title"] = "Retiro";
+    Layout = "_LayoutTeller";
 }
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">
+                        <i class="bi bi-cash-stack"></i> Realizar Retiro
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form asp-area="Teller" asp-controller="Teller" asp-action="Withdrawal" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="AccountNumber" class="form-label">
+                                <i class="bi bi-hash"></i> Número de Cuenta
+                            </label>
+                            <input asp-for="AccountNumber" 
+                                   class="form-control form-control-lg" 
+                                   placeholder="Ingrese 9 dígitos" 
+                                   maxlength="9"
+                                   pattern="[0-9]{9}"
+                                   autofocus />
+                            <span asp-validation-for="AccountNumber" class="text-danger"></span>
+                            <div class="form-text">Debe tener 9 dígitos</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Amount" class="form-label">
+                                <i class="bi bi-currency-dollar"></i> Monto a Retirar
+                            </label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text">RD$</span>
+                                <input asp-for="Amount" 
+                                       class="form-control" 
+                                       placeholder="0.00"
+                                       type="number"
+                                       step="0.01"
+                                       min="0.01" />
+                            </div>
+                            <span asp-validation-for="Amount" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-warning btn-lg text-dark">
+                                <i class="bi bi-check-circle"></i> Continuar
+                            </button>
+                            <a asp-area="Teller" asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Regresar al Dashboard
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="alert alert-warning mt-3" role="alert">
+                <i class="bi bi-exclamation-triangle-fill"></i> 
+                <strong>Importante:</strong> El sistema validará que la cuenta tenga saldo suficiente.
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+

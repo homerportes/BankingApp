@@ -5,6 +5,7 @@ using BankingApp.Core.Domain.Settings;
 using BankingApp.Infraestructure.Identity.Entities;
 using InvestmentApp.Infrastructure.Identity.Services;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System;
@@ -52,13 +53,13 @@ namespace BankingApp.Infraestructure.Identity.Services
             if (user == null)
             {
                 responseDto.HasError = true;
-                responseDto.Errors.Add($"No hay ningun usuario el nombre de usuario {loginDto.Username}");
+                responseDto.Errors!.Add($"No hay ningun usuario el nombre de usuario {loginDto.Username}");
                 return responseDto;
             }
             if (!user.EmailConfirmed)
             {
                 responseDto.HasError = true;
-                responseDto.Errors.Add($"Esta cuenta no esta activa. Actívala mediante un link que ha sido enviado a tu correo");
+                responseDto.Errors!.Add($"Esta cuenta no esta activa. Actívala mediante un link que ha sido enviado a tu correo");
                 return responseDto;
             }
 
@@ -66,7 +67,7 @@ namespace BankingApp.Infraestructure.Identity.Services
             if (!result.Succeeded)
             {
                 responseDto.HasError = true;
-                responseDto.Errors.Add($"Usuario o contraseña incorrectos");
+                responseDto.Errors!.Add($"Usuario o contraseña incorrectos");
                 return responseDto;
 
             }
@@ -79,6 +80,23 @@ namespace BankingApp.Infraestructure.Identity.Services
 
             return responseDto;
         }
+
+        public async Task DeactivateUsersAsync(List<string> userIds)
+        {
+            var usuarios = await _userManager.Users
+                .Where(u => userIds.Contains(u.Id))
+                .ToListAsync();
+
+            foreach (var usuario in usuarios)
+            {
+                usuario.IsActive = false;
+
+                await _userManager.UpdateAsync(usuario);
+            }
+        }
+
+
+
 
         #region private methods
         private async Task<JwtSecurityToken> GenerateJWToken(AppUser user)

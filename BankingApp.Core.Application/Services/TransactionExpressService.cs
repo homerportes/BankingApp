@@ -78,6 +78,7 @@ namespace BankingApp.Core.Application.Services
                 var entity = _mapper.Map<Transaction>(Dto);
                 if (entity is not null)
                 {
+                    entity.TellerId = null;
                     var transac = await transacctionRepository.AddAsync(entity);
                     var dto = _mapper.Map<CreateTransactionDto>(transac);
                     await unitOfWork.CommitAsync();
@@ -131,7 +132,7 @@ namespace BankingApp.Core.Application.Services
                 return false;
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 
 
@@ -173,7 +174,7 @@ namespace BankingApp.Core.Application.Services
                 return _DTO;
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 
 
@@ -205,7 +206,7 @@ namespace BankingApp.Core.Application.Services
 
 
 
-                var Accounts = await accountRepository.GetAllListByIdClienteAsync(idUser);
+                var Accounts = await accountRepository.GetAllListByIdAsync(idUser);
                 if (Accounts != null && Accounts.Any())
                 {
 
@@ -223,7 +224,7 @@ namespace BankingApp.Core.Application.Services
 
 
             }
-            catch (Exception ex)
+            catch (Exception )
             {
 
                 return new List<string>();
@@ -264,7 +265,7 @@ namespace BankingApp.Core.Application.Services
                 return _DTO;
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 
 
@@ -313,7 +314,7 @@ namespace BankingApp.Core.Application.Services
                 return false;
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 
 
@@ -337,8 +338,8 @@ namespace BankingApp.Core.Application.Services
                 foreach (var item in beneficiaryList)
                 {
 
-                    var accountBeneficiary = await accountRepository.GetAccounByIdClienteAsync(item.BeneficiaryId);
-                    var UserBeneficiary = await serviceForWebAPP.GetUserById(item.BeneficiaryId);
+                    var accountBeneficiary =  await  accountRepository.GetAccounByIdAsync(item.BeneficiaryId);
+                    var UserBeneficiary =   await  serviceForWebAPP.GetUserById(item.BeneficiaryId);
 
 
                     var entity = _mapper.Map<BeneficiaryToTransactionDto>(UserBeneficiary);
@@ -353,7 +354,7 @@ namespace BankingApp.Core.Application.Services
 
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 
                 return new List<BeneficiaryToTransactionDto>();
@@ -402,7 +403,7 @@ namespace BankingApp.Core.Application.Services
                 return response;
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 
                 return null;
@@ -451,7 +452,7 @@ namespace BankingApp.Core.Application.Services
                 return null;
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 
                 return null;

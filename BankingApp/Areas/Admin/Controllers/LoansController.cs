@@ -105,7 +105,7 @@ namespace YourNamespace.Areas.Admin.Controllers
             var vm = new ClientsPageViewModel
             {
                 Clients = _mapper.Map<List<UserViewModel>>(dtos),
-                ClientsDebt = await _service.GetAverageLoanDebth(),
+                ClientsDebt = await _service.GetTotalLoanDebt(),
                 DocumentIdFilter = documentIdFilter
             };
             return View(vm);
@@ -140,7 +140,7 @@ namespace YourNamespace.Areas.Admin.Controllers
             var request = new LoanRequest
             {
                 AnualInterest = vm.AnnualInterestRate,
-                ClientId = vm.ClientId,
+                ClientId = vm.ClientId?? "",
                 LoanAmount = vm.Amount,
                 LoanTermInMonths = vm.TermInMonths
             };
@@ -173,8 +173,8 @@ namespace YourNamespace.Areas.Admin.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            var json = pending.ToString();
-            var request = System.Text.Json.JsonSerializer.Deserialize<LoanRequest>(json);
+            var json = pending!.ToString();
+            var request = System.Text.Json.JsonSerializer.Deserialize<LoanRequest>(json??"");
             if (request == null)
             {
                 TempData["Error"] = "Datos de solicitud inválidos.";

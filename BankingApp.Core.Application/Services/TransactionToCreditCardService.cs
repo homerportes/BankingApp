@@ -62,10 +62,21 @@ namespace BankingApp.Core.Application.Services
                     descontar = Dto.Amount; 
                 }
 
+                if(_creditCard.TotalAmountOwed == 0)
+                {
 
-                    var entity = _mapper.Map<Transaction>(Dto);
+
+                    descontar = 0;
+                
+                
+                }
+
+
+
+                 var entity = _mapper.Map<Transaction>(Dto);
                 if (entity is not null)
                 {
+                    entity.TellerId = null;
                     entity.Amount = descontar;
                     var transac = await repo.AddAsync(entity);
                     var dto = _mapper.Map<CreateTransactionDto>(transac);
@@ -105,7 +116,7 @@ namespace BankingApp.Core.Application.Services
                 return map;
 
             }
-            catch(Exception ex)
+            catch (Exception)
             {
 
 
@@ -145,7 +156,7 @@ namespace BankingApp.Core.Application.Services
                 return CreditCards;
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 
                 return new List<string>();
@@ -153,5 +164,50 @@ namespace BankingApp.Core.Application.Services
             }
 
         }
+
+
+
+        public async Task<string?> ValidateDebitCreditCard(string BeneficiaryId) 
+        {
+            try
+            {
+
+                string response = "";
+                var _creditCard = await _creditCardRepository.GetByNumberAsync(BeneficiaryId);
+
+
+                if( _creditCard == null)
+                {
+
+                   response = "No se encontro registro de la tarjeta  a pagar";
+                    return response;
+
+                }
+
+                if(_creditCard!.TotalAmountOwed == 0)
+                {
+
+
+                    response = "La tarjeta seleccionada no se puede pagar no tiene deuda, favor verifiicar";
+                    return response;
+
+                }
+
+
+
+                return null;
+            }
+            catch(Exception ex)
+            {
+
+
+                return null;
+            
+            }
+        
+        }
+
+
+
     }
 }

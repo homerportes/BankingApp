@@ -92,6 +92,20 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
             return false;
         }
 
+        public async Task<List<Transaction>> GetTransactionsByTellerAndDateAsync(string tellerId, DateTime startDate, DateTime endDate)
+        {
+            try
+            {
+                return await context.Set<Transaction>()
+                    .Where(t => t.TellerId == tellerId && t.DateTime >= startDate && t.DateTime < endDate)
+                    .ToListAsync();
+            }
+            catch
+            {
+                return new List<Transaction>();
+            }
+        }
+
 
         public async Task<List<Transaction>> GetListTransaction(string number)
         {
@@ -99,6 +113,16 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
             return await context.Set<Transaction>().Where(t => t.Origin == number || t.Beneficiary == number).ToListAsync();
 
         }
+
+
+
+        public async Task<List<Transaction>> GetListTransactionByNumberCreditCard(string number)
+        {
+
+            return await context.Set<Transaction>().Where(t => t.Origin == number ).ToListAsync();
+
+        }
+
 
 
     }

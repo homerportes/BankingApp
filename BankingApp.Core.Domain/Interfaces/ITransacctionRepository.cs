@@ -10,6 +10,11 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
         Task<bool> MarkAsCredit(int id, Transaction transaction);
         Task<bool> MarkAsDebit(int id, Transaction transaction);
 
+
         Task<List<Transaction>> GetListTransaction(string number);
+
+        Task<List<Transaction>> GetTransactionsByTellerAndDateAsync(string tellerId, DateTime startDate, DateTime endDate);
+        Task<List<Transaction>> GetListTransactionByNumberCreditCard(string number);
+
     }
 }

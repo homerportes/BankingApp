@@ -21,7 +21,7 @@ namespace BankingApp.Core.Application.Dtos.User
         public bool IsSuccesful { get; set; }
         public string ?StatusMessage { get; set; }
         public bool IsInternalError { get; set; }
-        public string EntityId { get; set; }
+        public string ?EntityId { get; set; }
         public bool UserAlreadyExists { get; internal set; }
     }
 }

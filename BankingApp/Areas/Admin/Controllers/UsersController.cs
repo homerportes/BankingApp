@@ -44,8 +44,12 @@ namespace BankingApp.Areas.Admin.Controllers
 
             var enumMappings = EnumMapper<AppRoles>.GetAliasEnumPairs()
                 .Where(r => r.Value != AppRoles.COMMERCE)
-                .Select(e => new { Value = e.Alias, Text = e.Alias })
-                .ToList();
+                    .Select(e => new
+                    {
+                        Value = e.Alias,
+                        Text = char.ToUpper(e.Alias[0]) + e.Alias.Substring(1)
+                    });
+
 
             ViewBag.Filters = new SelectList(enumMappings, "Value", "Text", filter);
 
@@ -65,8 +69,11 @@ namespace BankingApp.Areas.Admin.Controllers
             vm.MaxPages = dtos.PagesCount;
 
             var enumMappings = EnumMapper<AppRoles>.GetAliasEnumPairs()
-                .Select(e => new { Value = e.Value, Text = e.Alias })
-                .ToList();
+                .Select(e => new
+                {
+                    Value = e.Value,
+                    Text = char.ToUpper(e.Alias[0]) + e.Alias.Substring(1)
+                });
 
             ViewBag.Filters = new SelectList(enumMappings, "Value", "Text");
 
@@ -136,7 +143,7 @@ namespace BankingApp.Areas.Admin.Controllers
                     return View("Register", vm);
                 }
                 dto.Roles = new List<string> { vm.Role.ToString().ToLower() };
-                var result = await _managementService.CreateUserWithAmount(dto, user?.Id ?? user.Id,false,origin);
+                var result = await _managementService.CreateUserWithAmount(dto, user?.Id ?? user!.Id,false,origin);
                 if (result.UserAlreadyExists || !result.IsSuccesful)
                 {
                     vm.HasError = true;
@@ -149,7 +156,7 @@ namespace BankingApp.Areas.Admin.Controllers
             else
             {
                 var saveDto = _mapper.Map<SaveUserDto>(vm);
-                saveDto.Roles.Add(vm.Role.ToString().ToLower());
+                saveDto.Roles?.Add(vm.Role.ToString().ToLower());
 
                 var registerResult = await _accountService.RegisterUser(saveDto, origin, false);
 
@@ -181,12 +188,27 @@ namespace BankingApp.Areas.Admin.Controllers
         [HttpPost]
         public async Task<IActionResult> EditPost(EditUserWithAmountViewModel vm)
         {
-            var currentUser = await _userService.GetCurrentUserAsync();
-            bool isClient = currentUser != null && currentUser.Role.ToLower() == AppRoles.CLIENT.ToString().ToLower();
-
-            if (isClient && (vm.AditionalAmount == null || vm.AditionalAmount <= 0))
+            if (string.IsNullOrEmpty(vm.Id))
             {
-                ModelState.AddModelError("AditionalAmount", "El monto adicional es obligatorio para clientes.");
+                vm.HasError = true;
+                vm.Error = "El ID del usuario es requerido.";
+                return View("Edit", vm);
+            }
+
+            var userToEdit = await _userService.GetUserById(vm.Id);
+            if (userToEdit == null)
+            {
+                vm.HasError = true;
+                vm.Error = "Usuario no encontrado.";
+                return View("Edit", vm);
+            }
+
+            bool isClient = userToEdit.Role.ToLower() == AppRoles.CLIENT.ToString().ToLower();
+            vm.IsClient = isClient;
+
+            if (isClient && (!vm.AditionalAmount.HasValue || vm.AditionalAmount <= 0))
+            {
+                ModelState.AddModelError("AditionalAmount", "El monto adicional es obligatorio para clientes y debe ser mayor a cero.");
             }
 
             if (!ModelState.IsValid)
@@ -195,16 +217,22 @@ namespace BankingApp.Areas.Admin.Controllers
                 return View("Edit", vm);
             }
 
+            var currentUser = await _userService.GetCurrentUserAsync();
             var dto = _mapper.Map<UpdateUserDto>(vm);
             var result = await _managementService.EditUserAndAmountAsync(dto, currentUser?.Id ?? "");
 
             if (!result.IsSuccesful)
             {
                 vm.HasError = true;
-                vm.Error = "No se pudo actualizar el usuario.";
+                vm.Error = !string.IsNullOrEmpty(result.StatusMessage) 
+                    ? result.StatusMessage 
+                    : "No se pudo actualizar el usuario.";
+                ViewBag.UserIsClient = isClient;
+                return View("Edit", vm);
             }
 
-            return View("Edit", vm);
+            TempData["SuccessMessage"] = "Usuario actualizado exitosamente.";
+            return RedirectToAction("Index");
         }
     }
 }

@@ -16,6 +16,8 @@ namespace BankingApp.Core.Application.ViewModels.User
         public string LastName { get; set; } = null!;
 
         [Required(ErrorMessage = "La cédula es obligatoria.")]
+        [StringLength(11, MinimumLength = 11, ErrorMessage = "La cédula debe tener exactamente 11 dígitos")]
+        [RegularExpression(@"^\d{11}$", ErrorMessage = "La cédula debe contener solo 11 dígitos numéricos (ej: 00112345678)")]
         public string DocumentIdNumber { get; set; } = null!;
 
         [Required(ErrorMessage = "El correo electrónico es obligatorio.")]
@@ -23,9 +25,11 @@ namespace BankingApp.Core.Application.ViewModels.User
         public string Email { get; set; } = null!;
 
         [Required(ErrorMessage = "El nombre de usuario es obligatorio.")]
+        [StringLength(50, MinimumLength = 3, ErrorMessage = "El nombre de usuario debe tener entre 3 y 50 caracteres")]
         public string UserName { get; set; } = null!;
 
         [DataType(DataType.Password)]
+        [StringLength(100, MinimumLength = 8, ErrorMessage = "La contraseña debe tener al menos 8 caracteres")]
         public string? Password { get; set; }
 
         [DataType(DataType.Password)]
@@ -47,7 +51,7 @@ namespace BankingApp.Core.Application.ViewModels.User
                 if (Password.Length < 8)
                 {
                     yield return new ValidationResult(
-                        "La contraseña debe tener al menos 8 caracteres.",
+                        "La contraseña debe tener al menos 8 caracteres",
                         new[] { nameof(Password) });
                 }
 
@@ -55,7 +59,23 @@ namespace BankingApp.Core.Application.ViewModels.User
                 if (!Regex.IsMatch(Password, @"[A-Z]"))
                 {
                     yield return new ValidationResult(
-                        "La contraseña debe contener al menos una letra mayúscula.",
+                        "La contraseña debe contener al menos una letra mayúscula",
+                        new[] { nameof(Password) });
+                }
+
+                // Verifica al menos una minúscula
+                if (!Regex.IsMatch(Password, @"[a-z]"))
+                {
+                    yield return new ValidationResult(
+                        "La contraseña debe contener al menos una letra minúscula",
+                        new[] { nameof(Password) });
+                }
+
+                // Verifica al menos un número
+                if (!Regex.IsMatch(Password, @"[0-9]"))
+                {
+                    yield return new ValidationResult(
+                        "La contraseña debe contener al menos un número",
                         new[] { nameof(Password) });
                 }
 
@@ -63,7 +83,7 @@ namespace BankingApp.Core.Application.ViewModels.User
                 if (!Regex.IsMatch(Password, @"[\W_]"))
                 {
                     yield return new ValidationResult(
-                        "La contraseña debe contener al menos un carácter especial (por ejemplo: @, #, $, %, &).",
+                        "La contraseña debe contener al menos un carácter especial (ej: @, #, $, %, &)",
                         new[] { nameof(Password) });
                 }
 
@@ -71,13 +91,13 @@ namespace BankingApp.Core.Application.ViewModels.User
                 if (string.IsNullOrWhiteSpace(ConfirmPassword))
                 {
                     yield return new ValidationResult(
-                        "Debe confirmar la contraseña.",
+                        "Debe confirmar la contraseña",
                         new[] { nameof(ConfirmPassword) });
                 }
                 else if (Password != ConfirmPassword)
                 {
                     yield return new ValidationResult(
-                        "Las contraseñas no coinciden.",
+                        "Las contraseñas no coinciden",
                         new[] { nameof(ConfirmPassword) });
                 }
             }

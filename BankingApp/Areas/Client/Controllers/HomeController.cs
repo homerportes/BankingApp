@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using BankingApp.Core.Application.Interfaces;
 using BankingApp.Core.Application.ViewModels.HomeClient;
-using BankingApp.Core.Domain.Common.Enums;
 using BankingApp.Infraestructure.Identity.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -37,17 +36,23 @@ namespace BankingApp.Areas.Client.Controllers
             var user = await userManager.GetUserAsync(User);
 
             var Accounts = await clientService.GetDataAccountClient(user!.Id);
+            var Loans = await clientService.GetDataLoanHomeClient(user!.Id);
+            var creditCards = await clientService.GetDetaCreditCardHomeClient(user.Id);
 
             var _entities = mapper.Map<List<DataAccountHomeClientViewModel>>(Accounts);
-
+            var _entitiesLoan = mapper.Map<List<DataLoanHomeClientViewModel>>(Loans);
+            var _credtiCards = mapper.Map<List<DataCreditCardHomeClientViewModel>>(creditCards);
        
             var listAccount = new DataAccountHomeClientListViewModel()
             {
-                ListAccountClient = _entities
+                ListAccountClient = _entities,
+                ListLoanHomeClient = _entitiesLoan,
+                ListCredtiCardHomeClient = _credtiCards
             };
 
             return View(listAccount);
         }
+
 
 
 
@@ -65,11 +70,11 @@ namespace BankingApp.Areas.Client.Controllers
             }
 
 
-            var transactions = await clientService.GetDataListTransaction(number);
+            var Details = await clientService.GetDataListTransaction(number);
 
 
 
-            if (transactions == null)
+            if (Details == null)
             {
 
                 TempData["Error"] = "No se encontraron transacciones a la cuenta seleccionada...";
@@ -78,13 +83,115 @@ namespace BankingApp.Areas.Client.Controllers
 
 
 
-            var entities = mapper.Map<List<DataTransactionHomeClientViewModel>>(transactions);
+            var entities = mapper.Map<List<DataTransactionHomeClientViewModel>>(Details);
 
 
-            var _ListTransaction = new DataTransactionHomeClientListViewModel() { DataTransactionHomeClient = entities };
+            var _ListCreditCard = new DataTransactionHomeClientListViewModel() { DataTransactionHomeClient = entities };
+
+            return View(_ListCreditCard);
+        }
+
+
+
+
+
+
+
+        [HttpGet]
+        public async Task<IActionResult> DetailsLoan(Guid LoanId)
+        {
+
+            if (LoanId == Guid.Empty)
+            {
+
+                TempData["Error"] = "Ocurrio un error al intentar ver la tabla de amortizacion de este prestamo, favor volver a intentar";
+                return RedirectToRoute("Index");
+            }
+
+
+            var Loans = await clientService.GetDetailsLoanHomeClient(LoanId);
+
+
+
+            if (Loans == null)
+            {
+
+                TempData["Error"] = "No se encontraron transacciones a la cuenta seleccionada...";
+                return RedirectToRoute("Index");
+            }
+
+
+
+            var entities = mapper.Map<List<DetailsLoanHomeClientViewModel>>(Loans);
+
+
+            var _ListTransaction = new DetailsLoanListHomeClientViewModel() { LoanHomeClientViewModels = entities };
 
             return View(_ListTransaction);
         }
+
+
+
+
+
+
+
+
+        [HttpGet]
+        public async Task<IActionResult> DetailsCredtiCard(string number)
+        {
+
+            if (string.IsNullOrEmpty(number))
+            {
+
+                TempData["Error"] = "Ocurrio un error al intentar ver la informacion del consumo, favor intentar otra vez";
+                return RedirectToRoute("Index");
+            }
+
+
+            var CredtiCard = await clientService.GetDetailsCreditCardHomeClient(number);
+
+
+
+            if (CredtiCard == null)
+            {
+
+                TempData["Error"] = "No se encontraron transacciones a la cuenta seleccionada...";
+                return RedirectToRoute("Index");
+            }
+
+
+
+            var entities = mapper.Map<List<DetailsCreditCardHomeClientViewModel>>(CredtiCard);
+
+
+            var _ListTransaction = new DetailsCreditCardHomeClientListViewModel() { DetailsCreditCard = entities };
+
+            return View(_ListTransaction);
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     }

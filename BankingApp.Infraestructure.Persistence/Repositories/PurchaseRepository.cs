@@ -21,5 +21,22 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
                 .OrderByDescending(p => p.DateTime)
                 .ToListAsync();
         }
+
+
+
+
+        public async Task<bool> ExistsAsync(string cardNumber, decimal amountSpent, string merchantName)
+        {
+            return await _context.Set<Purchase>()
+                .AnyAsync(p =>
+                    p.CardNumber == cardNumber &&
+                    p.AmountSpent == amountSpent &&
+                    p.MerchantName == merchantName 
+                  
+                );
+        }
+
+
+
     }
 }

@@ -1,114 +1,126 @@
-﻿
-@model DataTransactionHomeClientListViewModel
-
-
+﻿@model DataTransactionHomeClientListViewModel
 
 @{
-    ViewData["Title"] = "Home cliente";
+    ViewData["Title"] = "Historial de Transacciones";
     Layout = "_LayoutClient";
 }
-
 
 <link rel="stylesheet" href="~/css/DetailsTransactionStyle.css" />
 
 <div class="container mt-4">
 
-    <h2 class="page-title text-center">Historial de Transacciones</h2>
+    <h2 class="page-title text-center mb-4">
+        <i class="bi bi-receipt-cutoff me-2"></i>
+        Historial de Transacciones
+    </h2>
 
     @if (Model.DataTransactionHomeClient == null || !Model.DataTransactionHomeClient.Any())
     {
-        <div class="no-transactions text-center mt-5">
-            <i class="bi bi-receipt-cutoff display-1 text-muted"></i>
-            <h4 class="mt-3 text-muted">No tiene transacciones registradas</h4>
-            <p class="text-secondary">Aquí aparecerán los movimientos de su cuenta.</p>
+        <div class="empty-state text-center mt-5">
+            <i class="bi bi-journal-x display-1 text-muted"></i>
+
+            <h4 class="mt-3 fw-bold text-muted">Aún no tienes transacciones</h4>
+            <p class="text-secondary">Cuando realices movimientos aparecerán aquí.</p>
         </div>
+
         <div class="text-center mt-4">
             <a asp-area="Client" asp-controller="Home" asp-action="Index" class="btn-back btn btn-outline-warning">
-                <i class="bi bi-arrow-left"></i>
-                Volver al listado de productos
+                <i class="bi bi-arrow-left"></i> Volver al inicio
             </a>
         </div>
     }
     else
     {
-        foreach (var item in Model.DataTransactionHomeClient)
-        {
-            <div class="transaction-card mb-4">
+        <div class="transaction-list">
 
-                <div class="detail-row">
-                    <span class="detail-label">Fecha:</span>
-                    <span class="detail-value">
-                        @item.Fecha.ToString("dd/MM/yyyy hh:mm tt")
+            @foreach (var item in Model.DataTransactionHomeClient)
+            {
+                <div class="transaction-card blue-gradient-card shadow-sm">
+
+                    <div class="card-header-custom text-white">
+                        <i class="bi bi-arrow-left-right me-1"></i>
+                        <span class="fw-bold">Transacción</span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="detail-label">Fecha:</span>
+                        <span class="detail-value text-white">
+                            @item.Fecha.ToLocalTime().ToString("dd/MM/yyyy hh:mm tt")
+                        </span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="detail-label">Monto:</span>
+                        <span class="detail-value amount @(item.Monto >= 0 ? "text-success" : "text-danger")">
+                            @((item.Monto > 0 ? item.Monto : 0) + " RD$")
+                        </span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="detail-label">Tipo:</span>
+                        <span class="detail-value text-white">
+                            @(item.Type == TransactionType.DEBIT ? "DÉBITO" : "CRÉDITO")
+                        </span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="detail-label">Beneficiario:</span>
+                        <span class="detail-value text-white">
+                            @(
+                                                item.Description == DescriptionTransaction.Transaccion_Express ? item.Beneficiary :
+                                                item.Description == DescriptionTransaction.Transaccion_A_Beneficiario ? item.Beneficiary :
+                                                item.Description == DescriptionTransaction.Trasaccion_A_Tarjeta ? item.Beneficiary![^4..] :
+                                                item.Description == DescriptionTransaction.Transaccion_A_Prestamo ? item.Beneficiary :
+                                                item.Description == DescriptionTransaction.Cash_Advance ? item.Beneficiary :
+                                                item.Description == DescriptionTransaction.CREDITCARDPAYMENT ? item.Beneficiary![^4..] :
+                                                item.Description == DescriptionTransaction.LOANPAYMENT ? item.Beneficiary :
+                                                item.Description == DescriptionTransaction.TRANSFER ? item.Beneficiary :
+                                                "No tuvo beneficiario"
+                                                )
+                        </span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="detail-label">Origen:</span>
+
+                        <span class="detail-value text-white">
+                            @(
+                                                item.Description == DescriptionTransaction.Transaccion_Express ? item.Origin :
+                                                item.Description == DescriptionTransaction.Transaccion_A_Beneficiario ? item.Origin :
+                                                item.Description == DescriptionTransaction.WITHDRAWAL ? item.Origin :
+                                                item.Description == DescriptionTransaction.Cash_Advance ? item.Origin![^4..] :
+                                                item.Description == DescriptionTransaction.DEPOSIT ? item.Origin :
+                                                item.Description == DescriptionTransaction.Transaccion_A_Prestamo ? item.Origin :
+                                                item.Description == DescriptionTransaction.Trasaccion_A_Tarjeta ? item.Origin :
+                                                item.Description == DescriptionTransaction.DISBURSEMENT ? item.Origin :
+                                                item.Description == DescriptionTransaction.CREDITCARDPAYMENT ? item.Origin :
+                                                item.Description == DescriptionTransaction.LOANPAYMENT ? item.Origin :
+                                                item.Description == DescriptionTransaction.TRANSFER ? item.Origin :
+                                                "No tiene origen"
+                                                )
                     </span>
                 </div>
 
-                <div class="detail-row">
-                    <span class="detail-label">Monto:</span>
-                    <span class="detail-value amount">
-                        @(item.Monto > 0 ? item.Monto : 0 + "RD$")
-                    </span>
+                    <div class="detail-row">
+                        <span class="detail-label">Estado:</span>
+
+                        <span class="status text-white @(item.Status == OperationStatus.APPROVED ? "status-approved" : "status-rejected")">
+                            @(item.Status == OperationStatus.APPROVED ? "APROBADA" : "RECHAZADA")
+                        </span>
+                    </div>
+
                 </div>
+                }
 
-                <div class="detail-row">
-                    <span class="detail-label">Tipo de Transacción:</span>
-                    <span class="detail-value">
-                        @(item.Type == TransactionType.DEBIT ? "DÉBITO" : "CRÉDITO")
-                    </span>
-                </div>
-
-                <div class="detail-row">
-                    <span class="detail-label">Beneficiario:</span>
-                    <span class="detail-value">
-                        @(item.Description == DescriptionTransaction.Transaccion_Express ?
-                                        item.Beneficiary :
-                                        item.Description == DescriptionTransaction.Transaccion_A_Beneficiario ?
-                                        item.Beneficiary :
-                                        item.Description == DescriptionTransaction.Trasaccion_A_Tarjeta ?
-                                        item.Beneficiary![^4..] :
-                                        item.Description == DescriptionTransaction.Transaccion_A_Prestamo ?
-                                        item.Beneficiary :
-                                        item.Description == DescriptionTransaction.Cash_Advance ?
-                                        item.Beneficiary :
-                                        "No tuvo beneficiario")
-                                                           </span>
-                                                       </div>
-
-                <div class="detail-row">
-                    <span class="detail-label">Origen:</span>
-                    <span class="detail-value">
-                        @(item.Description == DescriptionTransaction.Transaccion_Express ?
-                                        item.Origin :
-                                        item.Description == DescriptionTransaction.Transaccion_A_Beneficiario ?
-                                        item.Origin :
-                                        item.Beneficiary == "RETIRO" ? item.Origin :
-                                        item.Description == DescriptionTransaction.Cash_Advance ?
-                                        item.Origin![^4..] :
-                                        item.Origin == "DEPOSITO" ? "DEPOSITO" :
-                                        item.Description == DescriptionTransaction.Transaccion_A_Prestamo ?
-                                        item.Origin :
-                                        item.Description == DescriptionTransaction.Trasaccion_A_Tarjeta ?
-                                        item.Origin! :
-                                        "No tiene origen")
-            </span>
         </div>
-
-                <div class="detail-row">
-                    <span class="detail-label">Estado:</span>
-                    <span class="detail-value status @(item.Status == OperationStatus.APPROVED ? "status-approved" : "status-rejected")">
-                        @(item.Status == OperationStatus.APPROVED ? "APROBADA" : "RECHAZADA")
-                    </span>
-                </div>
-
-
-              
-            </div>
-        }
 
         <div class="text-center mt-4">
             <a asp-area="Client" asp-controller="Home" asp-action="Index" class="btn-back btn btn-outline-warning">
-                <i class="bi bi-arrow-left"></i>
-                Volver
+                <i class="bi bi-arrow-left"></i> Volver
             </a>
         </div>
     }
 </div>
+
+
+

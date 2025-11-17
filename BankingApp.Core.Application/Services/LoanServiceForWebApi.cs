@@ -9,6 +9,7 @@ using BankingApp.Core.Application.Interfaces;
 using BankingApp.Core.Domain.Common.Enums;
 using BankingApp.Core.Domain.Entities;
 using BankingApp.Core.Domain.Interfaces;
+using BankingApp.Infraestructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Reflection.Metadata;
@@ -22,57 +23,103 @@ namespace BankingApp.Core.Application.Services
         private readonly IInstallmentRepository _installmentRepo;
         private readonly IAccountRepository _accountRepo;
         private readonly IUnitOfWork _unitOfWork;
-  
+
         private readonly ILogger<Loan> _logger;
+        private readonly ICreditCardRepository _cardRepository;
 
         public LoanServiceForWebApi(
-            ILoanRepository repo, 
-            IMapper mapper, 
-            IInstallmentRepository installmentRepository, 
+            ILoanRepository repo,
+            IMapper mapper,
+            IInstallmentRepository installmentRepository,
             ILogger<Loan> logger,
             IAccountRepository accountRepository,
-            IUnitOfWork unitOfWork, 
-            IEmailService emailService, 
-            IUserService userService
-            ) 
-            : base(repo, mapper, logger, unitOfWork, installmentRepository, accountRepository, emailService, userService)
+            IUnitOfWork unitOfWork,
+            IEmailService emailService,
+            IUserService userService,
+            ICreditCardRepository cardRepository,
+            ITransacctionRepository transacctionRepository
+            )
+            : base(repo, mapper, logger, unitOfWork, installmentRepository, accountRepository, emailService, userService, cardRepository, transacctionRepository)
         {
             _loanRepository = repo;
-            _mapper=mapper;
-            _installmentRepo=installmentRepository;
+            _mapper = mapper;
+            _installmentRepo = installmentRepository;
             _accountRepo = accountRepository;
-            _unitOfWork=unitOfWork;
+            _unitOfWork = unitOfWork;
             _logger = logger;
-       
-        }
+            _cardRepository= cardRepository;
 
+
+        }
 
         public async Task<CreateLoanResult> HandleCreateRequestApi(LoanRequest request)
         {
             var result = new CreateLoanResult();
+            result.ClientIsHighRisk = false;
+            result.ClientIsAlreadyHighRisk = false;
+            result.ClientHasActiveLoan = false;
 
+            if (request == null ||
+               string.IsNullOrEmpty( request.ClientId)||
+                request.LoanAmount <= 0 ||
+                request.AnualInterest <= 0 ||
+                request.LoanTermInMonths <= 0)
+            {
+                result.HasValidationErrors = true;
+                result.ValidationMessage = "Datos incompletos o inválidos.";
+                return result;
+            }
+
+      
             result.ClientHasActiveLoan = await ClientHasActiveLoan(request.ClientId);
             if (result.ClientHasActiveLoan)
                 return result;
 
-            var userDebt = await _loanRepository
-                .GetAllQuery()
-                .Where(r => r.IsActive && r.ClientId == request.ClientId)
-                .Select(r => r.OutstandingBalance)
-                .SumAsync();
+          
+         
+            var clientLoansDebt = await GetClientLoansDebt(request.ClientId);
+            var cardDebt = await _cardRepository.GetClientTotalCreditCardDebt(request.ClientId);
 
-            var systemDebt = await GetAverageLoanDebth();
+            var userDebt = clientLoansDebt + cardDebt;
 
-            result.ClientIsHighRisk = userDebt > systemDebt || (userDebt + request.LoanAmount) > systemDebt;
+            var systemLoansDebt = await GetTotalLoanDebt();
+            var systemCardDebt = await _cardRepository.GetTotalClientsCreditCardDebt();
+
+            var systemDebt = systemLoansDebt + systemCardDebt;
+
+
+            if (userDebt > systemDebt)
+            {
+                result.ClientIsAlreadyHighRisk = true;
+                return result;
+            }
+             
+
+            var monthlyRate = request.AnualInterest / 100m;  
+            var interests = request.LoanAmount * monthlyRate * request.LoanTermInMonths;
+
+            var newLoanTotal = request.LoanAmount + interests;
+
+            result.ClientIsHighRisk =
+                userDebt > systemDebt ||
+               ( (userDebt + newLoanTotal) > systemDebt && systemDebt>0);
+
             if (result.ClientIsHighRisk)
                 return result;
 
-
             var createResult = await Create(request);
+
+
+
+
+
             if (createResult.LoanCreated)
             {
+              
                 await SendEmail(request, createResult);
+
             }
+
             return createResult;
         }
 
@@ -114,14 +161,14 @@ namespace BankingApp.Core.Application.Services
                 loan.InterestRate = newRate;
                 loan.UpdatedAt = DateTime.Now;
 
-                foreach (var installment in loan.Installments.Where(i => !i.IsPaid))
+                foreach (var installment in loan.Installments!.Where(i => !i.IsPaid))
                 {
                     installment.Value = newInstallmentValue;
                     installment.IsModified = true;
                 }
 
                 await _loanRepository.UpdateByObjectAsync(loan);
-                await _installmentRepo.UpdateRangeAsync(loan.Installments.ToList());
+                await _installmentRepo.UpdateRangeAsync(loan.Installments!.ToList());
 
                 await _unitOfWork.CommitAsync();
 

@@ -27,7 +27,7 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
         public async Task<Installment?> GetByIdLoan(Guid loanId)
         {
 
-            return context.Set<Installment>().FirstOrDefault(s => s.LoanId == loanId);
+            return await context.Set<Installment>().FirstOrDefaultAsync(s => s.LoanId == loanId);
           
         }
 
@@ -37,6 +37,17 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
             return await context.Set<Installment>().Where(s => s.LoanId == loanID && s.IsPaid == false).ToListAsync();
 
         }
+
+
+
+        public async Task<List<Installment>> GetTotalInstallamentByLoanId(Guid loanID)
+        {
+
+            return await context.Set<Installment>().Where(s => s.LoanId == loanID).ToListAsync();
+
+        }
+
+
 
         public async Task<Installment?> UpdateInstallmentOnPaymentAsync(int id, Installment installment, decimal amount)
         {
@@ -66,6 +77,21 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
 
             return null;
 
+        }
+
+        public async Task<List<Installment>> GetPendingInstallmentsByLoanIdAsync(Guid loanId)
+        {
+            try
+            {
+                return await context.Set<Installment>()
+                    .Where(i => i.LoanId == loanId && !i.IsPaid)
+                    .OrderBy(i => i.PayDate)
+                    .ToListAsync();
+            }
+            catch
+            {
+                return new List<Installment>();
+            }
         }
     }
 }

@@ -5,49 +5,156 @@
     Layout = "_LayoutClient";
 }
 
-
 <link rel="stylesheet" href="~/css/HomeClientStyle.css" />
 
 <div class="container mt-4">
 
-    <h2 class="accounts-title text-center">Mis Cuentas</h2>
+   
+    <h2 class="accounts-title text-center">Mis Productos</h2>
 
-    <div class="row g-4 mt-3">
+   
+    <h3 class="accounts-title mt-5">Mis Cuentas</h3>
 
+    <div class="row g-4 mt-2">
         @foreach (var item in Model.ListAccountClient)
         {
             <div class="col-md-4 col-sm-6">
                 <div class="account-card">
 
                     <div class="account-header">
-                       Cuenta: @item.Number
+                        <i class="bi bi-bank2"></i> Cuenta: @item.Number
                     </div>
 
                     <div class="balance-label">Balance disponible</div>
 
                     <div class="balance-amount">
-                        @(item.Banlace < 0 ? "0 RD$" : $"{item.Banlace} RD$")
+                        @(item.Banlace < 0 ? "0 RD$" : $"{item.Banlace:N2} RD$")
                     </div>
 
-
-                    <div class="account-header">
-                        Type: @item.Type
+                    <div class="account-header mt-2">
+                        Tipo: @item.Type
                     </div>
 
-
-                    <div class="text-center">
-                        <a asp-area="Client" asp-controller="Home" asp-action="DetailsTransaction"
+                    <div class="text-center mt-3">
+                        <a asp-area="Client"
+                           asp-controller="Home"
+                           asp-action="DetailsTransaction"
                            asp-route-number="@item.Number"
-                           class="btn btn-details">
+                           class="btn btn-details btn-primary">
                             Ver Detalles
-                         </a>
+                        </a>
                     </div>
 
                 </div>
             </div>
         }
-
     </div>
+
+
+  
+    @if (Model.ListLoanHomeClient != null && Model.ListLoanHomeClient.Any())
+    {
+        <h3 class="accounts-title mt-5">Mis Préstamos</h3>
+
+        <div class="row g-4 mt-2">
+            @foreach (var loan in Model.ListLoanHomeClient)
+            {
+                <div class="col-md-4 col-sm-6">
+                    <div class="account-card">
+
+                        <div class="account-header">
+                            <i class="bi bi-cash"></i> Monto Prestado: @loan.LoanedAmountTotal.ToString("N2") RD$
+                        </div>
+
+                        <div class="balance-label">Saldo Pendiente</div>
+
+                        <div class="balance-amount">
+                            @loan.OutstandingBalance.ToString("N2") RD$
+                        </div>
+
+                        <div class="account-header">Total Cuotas: @loan.installmentsTotalAmount</div>
+
+                        <div class="account-header">
+                            Cuotas pagadas: @loan.installmentsTotalAmountPaid / @loan.installmentsTotalAmount
+                        </div>
+
+                        <div class="account-header">Tasa de Interés: @loan.InterestRate.ToString("N2")%</div>
+
+                        <div class="account-header">Plazo: @loan.LoanTermInMonths meses</div>
+
+                        <div class="account-header">
+                            Estado:
+                            @if (loan.IsDelinquent)
+                            {
+                                <span class="text-danger bg-warning px-2 rounded">En Mora</span>
+                            }
+                            else
+                            {
+                                <span class="text-success bg-body-secondary px-2 rounded">Al Día</span>
+                            }
+                        </div>
+
+                        <div class="text-center mt-3">
+                            <a asp-area="Client"
+                               asp-controller="Home"
+                               asp-action="DetailsLoan"
+                               asp-route-LoanId="@loan.Id"
+                               class="btn btn-details btn-primary">
+                                Ver Detalles
+                            </a>
+                        </div>
+
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+
+   
+    @if (Model.ListCredtiCardHomeClient != null && Model.ListCredtiCardHomeClient.Any())
+    {
+        <h3 class="accounts-title mt-5">Mis Tarjetas</h3>
+
+        <div class="row g-4 mt-2">
+            @foreach (var card in Model.ListCredtiCardHomeClient)
+            {
+                <div class="col-md-4 col-sm-6">
+                    <div class="account-card">
+
+                        <div class="account-header">
+                            <i class="bi bi-credit-card"></i> Número: @card.Number
+                        </div>
+
+                        <div class="balance-label">Monto Límite</div>
+
+                        <div class="balance-amount">
+                            @card.CreditLimitAmount.ToString("N2") RD$
+                        </div>
+
+                        <div class="account-header mt-2">
+                            Monto adeudado: @card.TotalAmountOwed.ToString("N2") RD$
+                        </div>
+
+                        <div class="account-header">
+                            Expira: @card.ExpirationDate.ToString("MM/yy")
+                        </div>
+
+                        <div class="text-center mt-3">
+                            <a asp-area="Client"
+                               asp-controller="Home"
+                               asp-action="DetailsCredtiCard"
+                               asp-route-Number="@card.Number"
+                               class="btn btn-details btn-primary">
+                                Ver Detalles
+                            </a>
+                        </div>
+
+                    </div>
+                </div>
+            }
+        </div>
+    }
 
 </div>
 

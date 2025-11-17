@@ -28,8 +28,9 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
             {
                 _bankingContext.Entry(entry).CurrentValues.SetValues(entity);
                 await _bankingContext.SaveChangesAsync();
+                return entry;
             }
-            return entry;
+            return entity;
         }
 
 
@@ -41,27 +42,32 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
         }
 
 
-        public async Task<Loan?> PayLoan(Guid idLoan, decimal amount, int value)
+        public async Task<Loan?> PayLoan(Guid idLoan, decimal amount, int value, bool? IsActive = true)
         {
             var loan = await _bankingContext.Set<Loan>().FirstOrDefaultAsync(c => c.Id == idLoan);
 
-            if (loan != null || loan!.OutstandingBalance > 0)
+            if (loan != null)
             {
 
-                loan.OutstandingBalance -= amount;
-                loan.UpdatedAt = DateTime.UtcNow;
 
-                if (value > 1)
+                decimal descontar = 0m;
+                if (loan!.OutstandingBalance > 0 && loan.OutstandingBalance >= amount)
                 {
-                    loan.IsActive = true;
+
+                    loan.OutstandingBalance -= amount;
+
                 }
                 else
                 {
 
-                    loan.IsActive = false;
+                    loan.OutstandingBalance -= loan.OutstandingBalance; 
 
                 }
 
+                    loan.UpdatedAt = DateTime.UtcNow;
+                    loan.IsActive = IsActive!.Value;
+                  
+               
                 await _bankingContext.SaveChangesAsync();
                 return loan;
             }
@@ -71,11 +77,45 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
 
 
 
+
         public  async Task<Loan?> GetLoanByPublicId(string publicId)
         {
 
            return  await _bankingContext.Set<Loan>().FirstOrDefaultAsync(c => c.PublicId == publicId);
 
+        }
+
+
+
+        public async Task<Loan?> GetByNumberAsync(string loanNumber)
+        {
+            try
+            {
+                return await _bankingContext.Set<Loan>()
+                    .FirstOrDefaultAsync(l => l.PublicId == loanNumber);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public async Task<int> GetAllLoansCount()
+        {
+            return await _bankingContext.Set<Loan>().CountAsync();
+        }
+
+        public async Task<int> GetActiveLoansCount()
+        {
+            return await _bankingContext.Set<Loan>().CountAsync(l => l.IsActive);
+        }
+
+        public async Task<decimal> GetActiveClientsLoanDebt()
+        {
+            var total = await _bankingContext.Set<Loan>()
+                .Where(l => l.IsActive)
+                .SumAsync(l => (decimal?)l.OutstandingBalance);
+            return total ?? 0;
         }
     }
 }

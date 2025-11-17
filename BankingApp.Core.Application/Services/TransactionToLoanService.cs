@@ -69,6 +69,7 @@ namespace BankingApp.Core.Application.Services
                 var entity = _mapper.Map<Transaction>(Dto);
                 if (entity is not null)
                 {
+                    entity.TellerId = null;
                     var transac = await repo.AddAsync(entity);
                     var dto = _mapper.Map<CreateTransactionDto>(transac);
                     await unitOfWork.CommitAsync();
@@ -121,7 +122,7 @@ namespace BankingApp.Core.Application.Services
 
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 
                 return new List<string>();
@@ -138,18 +139,18 @@ namespace BankingApp.Core.Application.Services
                 var entity = await loanRepo.GetLoanByPublicId(publicId);
 
 
-                if(entity == null)
+                if (entity == null)
                 {
 
                     return null;
-                
+
                 }
 
 
-                var map = _mapper.Map<LoanDto>(entity); 
+                var map = _mapper.Map<LoanDto>(entity);
                 return map;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 
                 return null;
@@ -181,6 +182,8 @@ namespace BankingApp.Core.Application.Services
                     .OrderBy(s => s.PayDate)
                     .ToList();
 
+                int contadorCuotas = debitInstallmentList.Count();
+                bool IsActive = true;
                 foreach (var intem in debitInstallmentList)
                 {
 
@@ -208,26 +211,50 @@ namespace BankingApp.Core.Application.Services
 
 
 
-                    var Loanclient = await loanRepo.PayLoan(entity.LoanId, descontar, debitInstallmentList.Count);
 
-
-                    if (entity.Value <= 0)
+                    if(contadorCuotas == 1 && descontar >= entity.Value)
                     {
-                        break;
+                    
+                       IsActive = false;    
+                        
+                    
                     }
 
-                   
-                    if (Loanclient is not null)
+
+
+
+
+                    if (contadorCuotas > 0)
                     {
-                        await installmentRepository.UpdateInstallmentOnPaymentAsync(entity.Id, entity,descontar);
-                        var AccountCliet = await bankAccountService.GetAccountByClientId(Loanclient!.ClientId);
-                        await accountRepository.DebitBalance(AccountCliet!.Number, descontar);
-                        response.HasError = false;
-                        response.Error = "";
-                        response.IdLoan = entity.LoanId;
+
+                        var Loanclient = await loanRepo.PayLoan(entity.LoanId, descontar, contadorCuotas,IsActive);
+
+
+                        if (entity.Value <= 0)
+                        {
+                            break;
+                        }
+
+
+                        if (Loanclient is not null)
+                        {
+                            var installment = await installmentRepository.UpdateInstallmentOnPaymentAsync(entity.Id, entity, descontar);
+                            if (installment!.IsPaid == true)
+                            {
+
+                                contadorCuotas -= 1;
+
+                            }
+                            var AccountCliet = await bankAccountService.GetAccountByClientId(Loanclient!.ClientId);
+                            await accountRepository.DebitBalance(AccountCliet!.Number, descontar);
+                            response.HasError = false;
+                            response.Error = "";
+                            response.IdLoan = entity.LoanId;
+                        }
                     }
 
                 }
+
 
                 await unitOfWork.CommitAsync();
                 return response;

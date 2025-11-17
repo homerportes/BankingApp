@@ -2,6 +2,7 @@ using AutoMapper;
 using BankingApp.Core.Application.ViewModels.CreditCard;
 using BankingApp.Core.Application.Dtos.CreditCard;
 using BankingApp.Core.Domain.Common.Enums;
+using BankingApp.Core.Application.ViewModels.HomeClient;
 
 namespace BankingApp.Core.Application.Mappings.ViewModelsAndDtos
 {
@@ -40,6 +41,18 @@ namespace BankingApp.Core.Application.Mappings.ViewModelsAndDtos
                 .ForMember(dest => dest.CommerceName, opt => opt.MapFrom(src => src.MerchantName))
                 .ForMember(dest => dest.Description, opt => opt.MapFrom(src => ""))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => ParseOperationStatus(src.Status)));
+
+
+
+            CreateMap<DataHomeClientCreditCardDto, DataCreditCardHomeClientViewModel>()
+                 .ReverseMap();
+
+
+
+
+            CreateMap<DetailsCreditCardHomeClientDto, DetailsCreditCardHomeClientViewModel>()
+                 .ReverseMap();
+
         }
 
         private static OperationStatus ParseOperationStatus(string? status)
@@ -56,6 +69,27 @@ namespace BankingApp.Core.Application.Mappings.ViewModelsAndDtos
 
             return OperationStatus.DECLINED;
         }
+
+
+
+
+
+      
+
+              
+
+
+
+
+
+
+
+
     }
+
+
+
+
+
 }
 

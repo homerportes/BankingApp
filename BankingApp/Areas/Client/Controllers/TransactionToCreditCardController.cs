@@ -70,6 +70,15 @@ namespace BankingApp.Areas.Client.Controllers
         {
             var user = await userManager.GetUserAsync(User);
 
+            var ValidateDebit = await transactionToCreditCard.ValidateDebitCreditCard(vm.CreditCard);
+            if(ValidateDebit != null)
+            {
+
+                ModelState.AddModelError(string.Empty, $"{ValidateDebit}");
+                ViewBag.CuentasAhorros = await transactionService.CuentaListAsync(user!.Id);
+                ViewBag.CreditCars = await transactionToCreditCard.GetCreditCardByIdUser(user!.Id);
+                return View(vm);    
+            }
 
             var validateAmount = await transactionService.ValidateAmount(vm.Account,vm.Amount);
             if (validateAmount != null && validateAmount.IsSuccess == false)
