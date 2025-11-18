@@ -30,7 +30,7 @@ namespace BankingApp.Infraestructure.Identity.Seeds
             await userManager.AddToRoleAsync(_user!, AppRoles.CLIENT.ToString());
 
 
-
+            //Agregando algunos usuarios para pruebas
             await userManager.CreateAsync(new AppUser
             {
                 DocumentIdNumber = "",

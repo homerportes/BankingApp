@@ -45,7 +45,7 @@
                     <div class="detail-row">
                         <span class="detail-label">Fecha:</span>
                         <span class="detail-value text-white">
-                            @item.Fecha.ToLocalTime().ToString("dd/MM/yyyy hh:mm tt")
+                            @item.Fecha.ToString("dd/MM/yyyy hh:mm tt")
                         </span>
                     </div>
 
@@ -75,6 +75,7 @@
                                                 item.Description == DescriptionTransaction.CREDITCARDPAYMENT ? item.Beneficiary![^4..] :
                                                 item.Description == DescriptionTransaction.LOANPAYMENT ? item.Beneficiary :
                                                 item.Description == DescriptionTransaction.TRANSFER ? item.Beneficiary :
+                                                item.Description == DescriptionTransaction.DISBURSEMENT ? "Tu, prestamo" :
                                                 "No tuvo beneficiario"
                                                 )
                         </span>
@@ -92,7 +93,7 @@
                                                 item.Description == DescriptionTransaction.DEPOSIT ? item.Origin :
                                                 item.Description == DescriptionTransaction.Transaccion_A_Prestamo ? item.Origin :
                                                 item.Description == DescriptionTransaction.Trasaccion_A_Tarjeta ? item.Origin :
-                                                item.Description == DescriptionTransaction.DISBURSEMENT ? item.Origin :
+                                                item.Description == DescriptionTransaction.DISBURSEMENT ? item.Beneficiary :
                                                 item.Description == DescriptionTransaction.CREDITCARDPAYMENT ? item.Origin :
                                                 item.Description == DescriptionTransaction.LOANPAYMENT ? item.Origin :
                                                 item.Description == DescriptionTransaction.TRANSFER ? item.Origin :

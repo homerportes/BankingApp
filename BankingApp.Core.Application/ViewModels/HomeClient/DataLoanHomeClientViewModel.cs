@@ -10,6 +10,7 @@ namespace BankingApp.Core.Application.ViewModels.HomeClient
     {
         public Guid Id { get; set; }
         public decimal LoanedAmountTotal { get; set; }
+        public string Number { get; set; } = string.Empty;
         public required decimal OutstandingBalance { get; set; }
         public int installmentsTotalAmount { get; set; }
         public int installmentsTotalAmountPaid { get; set; }

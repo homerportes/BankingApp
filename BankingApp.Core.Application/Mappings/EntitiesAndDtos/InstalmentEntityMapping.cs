@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BankingApp.Core.Application.Dtos.Installment;
+using BankingApp.Core.Application.Dtos.Loan;
 using BankingApp.Core.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -14,6 +15,18 @@ namespace BankingApp.Core.Application.Mappings.EntitiesAndDtos
         public InstalmentEntityMapping()
         {
             CreateMap<Installment, InstallmentDto>();
+
+
+
+            CreateMap<Installment, DetailsLoanHomeClientDto>()
+                .ReverseMap();
+           
+
+         
+
         }
+
+
+
     }
 }

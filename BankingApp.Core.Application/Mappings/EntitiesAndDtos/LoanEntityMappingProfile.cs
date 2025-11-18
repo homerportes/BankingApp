@@ -25,7 +25,8 @@ namespace BankingApp.Core.Application.Mappings.EntitiesAndDtos
                  .ForMember(s => s.LoanedAmountTotal, opt => opt.MapFrom(src => src.TotalLoanAmount))
                  .ForMember(s => s.OutstandingBalance, opt => opt.MapFrom(src => src.OutstandingBalance))
                  .ForMember(s => s.InterestRate, opt => opt.MapFrom(src => src.InterestRate))
-                 .ForMember(s => s.LoanTermInMonths, opt => opt.MapFrom(src => src.LoanTermInMonths));
+                 .ForMember(s => s.LoanTermInMonths, opt => opt.MapFrom(src => src.LoanTermInMonths))
+                 .ForMember(s => s.Number, opt => opt.MapFrom(src => src.PublicId));
 
 
 

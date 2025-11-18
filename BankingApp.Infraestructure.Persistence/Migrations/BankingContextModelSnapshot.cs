@@ -345,8 +345,7 @@ namespace BankingApp.Infraestructure.Persistence.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("TellerId")
-                        .HasMaxLength(450)
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Type")
                         .HasColumnType("int");

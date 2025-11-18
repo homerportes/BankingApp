@@ -104,7 +104,8 @@ namespace BankingApp.Core.Application.Services
                 bool isBidirectional =
                     t.Description == DescriptionTransaction.Transaccion_Express ||
                     t.Description == DescriptionTransaction.Transaccion_A_Beneficiario ||
-                    t.Description == DescriptionTransaction.TRANSFER;
+                    t.Description == DescriptionTransaction.TRANSFER ||
+                    t.Description == DescriptionTransaction.Cash_Advance;
 
                 if (isBidirectional)
                 {
@@ -124,6 +125,7 @@ namespace BankingApp.Core.Application.Services
             })
             .OrderByDescending(t => t.DateTime)
             .ToList();
+           
 
             return _mapper.Map<List<DataTransactionHomeClientDto>>(filtered);
         }
@@ -191,17 +193,8 @@ namespace BankingApp.Core.Application.Services
 
                 foreach (var entity in entities)
                 {
-                    var dto = new DetailsLoanHomeClientDto()
-                    {
-
-                        IdLoan = entity.LoanId,
-                        PayDate = entity.PayDate,
-                        IsPaid = entity.IsPaid,
-                        Value = entity.Value,
-                        IsDelinquent = entity.IsDelinquent,
-
-                    };
-
+                    var dto = _mapper.Map<DetailsLoanHomeClientDto>(entity);
+                  
                     ListaIntallment.Add(dto);
                 }
 

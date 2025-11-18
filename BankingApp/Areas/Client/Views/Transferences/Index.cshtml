@@ -1,5 +1,19 @@
-﻿@using BankingApp.Core.Application.ViewModels.Transferences
-@model TransferenceOperationViewModel
+﻿@model TransferenceOperationViewModel
+
+
+@{
+    ViewData["Title"] = "Transferencias";
+    Layout = "_LayoutClient";
+}
+
+@if (TempData["Menssage"] != null)
+{
+    <div id="alertCard" class="custom-alert-success">
+        <span class="text-center">@TempData["Menssage"]</span>
+        <button type="button" id="closeAlert" class="close-btn">✕</button>
+    </div>
+}
+
 
 <style>
     .bank-container {
@@ -86,35 +100,64 @@
         border-left: 5px solid #00aa00;
     }
 
+    .error-card * {
+        color: #a10000 !important;
+    }
+
+    .custom-alert-success {
+        background: linear-gradient(135deg, #0A1F44, #0E3A75);
+        color: white;
+        padding: 15px 20px;
+        border-radius: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        animation: fadeIn 0.5s ease-out;
+    }
+
+    .close-btn {
+        background: transparent;
+        border: none;
+        color: white;
+        font-size: 20px;
+        cursor: pointer;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
 
     
 </style>
 
 <div class="bank-container">
 
-    @if (Model.HasError == true)
-    {
-        <div class="error-card">
-            @Model.Error
-        </div>
-    }
-
-    @if (!string.IsNullOrEmpty(Model.Message))
-    {
-        <div class="success-card">
-            @Model.Message
-        </div>
-    }
+   
 
     <h2 class="bank-title">Transferencia Bancaria</h2>
 
+
+
     <form asp-controller="Transferences" asp-action="Transfer" method="post">
+
+        <div asp-validation-summary="All" class="text-danger text-center mb-3"></div>
+
         <div class="form-group">
             <label>Cuenta de origen</label>
             <select asp-for="AccountNumberFrom" asp-items="new SelectList(Model.AvailableAccounts)">
                 <option value="">Selecciona una cuenta de origen</option>
             </select>
-            <span asp-validation-for="AccountNumberFrom" class="text-danger"></span>
+    
         </div>
 
         <div class="form-group">
@@ -122,13 +165,12 @@
             <select asp-for="AccountNumberTo" asp-items="new SelectList(Model.AvailableAccounts)">
                 <option value="">Selecciona una cuenta de destino</option>
             </select>
-            <span asp-validation-for="AccountNumberTo" class="text-danger"></span>
+       
         </div>
 
         <div class="form-group">
             <label>Monto</label>
             <input asp-for="Amount" type="text" />
-            <span asp-validation-for="Amount" class="text-danger"></span>
         </div>
 
         <button class="btn-primary">Transferir monto</button>
@@ -136,3 +178,13 @@
 
     <a class="btn-back" asp-controller="Home" asp-action="Index">Volver atrás</a>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+
+<script>
+    document.getElementById("closeAlert")?.addEventListener("click", () => {
+        document.getElementById("alertCard").style.display = "none";
+    });
+</script>
