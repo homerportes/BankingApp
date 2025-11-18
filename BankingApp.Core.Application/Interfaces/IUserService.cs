@@ -9,8 +9,8 @@ namespace BankingApp.Core.Application.Interfaces
 {
     public interface IUserService
     {
-        Task<UserPaginationResultDto> GetAllExceptCommerce(int page = 1, int pageSize = 20, string? rol = null);
-        Task<UserPaginationResultDto> GetAllOnlyCommerce(int page = 1, int pageSize = 20, string? rol = null);
+        Task<UserPaginationResultDto> GetAllExceptCommerce(int page, int pageSize, string? rol = null);
+        Task<UserPaginationResultDto> GetAllOnlyCommerce(int page , int pageSize, string? rol = null);
         Task<UserDto?> GetByDocumentId(string documentId);
         Task<UserDto?> GetUserById(string userId);
         Task<List<string>> GetActiveUserIdsAsync(); 

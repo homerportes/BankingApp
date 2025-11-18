@@ -31,7 +31,7 @@ namespace BankingApi.Controllers.v1
 
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
 
-        public async Task<IActionResult> GetAll([FromQuery] int page=1, [FromQuery] int pageSize=20)
+        public async Task<IActionResult> GetAll([FromQuery] int ?page, [FromQuery] int ?pageSize)
         {
             try
             {

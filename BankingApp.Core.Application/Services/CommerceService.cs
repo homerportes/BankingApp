@@ -56,9 +56,8 @@ namespace BankingApp.Core.Application.Services
         }
 
 
- 
 
-        public async Task<CommercePaginationDto> GetAllActiveFiltered(int page = 1, int pageSize = 20)
+        public async Task<CommercePaginationDto> GetAllActiveFiltered(int? page, int? pageSize)
         {
             var query = _repo.GetAllQuery()
                              .Where(r => r.IsActive)
@@ -66,23 +65,47 @@ namespace BankingApp.Core.Application.Services
 
             var totalCount = await query.CountAsync();
 
-            if (page > 0 && pageSize > 0)
+            if (!page.HasValue && !pageSize.HasValue)
             {
-                int skip = (page - 1) * pageSize;
-                query = (IOrderedQueryable<Commerce>)query.Skip(skip).Take(pageSize);
+                var allData = await query.ToListAsync();
+
+                return new CommercePaginationDto
+                {
+                    Data = _mapper.Map<List<CommerceDto>>(allData),
+                    TotalCount = totalCount,
+                    CurrentPage = 1,
+                    PagesCount = 1
+                };
             }
 
-            var data = await query.ToListAsync();
-
-            var result = new CommercePaginationDto
+            if ((page.HasValue && page.Value == 0) || (pageSize.HasValue && pageSize.Value == 0))
             {
-                Data = _mapper.Map<List<CommerceDto>>(data),
-                TotalCount = totalCount,
-                CurrentPage = totalCount == 0 ? 0 : page,
-                PagesCount = totalCount == 0 ? 0 : (int)Math.Ceiling((double)totalCount / pageSize)
-            };
+                return new CommercePaginationDto
+                {
+                    Data = new List<CommerceDto>(),
+                    TotalCount = totalCount,
+                    CurrentPage = 0,
+                    PagesCount = 0
+                };
+            }
 
-            return result;
+            int currentPage = page ?? 1;
+            int currentPageSize = pageSize ?? 20;
+
+            int skip = (currentPage - 1) * currentPageSize;
+
+            var paginatedData = await query
+                .Skip(skip)
+                .Take(currentPageSize)
+                .ToListAsync();
+
+            return new CommercePaginationDto
+            {
+                Data = _mapper.Map<List<CommerceDto>>(paginatedData),
+                TotalCount = totalCount,
+                CurrentPage = currentPage,
+                PagesCount = (int)Math.Ceiling((double)totalCount / currentPageSize)
+            };
         }
 
 
