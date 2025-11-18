@@ -155,11 +155,17 @@ namespace BankingApp.Core.Application.Services
 
         public async Task<decimal> GetTotalLoanDebt()
         {
+
+           
+
             return await _repo.GetAllQuery().Where(r => r.IsActive).SumAsync(r => r.OutstandingBalance);
+
 
           
 
         }
+
+
 
         public async Task<bool> ClientHasActiveLoan(string clientId)
         {
@@ -169,14 +175,23 @@ namespace BankingApp.Core.Application.Services
                 .AnyAsync();
         }
 
+
         public async Task<decimal> GetClientLoansDebt(string clientId)
         {
+
             return await _repo
                 .GetAllQuery()
                 .Where(r => r.IsActive && r.ClientId == clientId)
                 .Select(r => r.OutstandingBalance)
                 .SumAsync();
+
+
         }
+
+
+
+
+    
 
         public async Task VerifyAndMarkDelayedLoansAsync()
         {
@@ -401,7 +416,33 @@ namespace BankingApp.Core.Application.Services
                 await _unitOfWork.CommitAsync();
 
                 result.IsSuccessful = true;
+
+                result.StatusMessage = $"Tasa actualizada correctamente. Cada cuota pendiente ahora es {newInstallmentValue:C}.";
+
+                // Enviar correo al cliente
+                var user = await _UserService.GetUserById(loan.ClientId);
+
+                string emailBody = $@"
+<html>
+    <body>
+        <p>Estimado/a {user.Name} {user.LastName},</p>
+        <p>Su préstamo con ID {loan.PublicId} ha tenido una actualización en la tasa de interés.</p>
+        <p>Nueva tasa anual: {newRate}%</p>
+        <p>Valor actualizado de cada cuota pendiente: {newInstallmentValue:C}</p>
+        <p>Por favor revise su plan de pagos actualizado.</p>
+        <p>Atentamente,<br/>Banco XYZ</p>
+    </body>
+</html>";
+
+                await _emailService.SendAsync(new EmailRequestDto
+                {
+                    To = user.Email,
+                    Subject = "Actualización de tasa de interés",
+                    BodyHtml = emailBody
+                });
+
                 result.StatusMessage = "Tasa actualizada correctamente.";
+
             }
             catch (Exception ex)
             {
@@ -491,14 +532,16 @@ namespace BankingApp.Core.Application.Services
                     AccountId = account!.Id,
                     AccountNumber = account.Number,
                     Type = TransactionType.CREDIT,
-                    OperationId= _transacctionRepository.GenerateOperationId(),
+                    OperationId = _transacctionRepository.GenerateOperationId(),
                     Status = OperationStatus.APPROVED,
                     Amount = request.LoanAmount,
                     DateTime = DateTime.Now,
                     Beneficiary = account.Number,
+                    Description = DescriptionTransaction.DISBURSEMENT,
+                    TellerId = null,
                     Origin = "SYSTEM",
                     Id = Guid.NewGuid()
-                });
+                }); ;
 
                 await _unitOfWork.CommitAsync();
 
@@ -521,7 +564,7 @@ namespace BankingApp.Core.Application.Services
             string emailBody = $@"
         <html>
             <body>
-                <p>Estimado/a {user!.Name??""} {user.LastName},</p>
+                <p>Estimado/a {user.Name} {user.LastName},</p>
                 <p>Nos complace informarle que su solicitud de préstamo ha sido aprobada.</p>
                 <table style='border-collapse: collapse;'>
                     <tr>

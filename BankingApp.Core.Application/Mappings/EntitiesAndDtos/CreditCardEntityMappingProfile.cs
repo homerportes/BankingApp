@@ -41,6 +41,24 @@ namespace BankingApp.Core.Application.Mappings.EntitiesAndDtos
                 .ForMember(dest => dest.CardNumber, opt => opt.Ignore())
                 .ForMember(dest => dest.CreditCard, opt => opt.Ignore())
                 .ForMember(dest => dest.Status, opt => opt.Ignore());
+
+
+
+
+            CreateMap<Purchase, DetailsCreditCardHomeClientDto >()
+                .ReverseMap();
+
+
+
+
+            CreateMap<CreditCard, DataHomeClientCreditCardDto>()
+                .ReverseMap();
+
+           
+
+
+
+
         }
     }
 }

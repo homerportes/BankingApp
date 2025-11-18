@@ -38,6 +38,17 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
 
         }
 
+
+
+        public async Task<List<Installment>> GetTotalInstallamentByLoanId(Guid loanID)
+        {
+
+            return await context.Set<Installment>().Where(s => s.LoanId == loanID).ToListAsync();
+
+        }
+
+
+
         public async Task<Installment?> UpdateInstallmentOnPaymentAsync(int id, Installment installment, decimal amount)
         {
 

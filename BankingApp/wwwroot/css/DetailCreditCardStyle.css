@@ -1,0 +1,92 @@
+﻿
+.page-title {
+    color: #003366;
+    letter-spacing: 1px;
+}
+
+
+.empty-state {
+    max-width: 480px;
+    background: #ffffff;
+    padding: 40px 25px;
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+
+.empty-icon {
+    font-size: 4rem;
+    color: #b0b8c4;
+}
+
+
+.transaction-card {
+    background: #ffffff;
+    padding: 22px 22px;
+    border-radius: 16px;
+    margin-bottom: 20px;
+    border-left: 5px solid #004b8d;
+}
+
+.shadow-card {
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+    transition: .25s ease;
+}
+
+    .shadow-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    }
+
+
+.t-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #e9eef4;
+}
+
+    .t-item:last-child {
+        border-bottom: none;
+    }
+
+.t-label {
+    font-weight: 600;
+    color: #003c71;
+}
+
+.t-value {
+    font-weight: 500;
+    color: #333;
+}
+
+.amount {
+    color: #0b6efd;
+    font-weight: 700;
+}
+
+
+.status-approved {
+    color: #0d8b34;
+    font-weight: 700;
+}
+
+.status-rejected {
+    color: #d62828;
+    font-weight: 700;
+}
+
+
+.btn-custom-outline {
+    padding: 10px 24px;
+    border-radius: 30px;
+    border: 2px solid #ffc107;
+    color: #a56d00;
+    font-weight: 600;
+    background: #fff;
+    transition: .25s ease;
+}
+
+    .btn-custom-outline:hover {
+        background: #ffc107;
+        color: #003366;
+    }

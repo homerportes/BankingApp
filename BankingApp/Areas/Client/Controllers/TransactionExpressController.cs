@@ -80,7 +80,7 @@ namespace BankingApp.Areas.Client.Controllers
             {
 
                 ModelState.AddModelError(string.Empty, $"{validateAmount!.Error}");
-                //registrar transaccion en caso de ser rechazada
+                //registrar transaccion en caso de ser rechazada para el origen
                 var Transaccion = _mapper.Map<CreateTransactionDto>(vm);           
                 Transaccion.Status = OperationStatus.DECLINED;
                 Transaccion.Type = TransactionType.DEBIT;

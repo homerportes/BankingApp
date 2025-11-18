@@ -1,0 +1,76 @@
+﻿@model DetailsCreditCardHomeClientListViewModel
+
+@{
+    ViewData["Title"] = "Detalles del consumo de la tarjeta";
+    Layout = "_LayoutClient";
+}
+
+<link rel="stylesheet" href="~/css/DetailCreditCardStyle.css" />
+
+<div class="container mt-4">
+
+    <h2 class="page-title text-center mb-4 fw-bold text-primary-dark">
+        <i class="bi bi-credit-card-2-front me-2"></i>
+        Historial de Consumo
+    </h2>
+
+    @if (Model.DetailsCreditCard == null || !Model.DetailsCreditCard.Any())
+    {
+        <div class="empty-state mx-auto text-center">
+            <i class="bi bi-journal-x empty-icon"></i>
+            <h4 class="text-muted mt-3">No tiene consumos registrados</h4>
+            <p class="text-secondary">
+                Aquí aparecerán todos los movimientos relacionados a su tarjeta de crédito.
+            </p>
+
+            <a asp-area="Client" asp-controller="Home" asp-action="Index"
+               class="btn-custom-outline mt-3">
+                <i class="bi bi-arrow-left"></i> Volver al listado de productos
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="row justify-content-center">
+            @foreach (var item in Model.DetailsCreditCard)
+            {
+                <div class="col-md-6 col-lg-5">
+                    <div class="transaction-card shadow-card">
+
+                        <div class="t-item">
+                            <span class="t-label"><i class="bi bi-calendar-day me-1"></i> Fecha</span>
+                            <span class="t-value">@item.DateTime.ToString("dd/MM/yyyy")</span>
+                        </div>
+
+                        <div class="t-item">
+                            <span class="t-label"><i class="bi bi-cash-stack me-1"></i> Monto</span>
+                            <span class="t-value amount">@($"{item.AmountSpent:N2} RD$")</span>
+                        </div>
+
+                        <div class="t-item">
+                            <span class="t-label"><i class="bi bi-shop me-1"></i> Comercio</span>
+                            <span class="t-value">@item.MerchantName</span>
+                        </div>
+
+                        <div class="t-item">
+                            <span class="t-label"><i class="bi bi-check2-circle me-1"></i> Estado</span>
+                            <span class="t-value status @(item.Status == OperationStatus.APPROVED ? "status-approved" : "status-rejected")">
+                                @(item.Status == OperationStatus.APPROVED ? "APROBADA" : "RECHAZADA")
+                            </span>
+                        </div>
+
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="text-center mt-4">
+            <a asp-area="Client" asp-controller="Home" asp-action="Index"
+               class="btn-custom-outline">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+        </div>
+    }
+</div>
+
+

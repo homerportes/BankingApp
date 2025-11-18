@@ -135,7 +135,7 @@ namespace BankingApp.Areas.Client.Controllers
             {
                 ViewBag.CuentasAhorros = await transactionService.CuentaListAsync(user!.Id);
                 ViewBag.CreditCard = await transactionToCreditCard.GetCreditCardByIdUser(user!.Id);
-                ModelState.AddModelError(string.Empty, "No se pudo realizan la transaccion");
+                ModelState.AddModelError(string.Empty, "No se pudo realizar la transaccion");
                 return View(vm);
 
             }

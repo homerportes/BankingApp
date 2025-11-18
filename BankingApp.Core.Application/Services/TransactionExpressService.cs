@@ -55,7 +55,7 @@ namespace BankingApp.Core.Application.Services
             await unitOfWork.BeginTransactionAsync();
             try
             {
-
+                var operationId = transacctionRepository.GenerateOperationId();
                 var _validateAccountBeneficiary = await ValidateNumberAsync(Dto.Beneficiary);
                 if (_validateAccountBeneficiary == null)
                 {
@@ -66,7 +66,7 @@ namespace BankingApp.Core.Application.Services
 
 
                 var _validateAmount = await ValidateAmount(Dto.Origin, Dto.Amount);
-                if (_validateAmount == null || _validateAmount!.IsSuccess == false)
+                if (_validateAmount == null)
                 {
 
                     return null;
@@ -78,6 +78,8 @@ namespace BankingApp.Core.Application.Services
                 var entity = _mapper.Map<Transaction>(Dto);
                 if (entity is not null)
                 {
+                    entity.TellerId = null;
+                    entity.OperationId = operationId;
                     var transac = await transacctionRepository.AddAsync(entity);
                     var dto = _mapper.Map<CreateTransactionDto>(transac);
                     await unitOfWork.CommitAsync();
@@ -337,19 +339,19 @@ namespace BankingApp.Core.Application.Services
                 foreach (var item in beneficiaryList)
                 {
 
-                  var accountBeneficiary =  await  accountRepository.GetAccounByIdAsync(item.BeneficiaryId);
-                  var UserBeneficiary =   await  serviceForWebAPP.GetUserById(item.BeneficiaryId);
+                    var accountBeneficiary =  await  accountRepository.GetAccounByIdAsync(item.BeneficiaryId);
+                    var UserBeneficiary =   await  serviceForWebAPP.GetUserById(item.BeneficiaryId);
 
 
                     var entity = _mapper.Map<BeneficiaryToTransactionDto>(UserBeneficiary);
                     entity.Id = item.BeneficiaryId;
                     entity.Cuenta = accountBeneficiary!.Number;
-                  
+
                     ListDataBeneificary.Add(entity);
                 }
 
-               
-                return ListDataBeneificary; 
+
+                return ListDataBeneificary;
 
 
             }
@@ -357,7 +359,7 @@ namespace BankingApp.Core.Application.Services
             {
 
                 return new List<BeneficiaryToTransactionDto>();
-               
+
             }
 
         }
@@ -441,8 +443,8 @@ namespace BankingApp.Core.Application.Services
                     var map = _mapper.Map<ValidateAccountNumberResponseDto>(data);
                     var beneficiary = await serviceForWebAPP.GetUserById(data.IdBeneficiary);
                     map.AccountBenefiicaryId = entity!.Id;
-                    map.LastName = beneficiary!.LastName;
-                    map.Gmail = beneficiary.Email;
+                    map.LastName = beneficiary!.LastName ?? "";
+                    map.Gmail = beneficiary.Email ?? "";
 
                     return map;
                 }

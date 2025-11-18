@@ -15,7 +15,7 @@
     <header>
         <nav class="navbar navbar-expand-lg custom-navbar shadow-sm">
             <div class="container-fluid">
-                <a class="navbar-brand d-flex align-items-center" asp-area="Client" asp-controller="Client" asp-action="Index">
+                <a class="navbar-brand d-flex align-items-center" asp-area="Client" asp-controller="Home" asp-action="Index">
                     <i class="bi bi-house-check-fill"></i>&nbsp;Home
                 </a>
 
@@ -27,13 +27,7 @@
 
                 <div class="collapse navbar-collapse" id="navbarCliente">
                     <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="Client" asp-controller="Beneficiary" asp-action="Index">
-                                <i class="bi bi-people"></i> Beneficiarios
-                            </a>
-                        </li>
 
-                     
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="transaccionesDropdown" role="button"
                                data-bs-toggle="dropdown" aria-expanded="false">
@@ -49,14 +43,23 @@
                             </ul>
                         </li>
 
+
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="Client" asp-controller="Beneficiary" asp-action="Index">
+                                <i class="bi bi-people"></i> Beneficiarios
+                            </a>
+                        </li>
+
+                     
                         <li class="nav-item">
                             <a class="nav-link" asp-area="Client" asp-controller="CashAdvances" asp-action="Create">
                                 <i class="bi bi-cash"></i> Avances de efectivo
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="Client" asp-controller="Transferences" asp-action="Index">
-                                <i class="bi bi-arrow-repeat"></i> Transferencias entre cuentas
+
+                            <a class="nav-link" asp-area="Client" asp-controller="Cliente" asp-action="Transferencias">
+                                <i class="bi bi-arrow-repeat"></i> Transferencias
                             </a>
                         </li>
                         <li class="nav-item">
