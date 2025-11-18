@@ -148,4 +148,21 @@
             }
         });
     </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.getElementById("CreateUserForm");
+            if (!form) return;
+
+            form.addEventListener("submit", function () {
+                const input = document.querySelector('input[name="InitialAmount"]');
+
+            
+                if (input && input.value && input.offsetParent !== null) {
+                    input.value = input.value.replace(",", ".");
+                }
+            });
+        });
+    </script>
+
+
 }

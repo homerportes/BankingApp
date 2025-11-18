@@ -25,7 +25,10 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
 
 
 
-
+        public  string GenerateOperationId()
+        {
+            return Guid.NewGuid().ToString("N").Substring(0, 12).ToUpper();
+        }
         public async Task<bool> ApproveTransaction(int id, Transaction transaction)
         {
             var entry = await context.Set<Transaction>().FindAsync(id);

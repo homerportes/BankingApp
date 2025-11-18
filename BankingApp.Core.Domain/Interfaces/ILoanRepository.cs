@@ -17,8 +17,9 @@ namespace BankingApp.Core.Domain.Interfaces
         Task<Loan?> GetByNumberAsync(string loanNumber);
         Task<int> GetAllLoansCount();
         Task<int> GetActiveLoansCount();
-        Task<decimal> GetActiveClientsLoanDebt();
-     
+
+        Task<decimal> GetActiveClientsLoanDebt(HashSet<string> activeUserIds);
+
 
     }
 }

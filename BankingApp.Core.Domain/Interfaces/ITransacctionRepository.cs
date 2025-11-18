@@ -14,7 +14,11 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
         Task<List<Transaction>> GetListTransaction(string number);
 
         Task<List<Transaction>> GetTransactionsByTellerAndDateAsync(string tellerId, DateTime startDate, DateTime endDate);
+
         Task<List<Transaction>> GetListTransactionByNumberCreditCard(string number);
+
+
+        string GenerateOperationId();
 
     }
 }

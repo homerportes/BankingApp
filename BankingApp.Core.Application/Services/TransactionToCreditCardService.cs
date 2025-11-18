@@ -40,7 +40,7 @@ namespace BankingApp.Core.Application.Services
             await unitOfWork.BeginTransactionAsync();
             try
             {
-
+                var operationId = repo.GenerateOperationId();
                 var _validateAmount = await ServiceTransaction.ValidateAmount(Dto.Origin, Dto.Amount);
                 if (_validateAmount == null || _validateAmount!.IsSuccess == false)
                 {
@@ -78,6 +78,7 @@ namespace BankingApp.Core.Application.Services
                 {
                     entity.TellerId = null;
                     entity.Amount = descontar;
+                    entity.OperationId = operationId;
                     var transac = await repo.AddAsync(entity);
                     var dto = _mapper.Map<CreateTransactionDto>(transac);
                     await unitOfWork.CommitAsync();

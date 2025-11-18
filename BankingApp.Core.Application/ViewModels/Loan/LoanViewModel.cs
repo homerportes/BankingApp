@@ -41,7 +41,7 @@ namespace BankingApp.Core.Application.ViewModels.Loan
         public required decimal OutstandingBalance { get; set; }
 
 
-        public required int InterestRate { get; set; }
+        public required decimal InterestRate { get; set; }
 
 
         public required int LoanTermInMonths { get; set; }

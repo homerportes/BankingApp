@@ -47,7 +47,7 @@ namespace BankingApp.Core.Application.Services
             await _unitOfWork.BeginTransactionAsync();
             try
             {
-
+                var operationId = _transacctionRepository.GenerateOperationId();
                 var _validatelAmountOwedCreditCard = await ValidateTotalAmountOwedCreditCard(Dto.Origin, Dto.Amount);
                 if (_validatelAmountOwedCreditCard == null)
                 {
@@ -61,6 +61,7 @@ namespace BankingApp.Core.Application.Services
                 if (entity is not null)
                 {
                     entity.TellerId = null;
+                    entity.OperationId = operationId;
                     var transac = await _transacctionRepository.AddAsync(entity);
                     var dto = _mapper.Map<CreateTransactionDto>(transac);
 

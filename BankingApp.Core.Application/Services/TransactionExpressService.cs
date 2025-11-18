@@ -55,7 +55,7 @@ namespace BankingApp.Core.Application.Services
             await unitOfWork.BeginTransactionAsync();
             try
             {
-
+                var operationId = transacctionRepository.GenerateOperationId();
                 var _validateAccountBeneficiary = await ValidateNumberAsync(Dto.Beneficiary);
                 if (_validateAccountBeneficiary == null)
                 {
@@ -79,6 +79,7 @@ namespace BankingApp.Core.Application.Services
                 if (entity is not null)
                 {
                     entity.TellerId = null;
+                    entity.OperationId = operationId;
                     var transac = await transacctionRepository.AddAsync(entity);
                     var dto = _mapper.Map<CreateTransactionDto>(transac);
                     await unitOfWork.CommitAsync();

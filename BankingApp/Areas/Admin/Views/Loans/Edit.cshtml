@@ -13,7 +13,10 @@
 
         <div class="form-group mb-3">
             <label asp-for="Rate" class="form-label fw-semibold"></label>
-            <input asp-for="Rate" class="form-control" type="number" step="0.01" min="0" placeholder="Ingrese la tasa de interés" />
+            <input asp-for="Rate" type="text" class="form-control" inputmode="decimal" />
+
+
+
             <span asp-validation-for="Rate" class="text-danger"></span>
         </div>
 

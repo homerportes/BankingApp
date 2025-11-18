@@ -5,58 +5,60 @@
 }
 
 <div class="container py-5">
-    <div class="card shadow-lg border-0 rounded-3">
-        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-            <h4 class="mb-0">Detalles del Préstamo</h4>
-            <a asp-action="Index" class="btn btn-light btn-sm fw-semibold">
-                ← Volver
+    <div class="card shadow border-0 rounded-4">
+        <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center py-3">
+            <h4 class="fw-bold text-primary m-0">
+                <i class="bi bi-file-earmark-text me-2"></i> Detalles del Préstamo
+            </h4>
+
+            <a asp-action="Index" class="btn btn-outline-primary btn-sm fw-semibold rounded-pill px-3">
+                <i class="bi bi-arrow-left"></i> Volver
             </a>
         </div>
 
-        <div class="card-body bg-light">
-            <div class="mb-4">
-                <h5 class="fw-bold text-secondary">
-                    <i class="bi bi-credit-card me-2"></i>ID del préstamo:
-                </h5>
-                <span class="fs-5 text-dark">@Model.LoadId</span>
+        <div class="card-body px-4 pb-5 bg-white">
+            <div class="mb-4 p-3 rounded-3 bg-light">
+                <h6 class="text-muted mb-1">ID del Préstamo</h6>
+                <span class="fs-4 fw-semibold text-dark">@Model.LoadId</span>
             </div>
 
-            <div class="table-responsive">
-                <table class="table table-hover align-middle shadow-sm bg-white rounded-3">
-                    <thead class="table-primary">
+            <div class="table-container shadow-sm rounded-4 overflow-hidden">
+                <table class="table table-borderless mb-0 align-middle">
+                    <thead class="custom-thead">
                         <tr>
-                            <th scope="col"># Cuota</th>
-                            <th scope="col">Fecha de Pago</th>
-                            <th scope="col">Valor</th>
-                            <th scope="col">Pagado</th>
-                            <th scope="col">Estado</th>
+                            <th># Cuota</th>
+                            <th>Fecha de Pago</th>
+                            <th>Valor</th>
+                            <th>Pagado</th>
+                            <th>Estado</th>
                         </tr>
                     </thead>
-                    <tbody>
+
+                    <tbody class="bg-white">
                         @foreach (var installment in Model.Installments)
                         {
-                            <tr>
+                            <tr class="row-hover">
                                 <td class="fw-semibold">@installment.Number</td>
                                 <td>@installment.PayDate.ToString("dd/MM/yyyy")</td>
-                                <td>@installment.Value.ToString("C")</td>
+                                <td class="fw-semibold text-dark">@installment.Value.ToString("C")</td>
                                 <td>
                                     @if (installment.IsPaid)
                                     {
-                                        <span class="badge bg-success px-3 py-2">Sí</span>
+                                        <span class="badge rounded-pill bg-success px-3 py-2 shadow-sm">Pagado</span>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-secondary px-3 py-2">No</span>
+                                        <span class="badge rounded-pill bg-secondary px-3 py-2 shadow-sm">Pendiente</span>
                                     }
                                 </td>
                                 <td>
                                     @if (installment.IsDelinquent)
                                     {
-                                        <span class="badge bg-danger px-3 py-2">En mora</span>
+                                        <span class="badge rounded-pill bg-danger px-3 py-2 shadow-sm">En mora</span>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-success px-3 py-2">Al día</span>
+                                        <span class="badge rounded-pill bg-primary px-3 py-2 shadow-sm">Al día</span>
                                     }
                                 </td>
                             </tr>
@@ -68,33 +70,62 @@
     </div>
 </div>
 
+
 <style>
     body {
-        background-color: #f4f6f9;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #eef2f7;
+        font-family: "Segoe UI", Roboto, sans-serif;
     }
 
-    h4, h5 {
+    /* Encabezado de tabla personalizado */
+    .custom-thead {
+        background: linear-gradient(90deg, #0d6efd, #0b5ed7);
+        color: white;
+        font-weight: 600;
         letter-spacing: 0.5px;
     }
 
-    .table thead th {
-        border-bottom: 2px solid #0d6efd;
+    /* Hover moderno */
+    .row-hover:hover {
+        background-color: #f5f8ff !important;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
     }
 
-    .table-hover tbody tr:hover {
-        background-color: #f8f9fa;
+    .table-container {
+        border: 1px solid #dce3ec;
     }
 
-    .btn-light:hover {
-        background-color: #e9ecef;
+    .badge {
+        font-size: 0.85rem;
     }
 
     .card {
-        transition: transform 0.2s ease-in-out;
+        border-radius: 1.5rem;
     }
 
-        .card:hover {
-            transform: translateY(-3px);
+    .table thead th {
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: none;
+    }
+
+    .table td {
+        padding: 1rem 0.75rem;
+        color: #444;
+    }
+
+    .table tbody tr + tr td {
+        border-top: 1px solid #edf1f5;
+    }
+
+    .btn-outline-primary {
+        border-radius: 30px;
+        padding: 6px 18px;
+    }
+
+        .btn-outline-primary:hover {
+            background-color: #0d6efd;
+            color: white;
         }
 </style>

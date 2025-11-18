@@ -38,6 +38,7 @@ namespace BankingApp.Core.Application.Mappings.EntitiesAndDtos
 
 
 
+
         }
     }
 }

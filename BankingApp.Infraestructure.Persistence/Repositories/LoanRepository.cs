@@ -110,12 +110,16 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
             return await _bankingContext.Set<Loan>().CountAsync(l => l.IsActive);
         }
 
-        public async Task<decimal> GetActiveClientsLoanDebt()
+        public async Task<decimal> GetActiveClientsLoanDebt(HashSet<string> activeUserIds)
         {
             var total = await _bankingContext.Set<Loan>()
-                .Where(l => l.IsActive)
+                .Where(l => l.IsActive && activeUserIds.Contains(l.ClientId))
                 .SumAsync(l => (decimal?)l.OutstandingBalance);
             return total ?? 0;
         }
+
+
+
+        
     }
 }

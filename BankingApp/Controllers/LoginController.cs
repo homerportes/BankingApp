@@ -123,7 +123,6 @@ namespace BankingApp.Controllers
 
             if (userDto != null && !userDto.HasError)
             {
-                // Usar el rol del DTO de autenticación
                 if (userDto.Roles != null && userDto.Roles.Any())
                 {
                     return RedirectToHome(userDto.Roles.First());

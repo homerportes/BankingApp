@@ -119,7 +119,8 @@ namespace BankingApp.Infraestructure.Persistence.Migrations
                     Beneficiary = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
                     Description = table.Column<int>(type: "int", maxLength: 100, nullable: false),
-                    TellerId = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: true)
+                    TellerId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+
                 },
                 constraints: table =>
                 {

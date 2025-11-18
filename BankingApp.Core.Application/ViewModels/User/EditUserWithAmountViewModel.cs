@@ -35,7 +35,11 @@ namespace BankingApp.Core.Application.ViewModels.User
         [DataType(DataType.Password)]
         public string? ConfirmPassword { get; set; }
 
+
+
         [Range(0, double.MaxValue, ErrorMessage = "El monto adicional no puede ser negativo.")]
+        [RegularExpression(@"^\d+(\.\d+)?$", ErrorMessage = "Ingrese un monto válido.")]
+
         public decimal? AditionalAmount { get; set; }
 
         public bool IsClient { get; set; }
