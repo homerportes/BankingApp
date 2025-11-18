@@ -32,10 +32,8 @@ namespace BankingApp.Infraestructure.Identity.Services
 
         public async Task<UserDto?> GetByDocumentId(string documentId)
         {
-            // Limpiar espacios en blanco y normalizar (eliminar guiones y espacios)
             var cleanDocumentId = documentId?.Trim().Replace("-", "").Replace(" ", "") ?? "";
 
-            // Buscar con diferentes formatos posibles
             var user = await _userManager.Users
                 .Where(r => r.DocumentIdNumber.Replace("-", "").Replace(" ", "") == cleanDocumentId)
                 .FirstOrDefaultAsync();
@@ -122,15 +120,29 @@ namespace BankingApp.Infraestructure.Identity.Services
 
             return userDto;
         }
-
-        public async Task<UserPaginationResultDto> GetAllOnlyCommerce(int page = 1, int pageSize = 20, string? rol = null)
+        public async Task<UserPaginationResultDto> GetAllOnlyCommerce(
+            int page,
+            int pageSize,
+            string? rol = null)
         {
             var commerceRoleId = await _identityContext.Roles
                 .Where(r => r.Name == AppRoles.COMMERCE.ToString())
                 .Select(r => r.Id)
                 .FirstOrDefaultAsync();
 
+            if (commerceRoleId == null)
+            {
+                return new UserPaginationResultDto
+                {
+                    Data = new List<UserDto>(),
+                    CurrentPage = 0,
+                    PagesCount = 0,
+                    TotalCount = 0
+                };
+            }
+
             string? extraRoleId = null;
+
             if (!string.IsNullOrWhiteSpace(rol))
             {
                 try
@@ -149,56 +161,74 @@ namespace BankingApp.Infraestructure.Identity.Services
                 }
             }
 
-            var query = from ur in _identityContext.UserRoles
-                        where ur.RoleId == commerceRoleId
-                        join u in _identityContext.Users on ur.UserId equals u.Id
-                        select u;
-            var totalCount = await query.CountAsync();
+            var query =
+                from ur in _identityContext.UserRoles
+                where ur.RoleId == commerceRoleId
+                join u in _identityContext.Users on ur.UserId equals u.Id
+                select u;
 
             if (extraRoleId != null)
             {
-                var extraUserIds = await _identityContext.UserRoles
-                    .Where(ur => ur.RoleId == extraRoleId)
-                    .Select(ur => ur.UserId)
-                    .ToListAsync();
-
-                query = query.Where(u => extraUserIds.Contains(u.Id));
+                query =
+                    from u in query
+                    where _identityContext.UserRoles
+                        .Any(ur => ur.UserId == u.Id && ur.RoleId == extraRoleId)
+                    select u;
             }
 
+            var totalCount = await query.CountAsync();
+
+            if ( page <= 0 || pageSize <= 0)
+            {
+                return new UserPaginationResultDto
+                {
+                    Data = new List<UserDto>(),
+                    CurrentPage = 0,
+                    PagesCount = 0,
+                    TotalCount = totalCount
+                };
+            }
+
+            int currentPage = page;
+            int currentPageSize = pageSize;
+
+            int skip = (currentPage - 1) * currentPageSize;
 
             var pagedUsers = await query
                 .OrderByDescending(u => u.CreatedAt)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
+                .Skip(skip)
+                .Take(currentPageSize)
                 .ToListAsync();
 
-            var userIds = pagedUsers.Select(u => u.Id).ToList();
+            var pagedUserIds = pagedUsers.Select(u => u.Id).ToList();
 
-            var roles = await _identityContext.UserRoles
-                .Where(ur => userIds.Contains(ur.UserId) && ur.RoleId != commerceRoleId)
-                .Join(_identityContext.Roles,
-                      ur => ur.RoleId,
-                      r => r.Id,
-                      (ur, r) => new { ur.UserId, RoleName = r.Name })
+            var additionalRoles = await _identityContext.UserRoles
+                .Where(ur => pagedUserIds.Contains(ur.UserId) && ur.RoleId != commerceRoleId)
+                .Join(
+                    _identityContext.Roles,
+                    ur => ur.RoleId,
+                    r => r.Id,
+                    (ur, r) => new { ur.UserId, r.Name }
+                )
                 .GroupBy(x => x.UserId)
-                .Select(g => new { UserId = g.Key, RoleName = g.Select(x => x.RoleName).FirstOrDefault() })
+                .Select(g => new { UserId = g.Key, RoleName = g.Select(x => x.Name).FirstOrDefault() })
                 .ToListAsync();
 
-            var roleMap = roles.ToDictionary(x => x.UserId, x => x.RoleName);
+            var rolesMap = additionalRoles.ToDictionary(x => x.UserId, x => x.RoleName);
 
-            var result = pagedUsers.Select(u =>
+            var resultUsers = pagedUsers.Select(u =>
             {
-                var roleName = roleMap.GetValueOrDefault(u.Id) ?? AppRoles.COMMERCE.ToString();
+                var rawRole = rolesMap.GetValueOrDefault(u.Id) ?? AppRoles.COMMERCE.ToString();
                 string displayRole;
 
                 try
                 {
-                    var enumValue = EnumMapper<AppRoles>.FromString(roleName);
+                    var enumValue = EnumMapper<AppRoles>.FromString(rawRole);
                     displayRole = EnumMapper<AppRoles>.ToString(enumValue);
                 }
                 catch
                 {
-                    displayRole = roleName;
+                    displayRole = rawRole;
                 }
 
                 return new UserDto
@@ -210,24 +240,24 @@ namespace BankingApp.Infraestructure.Identity.Services
                     Role = displayRole,
                     DocumentIdNumber = u.DocumentIdNumber,
                     UserName = u.UserName ?? "",
-                    Status = u.EmailConfirmed ? "activo" : "inactivo"
+                    Status = u.IsActive ? "activo" : "inactivo"
                 };
             }).ToList();
 
             return new UserPaginationResultDto
             {
-                Data = result,
-                PagesCount = (int)Math.Ceiling((double)totalCount / pageSize),
-                CurrentPage = page,
-                TotalCount = totalCount
+                Data = resultUsers,
+                TotalCount = totalCount,
+                CurrentPage = currentPage,
+                PagesCount = (int)Math.Ceiling(totalCount / (double)currentPageSize)
             };
         }
 
 
         public async Task<UserPaginationResultDto> GetAllExceptCommerce(
-       int page = 1,
-       int pageSize = 20,
-       string? rol = null)
+            int page ,
+            int pageSize,
+            string? rol = null)
         {
             var commerceRoleId = await _identityContext.Roles
                 .Where(r => r.Name == AppRoles.COMMERCE.ToString())
@@ -254,11 +284,31 @@ namespace BankingApp.Infraestructure.Identity.Services
                 }
             }
 
-            var query = from ur in _identityContext.UserRoles
-                        join u in _identityContext.Users on ur.UserId equals u.Id
-                        join r in _identityContext.Roles on ur.RoleId equals r.Id
-                        where ur.RoleId != commerceRoleId
-                        select new { User = u, Role = r };
+            if (!string.IsNullOrWhiteSpace(rol) && extraRoleId == null)
+            {
+                return new UserPaginationResultDto
+                {
+                    Data = new List<UserDto>(),
+                    PagesCount = 0,
+                    CurrentPage = 0,
+                    TotalCount = 0
+                };
+            }
+
+            var query = _identityContext.UserRoles
+                .Where(ur => ur.RoleId != commerceRoleId)
+                .Join(
+                    _identityContext.Users,
+                    ur => ur.UserId,
+                    u => u.Id,
+                    (ur, u) => new { ur.RoleId, User = u }
+                )
+                .Join(
+                    _identityContext.Roles,
+                    x => x.RoleId,
+                    r => r.Id,
+                    (x, r) => new { User = x.User, Role = r }
+                );
 
             if (!string.IsNullOrEmpty(extraRoleId))
             {
@@ -267,13 +317,24 @@ namespace BankingApp.Infraestructure.Identity.Services
 
             var totalCount = await query.CountAsync();
 
+            if (totalCount == 0)
+            {
+                return new UserPaginationResultDto
+                {
+                    Data = new List<UserDto>(),
+                    PagesCount = 0,
+                    CurrentPage = 0,
+                    TotalCount = 0
+                };
+            }
+
             var pagedUsers = await query
                 .OrderByDescending(x => x.User.CreatedAt)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
 
-            var result = pagedUsers.Select(x =>
+            var users = pagedUsers.Select(x =>
             {
                 string displayRole;
 
@@ -302,15 +363,18 @@ namespace BankingApp.Infraestructure.Identity.Services
                 };
             }).ToList();
 
-            var PagesCount = (int)Math.Ceiling(totalCount / (double)pageSize);
+            var pagesCount = (int)Math.Ceiling(totalCount / (double)pageSize);
+
             return new UserPaginationResultDto
             {
-                Data = result,
-                PagesCount = PagesCount,
-                CurrentPage = PagesCount==0? 0 :page,
+                Data = users,
+                PagesCount = pagesCount,
+                CurrentPage = page,
                 TotalCount = totalCount
             };
         }
+
+
 
 
         public async Task<List<string>> GetActiveUserIdsAsync()

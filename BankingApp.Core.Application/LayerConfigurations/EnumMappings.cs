@@ -22,8 +22,8 @@ namespace BankingApp.Core.Application.LayerConfigurations
                 { "cliente", AppRoles.CLIENT },
                 { "client", AppRoles.CLIENT },
                 { "comercio", AppRoles.COMMERCE },
-
                 { "commerce", AppRoles.COMMERCE },
+
 
             });
 
