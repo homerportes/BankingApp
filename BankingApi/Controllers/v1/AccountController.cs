@@ -21,6 +21,8 @@ namespace BankingApi.Controllers.v1
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+
         [HttpPost("login", Name = "IniciarSesion")]
         public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
@@ -64,14 +66,11 @@ namespace BankingApi.Controllers.v1
                 return BadRequest("Faltan uno o más parámetros requeridos en la solicitud");
             }
 
-            if (string.IsNullOrWhiteSpace(dto.UserId))
-            {
-                return BadRequest("Faltan uno o más parámetros requeridos en la solicitud");
-            }
+
 
             try
             {
-                var result = await _accountService.ConfirmAccountAsync(dto.UserId, dto.Token);
+                var result = await _accountService.ConfirmAccountAsync(dto.Token, null, true);
 
                 if (result.HasError)
                 {

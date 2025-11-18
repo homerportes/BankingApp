@@ -555,23 +555,44 @@ namespace InvestmentApp.Infrastructure.Identity.Services
 
             return listUsersDtos;
         }
-        public virtual async Task<UserResponseDto> ConfirmAccountAsync(string userId, string token)
+        public virtual async Task<UserResponseDto> ConfirmAccountAsync(string token, string? userId = null, bool isForApi = false)
         {
-            UserResponseDto response = new() { HasError = false, Errors = [] };
+            UserResponseDto response = new() { HasError = false, Errors = new List<string>() };
 
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
+            if (isForApi)
             {
-                response.Message = "There is no acccount registered with this user";
+                // Decodificar token combinado para extraer userId y token real
+                var decoded = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(token));
+                var parts = decoded.Split(':');
+                if (parts.Length != 2)
+                {
+                    response.Message = "Token inválido";
+                    response.HasError = true;
+                    return response;
+                }
+
+                userId = parts[0];
+                token = parts[1];
+            }
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                response.Message = "No se proporcionó un UserId válido";
                 response.HasError = true;
                 return response;
             }
 
-            token = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(token));
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                response.Message = "No hay ninguna cuenta registrada con este usuario";
+                response.HasError = true;
+                return response;
+            }
+
             var result = await _userManager.ConfirmEmailAsync(user, token);
             if (result.Succeeded)
             {
-                // Activar el usuario al confirmar el email
                 user.IsActive = true;
                 await _userManager.UpdateAsync(user);
 
@@ -586,6 +607,7 @@ namespace InvestmentApp.Infrastructure.Identity.Services
                 return response;
             }
         }
+
 
         #region "Protected methods"
 
@@ -604,10 +626,12 @@ namespace InvestmentApp.Infrastructure.Identity.Services
         protected async Task<string?> GetVerificationEmailToken(AppUser user)
         {
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            token = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+            var combined = $"{user.Id}:{token}";
 
-            return token;
+            var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(combined));
+            return encodedToken;
         }
+
         protected async Task<string> GetResetPasswordUri(AppUser user, string origin)
         {
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);

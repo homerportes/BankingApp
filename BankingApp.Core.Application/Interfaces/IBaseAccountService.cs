@@ -4,7 +4,7 @@ namespace BankingApp.Core.Application.Interfaces
 {
     public interface IBaseAccountService
     {
-        Task<UserResponseDto> ConfirmAccountAsync(string userId, string token);
+        Task<UserResponseDto> ConfirmAccountAsync(string token, string? userId = null, bool isForApi = false);
         Task<UserResponseDto> DeleteAsync(string id);
         Task<EditUserResponseDto> EditUser(SaveUserDto saveDto, string? origin, bool? isCreated = false, bool? isApi = false);
         Task<UserResponseDto> ForgotPasswordAsync(ForgotPasswordRequestDto request, bool? isApi = false);
