@@ -62,17 +62,17 @@ namespace BankingApp.Core.Application.Interfaces
         /// <summary>
         /// Valida y obtiene información de la cuenta para confirmación de retiro
         /// </summary>
-        Task<(bool IsValid, string AccountHolderName, decimal Balance, string Message)> ValidateAccountForWithdrawalAsync(string accountNumber);
+        Task<(bool IsValid, string AccountHolderName, decimal Balance, string Message)> ValidateAccountForWithdrawalAsync(string accountNumber, decimal amount, string tellerId);
 
         /// <summary>
         /// Valida y obtiene información para confirmación de pago a tarjeta de crédito
         /// </summary>
-        Task<(bool IsValid, string CardHolderName, decimal CurrentDebt, string Message)> ValidateCreditCardPaymentAsync(string accountNumber, string cardNumber);
+        Task<(bool IsValid, string CardHolderName, decimal CurrentDebt, string Message)> ValidateCreditCardPaymentAsync(string accountNumber, string cardNumber, decimal amount, string tellerId);
 
         /// <summary>
         /// Valida y obtiene información para confirmación de pago a préstamo
         /// </summary>
-        Task<(bool IsValid, string LoanHolderName, decimal RemainingBalance, string Message)> ValidateLoanPaymentAsync(string accountNumber, string loanNumber);
+        Task<(bool IsValid, string LoanHolderName, decimal RemainingBalance, string Message, Guid IdLoan)> ValidateLoanPaymentAsync(string accountNumber, string loanNumber, decimal amount, string tellerId);
 
         /// <summary>
         /// Valida cuentas para transacción entre terceros

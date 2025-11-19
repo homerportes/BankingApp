@@ -72,6 +72,8 @@
                                                 item.Description == DescriptionTransaction.Trasaccion_A_Tarjeta ? item.Beneficiary![^4..] :
                                                 item.Description == DescriptionTransaction.Transaccion_A_Prestamo ? item.Beneficiary :
                                                 item.Description == DescriptionTransaction.Cash_Advance ? item.Beneficiary :
+                                                item.Description == DescriptionTransaction.DEPOSIT ? item.Beneficiary :
+                                                item.Description == DescriptionTransaction.WITHDRAWAL ? item.Beneficiary :
                                                 item.Description == DescriptionTransaction.CREDITCARDPAYMENT ? item.Beneficiary![^4..] :
                                                 item.Description == DescriptionTransaction.LOANPAYMENT ? item.Beneficiary :
                                                 item.Description == DescriptionTransaction.TRANSFER ? item.Beneficiary :

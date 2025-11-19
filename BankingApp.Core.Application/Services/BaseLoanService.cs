@@ -548,6 +548,7 @@ namespace BankingApp.Core.Application.Services
                         Status = OperationStatus.APPROVED,
                         Amount = request.LoanAmount,
                         DateTime = DateTime.Now,
+                        Description = DescriptionTransaction.DISBURSEMENT,
                         Beneficiary = account.Number,
                         Origin = "SYSTEM",
                         Id = Guid.NewGuid()

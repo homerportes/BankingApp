@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BankingApp.Infraestructure.Persistence.Migrations
 {
     [DbContext(typeof(BankingContext))]
-    [Migration("20251118050725_InitialMigration")]
+    [Migration("20251119173105_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
@@ -236,6 +236,10 @@ namespace BankingApp.Infraestructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("ClientId")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -244,8 +248,8 @@ namespace BankingApp.Infraestructure.Persistence.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<decimal>("InterestRate")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("decimal(18,4)");
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");

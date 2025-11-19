@@ -73,21 +73,7 @@
                             </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label asp-for="CardNumber" class="form-label fw-bold">
-                                <i class="bi bi-credit-card"></i> Número de Tarjeta de Crédito (Destino del Pago)
-                            </label>
-                            <input asp-for="CardNumber" 
-                                   class="form-control form-control-lg" 
-                                   placeholder="Ej: 8244218090672493" 
-                                   maxlength="16"
-                                   pattern="[0-9]{16}" />
-                            <span asp-validation-for="CardNumber" class="text-danger"></span>
-                            <div class="form-text">
-                                <i class="bi bi-arrow-right"></i> La tarjeta cuya deuda será reducida con este pago
-                            </div>
-                        </div>
-
+                 
                         <div class="mb-4">
                             <label asp-for="Amount" class="form-label fw-bold">
                                 <i class="bi bi-currency-dollar"></i> Monto a Pagar
@@ -106,6 +92,23 @@
                                 <i class="bi bi-arrow-right"></i> Si paga más de lo debido, solo se cobrará el monto exacto de la deuda
                             </div>
                         </div>
+
+
+                        <div class="mb-3">
+                            <label asp-for="CardNumber" class="form-label fw-bold">
+                                <i class="bi bi-credit-card"></i> Número de Tarjeta de Crédito (Destino del Pago)
+                            </label>
+                            <input asp-for="CardNumber"
+                                   class="form-control form-control-lg"
+                                   placeholder="Ej: 8244218090672493"
+                                   maxlength="16"
+                                   pattern="[0-9]{16}" />
+                            <span asp-validation-for="CardNumber" class="text-danger"></span>
+                            <div class="form-text">
+                                <i class="bi bi-arrow-right"></i> La tarjeta cuya deuda será reducida con este pago
+                            </div>
+                        </div>
+
 
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-primary btn-lg">
