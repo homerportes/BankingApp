@@ -13,7 +13,6 @@ namespace BankingApp.Core.Application.Interfaces
     public interface IBaseLoanService : IGenericService<Loan, LoanDto>
     {
         Task<bool> ClientHasActiveLoan(string clientId);
-        Task<LoanPaginationResultDto> GetAllFiltered(int page = 1, int pageSize = 20, string? state = null, string? documentId = null);
         Task<DetailedLoanDto?> GetDetailed(string Id);
         public  Task<string> GenerateLoanId();
         Task VerifyAndMarkDelayedLoansAsync();
@@ -25,5 +24,8 @@ namespace BankingApp.Core.Application.Interfaces
         Task<decimal> GetClientLoansDebt(string clientId);
         Task<CreateLoanResult> HandleCreateRequest(LoanRequest request);
         Task<decimal> GetAverageLoanDebt();
+        Task<decimal> GetAverageSystemDebt();
+        Task<LoanPaginationResultDto> GetAllFilteredAPI(int page = 1, int pageSize = 20, string? state = null, string? clientId = null);
+        Task<decimal> GetLoanRate(string Id);
     }
 }

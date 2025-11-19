@@ -11,6 +11,7 @@
         </div>
     </div>
 
+    @* Alertas *@
     @if (TempData["Success"] != null)
     {
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -35,6 +36,7 @@
         </div>
     }
 
+    @* Filtros de búsqueda *@
     <div class="card mb-4">
         <div class="card-body">
             <form method="get" asp-action="Index" class="row g-3">
@@ -42,7 +44,7 @@
                     <label for="cedula" class="form-label">Buscar por Cédula</label>
                     <input type="text" class="form-control" id="cedula" name="cedula" value="@ViewBag.Cedula" placeholder="000-0000000-0">
                 </div>
-                
+
                 <div class="col-md-3">
                     <label for="estado" class="form-label">Estado</label>
                     <select class="form-select" id="estado" name="estado">
@@ -140,8 +142,8 @@
                                         <a asp-action="Details" asp-route-id="@account.Id" class="btn btn-sm btn-info" title="Ver detalles">
                                             <i class="bi bi-eye"></i> Ver detalles
                                         </a>
-                                        @if (account.Type == BankingApp.Core.Domain.Common.Enums.AccountType.SECONDARY && 
-                                             account.Status == BankingApp.Core.Domain.Common.Enums.AccountStatus.ACTIVE)
+                                        @if (account.Type == BankingApp.Core.Domain.Common.Enums.AccountType.SECONDARY &&
+                                                                        account.Status == BankingApp.Core.Domain.Common.Enums.AccountStatus.ACTIVE)
                                         {
                                             <a asp-action="Cancel" asp-route-id="@account.Id" class="btn btn-sm btn-danger" title="Cancelar cuenta">
                                                 <i class="bi bi-x-circle"></i> Cancelar
@@ -154,31 +156,53 @@
                     </table>
                 </div>
 
-                @if (ViewBag.TotalPages > 1)
+                @* Paginación completa con desactivación si solo hay una página *@
+                @if (ViewBag.TotalPages > 0)
                 {
                     <nav aria-label="Navegación de páginas">
                         <ul class="pagination justify-content-center">
+                            <!-- Anterior -->
                             <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
-                                <a class="page-link" asp-action="Index" 
+                                <a class="page-link" asp-action="Index"
                                    asp-route-page="@(ViewBag.CurrentPage - 1)"
                                    asp-route-cedula="@ViewBag.Cedula"
                                    asp-route-estado="@ViewBag.Estado"
                                    asp-route-tipo="@ViewBag.Tipo">Anterior</a>
                             </li>
 
-                            @for (int i = 1; i <= ViewBag.TotalPages; i++)
-                            {
-                                <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
-                                    <a class="page-link" asp-action="Index" 
-                                       asp-route-page="@i"
-                                       asp-route-cedula="@ViewBag.Cedula"
-                                       asp-route-estado="@ViewBag.Estado"
-                                       asp-route-tipo="@ViewBag.Tipo">@i</a>
-                                </li>
+                            <!-- Números de página -->
+                            @{
+                                int startPage = Math.Max(1, ViewBag.CurrentPage - 2);
+                                int endPage = Math.Min((int)ViewBag.TotalPages, ViewBag.CurrentPage + 2);
+
+                                if (startPage > 1)
+                                {
+                                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                                    ;
+                                }
+
+                                for (int i = startPage; i <= endPage; i++)
+                                {
+                                    <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                                        <a class="page-link" asp-action="Index"
+                                           asp-route-page="@i"
+                                           asp-route-cedula="@ViewBag.Cedula"
+                                           asp-route-estado="@ViewBag.Estado"
+                                           asp-route-tipo="@ViewBag.Tipo">@i</a>
+                                    </li>
+                                    ;
+                                }
+
+                                if (endPage < ViewBag.TotalPages)
+                                {
+                                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                                    ;
+                                }
                             }
 
+                            <!-- Siguiente -->
                             <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
-                                <a class="page-link" asp-action="Index" 
+                                <a class="page-link" asp-action="Index"
                                    asp-route-page="@(ViewBag.CurrentPage + 1)"
                                    asp-route-cedula="@ViewBag.Cedula"
                                    asp-route-estado="@ViewBag.Estado"

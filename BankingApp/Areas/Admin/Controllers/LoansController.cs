@@ -6,6 +6,7 @@ using BankingApp.Core.Application.Interfaces;
 using BankingApp.Core.Application.ViewModels.Loan;
 using BankingApp.Core.Application.ViewModels.User;
 using BankingApp.Core.Domain.Common.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Collections.Generic;
@@ -13,6 +14,8 @@ using System.Threading.Tasks;
 
 namespace YourNamespace.Areas.Admin.Controllers
 {
+
+    [Authorize(Roles = "ADMIN")]
     [Area("Admin")]
     public class LoansController : Controller
     {
@@ -28,46 +31,44 @@ namespace YourNamespace.Areas.Admin.Controllers
         }
 
         public async Task<IActionResult> Index(
-     [FromQuery] int page = 1,
-     [FromQuery] int pageSize = 20,
-     [FromQuery] LoanStatus? status = null,
-     [FromQuery] string? documentId = null)
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
+            [FromQuery] bool? Completed = null,
+            [FromQuery] string? documentId = null)
         {
-      
             var user = string.IsNullOrWhiteSpace(documentId)
                 ? null
                 : await _userService.GetByDocumentId(documentId);
 
-        
             var clientId = (!string.IsNullOrWhiteSpace(documentId) && user == null)
                 ? "__NO_MATCH__"
                 : user?.Id;
 
-            var statusString = status.HasValue
-                ? EnumMapper<LoanStatus>.ToString(status.Value)
-                : null;
-
-            var pag = await _service.GetAllFiltered(page, pageSize, statusString, clientId);
+            var pag = await _service.GetAllFilteredWeb(page, pageSize, Completed, clientId);
             pag ??= new LoanPaginationResultDto { Data = new List<LoanDto>(), PagesCount = 0 };
 
             var vm = new LoanPageViewModel
             {
                 FilterDocumentId = documentId,
-                FilterStatus = status,
+                FilterCompleted = Completed,
                 Loans = _mapper.Map<List<LoanViewModel>>(pag.Data),
                 Page = page,
                 MaxPages = pag.PagesCount,
                 CurrentPage = page
             };
 
-            var enumMappings = EnumMapper<LoanStatus>.GetAliasEnumPairs()
-                .Select(e => new { Value = e.Value, Text = e.Alias })
-                .ToList();
+            var filterOptions = new List<object>
+    {
+        new { Value = "", Text = "Todos" },
+        new { Value = "false", Text = "Completados" },
+        new { Value = "true", Text = "No completados" }
+    };
 
-            ViewBag.Filters = new SelectList(enumMappings, "Value", "Text", statusString);
+            ViewBag.Filters = new SelectList(filterOptions, "Value", "Text", Completed?.ToString().ToLower());
 
             return View(vm);
         }
+
 
         public async Task<IActionResult> Details(string publicId)
         {
@@ -84,6 +85,8 @@ namespace YourNamespace.Areas.Admin.Controllers
             var dto = await _service.GetDetailed(publicId);
             if (dto == null) return NotFound();
             var vm = _mapper.Map<EditLoanViewModel>(dto);
+            vm.Rate = await _service.GetLoanRate(publicId);
+
             return View(vm);
         }
 
@@ -98,7 +101,6 @@ namespace YourNamespace.Areas.Admin.Controllers
 
             var result=await _service.UpdateLoanRate(vm.PublicId, vm.Rate);
 
-            TempData["Success"] = "Tasa actualizada correctamente.";
             return RedirectToAction(nameof(Index));
         }
 
@@ -114,7 +116,7 @@ namespace YourNamespace.Areas.Admin.Controllers
             var vm = new ClientsPageViewModel
             {
                 Clients = _mapper.Map<List<UserViewModel>>(dtos),
-                ClientsDebt = await _service.GetTotalLoanDebt(),
+                ClientsDebt = await _service.GetAverageSystemDebt(),
                 DocumentIdFilter = cedula
             };
 
@@ -154,7 +156,7 @@ namespace YourNamespace.Areas.Admin.Controllers
                 LoanTermInMonths = vm.TermInMonths
             };
 
-            var result = await _service.HandleCreateRequestApp(request);
+            var result = await _service.HandleCreateRequest(request);
 
             if (result.ClientIsAlreadyHighRisk || result.ClientIsHighRisk)
             {
@@ -170,7 +172,6 @@ namespace YourNamespace.Areas.Admin.Controllers
             var loanResult=await _service.Create(request);
             if (loanResult.LoanCreated)
             {
-                TempData["Success"] = "Préstamo asignado correctamente.";
 
             }
             return RedirectToAction(nameof(Index));
@@ -182,7 +183,6 @@ namespace YourNamespace.Areas.Admin.Controllers
         {
             if (!TempData.TryGetValue("PendingLoanRequest", out var pending))
             {
-                TempData["Error"] = "No hay solicitud pendiente para confirmar.";
                 return RedirectToAction(nameof(Index));
             }
 
@@ -194,8 +194,7 @@ namespace YourNamespace.Areas.Admin.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            await _service.Create(request);
-            TempData["Success"] = "Préstamo asignado correctamente.";
+            await _service.ForceLoan(request);
             return RedirectToAction(nameof(Index));
         }
 

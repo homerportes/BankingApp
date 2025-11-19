@@ -112,9 +112,8 @@ namespace InvestmentApp.Infrastructure.Identity.Services
                 }
                 else
                 {
-                    string? verificationToken = await GetVerificationEmailToken(user);
+                    string? verificationToken = await GetVerificationEmailToken(user, true);
 
-                    // Email para API con formato HTML
                     string emailBody = $@"
                         <!DOCTYPE html>
                         <html lang='es'>
@@ -561,9 +560,9 @@ namespace InvestmentApp.Infrastructure.Identity.Services
 
             if (isForApi)
             {
-                // Decodificar token combinado para extraer userId y token real
                 var decoded = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(token));
                 var parts = decoded.Split(':');
+
                 if (parts.Length != 2)
                 {
                     response.Message = "Token inválido";
@@ -572,7 +571,11 @@ namespace InvestmentApp.Infrastructure.Identity.Services
                 }
 
                 userId = parts[0];
-                token = parts[1];
+                token = parts[1]; // token sin codificar
+            }
+            else
+            {
+                token = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(token));
             }
 
             if (string.IsNullOrEmpty(userId))
@@ -597,7 +600,6 @@ namespace InvestmentApp.Infrastructure.Identity.Services
                 await _userManager.UpdateAsync(user);
 
                 response.Message = $"Cuenta confirmada para {user.Email}. Ahora puedes usar la aplicación";
-                response.HasError = false;
                 return response;
             }
             else
@@ -623,14 +625,23 @@ namespace InvestmentApp.Infrastructure.Identity.Services
             return verificationUri;
         }
 
-        protected async Task<string?> GetVerificationEmailToken(AppUser user)
+        protected async Task<string?> GetVerificationEmailToken(AppUser user, bool isForAPI = false)
         {
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            var combined = $"{user.Id}:{token}";
 
-            var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(combined));
+            if (isForAPI)
+            {
+                // Token combinado para API
+                var combined = $"{user.Id}:{token}";
+                var encodedCombined = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(combined));
+                return encodedCombined;
+            }
+
+            // Token normal para Web
+            var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
             return encodedToken;
         }
+
 
         protected async Task<string> GetResetPasswordUri(AppUser user, string origin)
         {

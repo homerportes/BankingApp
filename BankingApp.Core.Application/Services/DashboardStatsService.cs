@@ -46,8 +46,10 @@ namespace BankingApp.Core.Application.Services
             return new AdminDashboardStatsDto
             {
 
-                TotalTransactionsCount = await _transacctionRepository.GetAllQuery().DistinctBy(r=>r.OperationId).CountAsync(),
-                DayPaysCount = await Payments.Where(p=>p.DateTime.Day==DateTime.Now.Day).CountAsync(),
+                TotalTransactionsCount = await _transacctionRepository.GetAllQuery().CountAsync(),
+                TodayTransactionsCount = await _transacctionRepository.GetAllQuery().Where(r=>r.DateTime== DateTime.Now.Date).CountAsync(),
+
+                DayPaysCount = await Payments.Where(p => p.DateTime.Date == DateTime.Now.Date).CountAsync(),
                 TotalPaysCount = await Payments.CountAsync(),
                 TotalActiveClientsCount = await _userService.GetActiveClientsCount(),
                 TotalInactiveClientsCount = totalActiveClients,
@@ -60,7 +62,9 @@ namespace BankingApp.Core.Application.Services
 
                 TotalSavingAccountsCount = totalAccounts,
 
-                AverageClientsDebt = await GetActiveClientsDebt() / totalActiveClients
+                AverageClientsDebt = await GetActiveClientsDebt() / totalActiveClients,
+
+                AverageClientsDebtActiveAndInactive = await GetAverageSystemDebt()
 
             };
 
@@ -69,10 +73,23 @@ namespace BankingApp.Core.Application.Services
 
            
         }
+        public async Task<decimal> GetAverageSystemDebt()
+        {
+            var clientIds = await _userService.GetAllClientIds();
+
+            if (clientIds == null || clientIds.Count == 0)
+                return 0;
+
+            var totalDebt = await _loanRepository.GetAllQuery()
+                .Where(r => clientIds.Contains(r.ClientId))
+                .SumAsync(r => r.OutstandingBalance);
+
+            return totalDebt / clientIds.Count;
+        }
 
 
 
-    private async Task<decimal> GetActiveClientsDebt()
+        private async Task<decimal> GetActiveClientsDebt()
     {
         var activeUserIds = await _userService.GetActiveClientsIds();
         if (activeUserIds == null || !activeUserIds.Any())
