@@ -2,11 +2,7 @@
 using BankingApp.Core.Domain.Entities;
 using BankingApp.Infraestructure.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 
 namespace BankingApp.Infraestructure.Persistence.Repositories
@@ -108,6 +104,22 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
             }
         }
 
+
+        public async Task<List<Transaction>> GetListTransaction(string number)
+        {
+
+            return await context.Set<Transaction>().Where(t => t.Origin == number || t.Beneficiary == number).ToListAsync();
+
+        }
+
+
+
+        public async Task<List<Transaction>> GetListTransactionByNumberCreditCard(string number)
+        {
+
+            return await context.Set<Transaction>().Where(t => t.Origin == number ).ToListAsync();
+
+        }
 
 
 

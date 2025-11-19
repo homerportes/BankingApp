@@ -40,7 +40,7 @@ namespace BankingApp.Core.Application.Services
             await unitOfWork.BeginTransactionAsync();
             try
             {
-
+                var operationId = repo.GenerateOperationId();
                 var _validateAmount = await ServiceTransaction.ValidateAmount(Dto.Origin, Dto.Amount);
                 if (_validateAmount == null || _validateAmount!.IsSuccess == false)
                 {
@@ -62,11 +62,23 @@ namespace BankingApp.Core.Application.Services
                     descontar = Dto.Amount; 
                 }
 
+                if(_creditCard.TotalAmountOwed == 0)
+                {
 
-                    var entity = _mapper.Map<Transaction>(Dto);
+
+                    descontar = 0;
+                
+                
+                }
+
+
+
+                 var entity = _mapper.Map<Transaction>(Dto);
                 if (entity is not null)
                 {
+                    entity.TellerId = null;
                     entity.Amount = descontar;
+                    entity.OperationId = operationId;
                     var transac = await repo.AddAsync(entity);
                     var dto = _mapper.Map<CreateTransactionDto>(transac);
                     await unitOfWork.CommitAsync();
@@ -153,5 +165,50 @@ namespace BankingApp.Core.Application.Services
             }
 
         }
+
+
+
+        public async Task<string?> ValidateDebitCreditCard(string BeneficiaryId) 
+        {
+            try
+            {
+
+                string response = "";
+                var _creditCard = await _creditCardRepository.GetByNumberAsync(BeneficiaryId);
+
+
+                if( _creditCard == null)
+                {
+
+                   response = "No se encontro registro de la tarjeta  a pagar";
+                    return response;
+
+                }
+
+                if(_creditCard!.TotalAmountOwed == 0)
+                {
+
+
+                    response = "La tarjeta seleccionada no se puede pagar no tiene deuda, favor verifiicar";
+                    return response;
+
+                }
+
+
+
+                return null;
+            }
+            catch(Exception ex)
+            {
+
+
+                return null;
+            
+            }
+        
+        }
+
+
+
     }
 }

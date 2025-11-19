@@ -28,11 +28,22 @@ namespace BankingApp.Core.Application.Mappings.EntitiesAndDtos
                 .ForMember(s => s.BeneficiaryId, opt => opt.MapFrom(src => src.IdBeneficiary))
                 .ForMember(s => s.IsExist, opt => opt.MapFrom(src => src.IsExist))
                 .ForMember(s => s.LastName, opt => opt.Ignore())
-                .ForMember(s => s.Gmail, opt => opt.Ignore());
 
             CreateMap<Transaction, CommerceTransactionDto>()
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => EnumMapper<OperationStatus>.ToString(src.Status)))
                 .ForMember(dest => dest.Type, opt => opt.MapFrom(src => EnumMapper<TransactionType>.ToString(src.Type)));
+
+
+
+
+
+
+            CreateMap<Transaction, DataTransactionHomeClientDto>()
+                .ForMember(s => s.Fecha, opt => opt.MapFrom(src => src.DateTime))
+                .ForMember(s => s.Monto, opt => opt.MapFrom(src => src.Amount))
+                .ReverseMap();
+             
+
 
         }
 

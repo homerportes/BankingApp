@@ -18,7 +18,7 @@ namespace BankingApp.Core.Application.ViewModels.Transferences
         [DataType(DataType.Currency)]
         public decimal Amount { get; set; }
 
-        public required List<string> AvailableAccounts { get; set; }
+        public required List<string>? AvailableAccounts { get; set; }
         public string? Message { get; set; }
     }
 }

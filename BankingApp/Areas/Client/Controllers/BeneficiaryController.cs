@@ -19,17 +19,18 @@ namespace BankingApp.Areas.Client.Controllers
         private readonly IMapper mapper;
         private readonly IBeneficiaryService service;
         private readonly UserManager<AppUser> userManager;
+        private readonly ITransactionService transactionService;
 
 
 
-        public BeneficiaryController(IBeneficiaryService service, IMapper mapper, UserManager<AppUser> userManager)
+        public BeneficiaryController(IBeneficiaryService service, IMapper mapper, UserManager<AppUser> userManager, ITransactionService transactionService)
         {
 
 
             this.service = service;
             this.mapper = mapper;
             this.userManager = userManager;
-
+            this.transactionService = transactionService;
         }
 
 
@@ -71,7 +72,7 @@ namespace BankingApp.Areas.Client.Controllers
             var user = await userManager.GetUserAsync(User);
 
             var dataBeneficiary = await service.ValidateAccountNumberExist(createVm.Number);
-
+            var Accounts = await transactionService.CuentaListAsync(user!.Id);
             if (dataBeneficiary == null || dataBeneficiary.IsExist == false)
             {
                 ModelState.AddModelError(string.Empty, "El número de cuenta ingresado no corresponde a ninguna cuenta válida");
@@ -80,6 +81,14 @@ namespace BankingApp.Areas.Client.Controllers
             {
                 ModelState.AddModelError(string.Empty, "El número de cuenta ingresado ya corresponde a uno de tus beneficiarios");
             }
+
+            if (Accounts!.Contains(vm.CreateBeneficiary.Number))
+            {
+
+                ModelState.AddModelError(string.Empty, "No puedes agregar un numero de cuenta propio como beneficiario, Favor verificar y volver a intentar");
+
+            }
+
 
             if (!ModelState.IsValid)
             {
@@ -98,7 +107,7 @@ namespace BankingApp.Areas.Client.Controllers
             {
                 Id = 0,
                 ClientId = user!.Id,
-                Fecha = DateTime.UtcNow,
+                Fecha = DateTime.Now,
                 BeneficiaryId = dataBeneficiary!.IdBeneficiary
             };
 

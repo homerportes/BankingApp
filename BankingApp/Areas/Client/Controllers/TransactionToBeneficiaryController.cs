@@ -104,7 +104,7 @@ namespace BankingApp.Areas.Client.Controllers
                 Transaccion.Type = TransactionType.DEBIT;
                 Transaccion.AccountId = validateAmount!.AccounId;
                 Transaccion.AccountNumber = vm.Origen!;
-                Transaccion.DateTime = DateTime.UtcNow;
+                Transaccion.DateTime = DateTime.Now;
                 Transaccion.Description = DescriptionTransaction.Transaccion_A_Beneficiario;
 
                 var salvar = await transactionService.AddAsync(Transaccion);
@@ -174,7 +174,7 @@ namespace BankingApp.Areas.Client.Controllers
             Transaccion.Type = TransactionType.DEBIT;
             Transaccion.AccountId = validateAmount!.AccounId;
             Transaccion.AccountNumber = model.Origen!;
-            Transaccion.DateTime = DateTime.UtcNow;
+            Transaccion.DateTime = DateTime.Now;
             Transaccion.Description = DescriptionTransaction.Transaccion_A_Beneficiario;
 
             var salvar = await transactionService.AddAsync(Transaccion);
@@ -204,7 +204,7 @@ namespace BankingApp.Areas.Client.Controllers
             creditTransaction.Type = TransactionType.CREDIT;
             creditTransaction.AccountId = beneficiary!.AccountBenefiicaryId;
             creditTransaction.AccountNumber = model.Beneficiary!;
-            creditTransaction.DateTime = DateTime.UtcNow;
+            creditTransaction.DateTime = DateTime.Now;
             creditTransaction.Description = DescriptionTransaction.Transaccion_A_Beneficiario;
 
             var credit = await transactionService.AddAsync(creditTransaction);

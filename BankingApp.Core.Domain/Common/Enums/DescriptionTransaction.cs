@@ -17,6 +17,7 @@ namespace BankingApp.Core.Domain.Common.Enums
         CREDITCARDPAYMENT = 7,
         LOANPAYMENT = 8,
         TRANSFER = 9,
-        Cash_Advance = 10
+        Cash_Advance = 10,
+        DISBURSEMENT = 11,
     }
 }

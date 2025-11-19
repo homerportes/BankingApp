@@ -72,6 +72,10 @@ namespace BankingApp.Areas.Client.Controllers
             if (validateAccount == null || validateAccount.IsExist == false)
             {
                 ModelState.AddModelError(string.Empty, "El número de cuenta ingresado no es válido, Favor introduzca otro");
+                List<string>? Cuentas = await transactionService.CuentaListAsync(user!.Id)!;
+                ViewBag.Cuentas = Cuentas;
+                return View(vm);
+
             }
 
             var validateAmount = await transactionService.ValidateAmount(vm.Origin, vm.Amount);
@@ -80,13 +84,13 @@ namespace BankingApp.Areas.Client.Controllers
             {
 
                 ModelState.AddModelError(string.Empty, $"{validateAmount!.Error}");
-                //registrar transaccion en caso de ser rechazada
+                //registrar transaccion en caso de ser rechazada para el origen
                 var Transaccion = _mapper.Map<CreateTransactionDto>(vm);           
                 Transaccion.Status = OperationStatus.DECLINED;
                 Transaccion.Type = TransactionType.DEBIT;
                 Transaccion.AccountId = validateAmount!.AccounId;
                 Transaccion.AccountNumber = vm.Origin;
-                Transaccion.DateTime = DateTime.UtcNow;
+                Transaccion.DateTime = DateTime.Now;
                 Transaccion.Description = DescriptionTransaction.Transaccion_Express;
 
                 var salvar = await transactionService.AddAsync(Transaccion);
@@ -152,7 +156,7 @@ namespace BankingApp.Areas.Client.Controllers
             Transaccion.Type = TransactionType.DEBIT;
             Transaccion.AccountId = validateAmount!.AccounId;
             Transaccion.AccountNumber = model.Origin;
-            Transaccion.DateTime = DateTime.UtcNow;
+            Transaccion.DateTime = DateTime.Now;
             Transaccion.Description = DescriptionTransaction.Transaccion_Express;
 
             var salvar = await transactionService.AddAsync(Transaccion);
@@ -182,7 +186,7 @@ namespace BankingApp.Areas.Client.Controllers
             creditTransaction.Type = TransactionType.CREDIT;
             creditTransaction.AccountId = beneficiary!.AccountBenefiicaryId;
             creditTransaction.AccountNumber = model.Beneficiary;
-            creditTransaction.DateTime = DateTime.UtcNow;
+            creditTransaction.DateTime = DateTime.Now;
             creditTransaction.Description = DescriptionTransaction.Transaccion_Express;
 
             var credit = await transactionService.AddAsync(creditTransaction);
