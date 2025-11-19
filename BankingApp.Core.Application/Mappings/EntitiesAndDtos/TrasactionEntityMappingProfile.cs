@@ -27,7 +27,7 @@ namespace BankingApp.Core.Application.Mappings.EntitiesAndDtos
                 .ForMember(s => s.Name, opt => opt.MapFrom(src => src.NameBeneficiary))
                 .ForMember(s => s.BeneficiaryId, opt => opt.MapFrom(src => src.IdBeneficiary))
                 .ForMember(s => s.IsExist, opt => opt.MapFrom(src => src.IsExist))
-                .ForMember(s => s.LastName, opt => opt.Ignore())
+                .ForMember(s => s.LastName, opt => opt.Ignore());
 
             CreateMap<Transaction, CommerceTransactionDto>()
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => EnumMapper<OperationStatus>.ToString(src.Status)))
