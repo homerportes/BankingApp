@@ -9,5 +9,6 @@ namespace BankingApp.Core.Domain.Interfaces
 {
     public interface ICommerceUserRepository : IGenericRepository<CommerceUser>
     {
+        Task<int?> GetCommerceAsociatedToUserId(string userId);
     }
 }
