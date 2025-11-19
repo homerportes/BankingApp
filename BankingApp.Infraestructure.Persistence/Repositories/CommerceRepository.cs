@@ -30,6 +30,15 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
                                  .Select(c => c.Users.Select(u => u.UserId).FirstOrDefault())
                                  .FirstOrDefaultAsync();
         }
+        public async Task<List<string>> GetAssociatesCommerceUsersId(int commerceId)
+        {
+            return await _context.Set<Commerce>()
+                                 .Where(c => c.Id == commerceId)
+                                 .SelectMany(c => c.Users)
+                                 .Select(u => u.UserId)
+                                 .ToListAsync();
+        }
+
 
 
     }
