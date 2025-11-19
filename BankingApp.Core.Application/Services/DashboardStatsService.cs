@@ -46,7 +46,7 @@ namespace BankingApp.Core.Application.Services
             return new AdminDashboardStatsDto
             {
 
-                TotalTransactionsCount = await _transacctionRepository.GetAllQuery().DistinctBy(r=>r.OperationId).CountAsync(),
+                TotalTransactionsCount = await _transacctionRepository.GetAllQuery().CountAsync(),
                 DayPaysCount = await Payments.Where(p=>p.DateTime.Day==DateTime.Now.Day).CountAsync(),
                 TotalPaysCount = await Payments.CountAsync(),
                 TotalActiveClientsCount = await _userService.GetActiveClientsCount(),

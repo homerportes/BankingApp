@@ -1,0 +1,123 @@
+﻿
+
+@inject UserManager<AppUser> UserManager
+@inject SignInManager<AppUser> SignInManager
+
+
+@{
+
+    Layout = "_LayoutAccessDenied";
+    ViewData["Title"] = "Acceso denegado";
+
+    var user = await UserManager.GetUserAsync(User);
+    var roles = await UserManager.GetRolesAsync(user!);
+    string home = "";
+    string action = "";
+    string area = "";
+
+}
+
+
+ 
+
+
+@if (roles.Contains("ADMIN"))
+{
+
+    home = "Home";
+    action = "Index";
+    area = "Admin";
+
+
+}
+else if(roles.Contains("CLIENT"))
+{
+
+    home = "Home";
+    action = "Index";
+    area = "Client";
+
+
+
+}
+else
+{
+    
+    home = "Home";
+    action = "Index";
+    area = "Teller";
+
+
+}
+
+
+<div class="d-flex justify-content-center align-items-center vh-100" style="background: linear-gradient(135deg, #f8f9fa, #e9ecef);">
+    <div class="text-center bg-white border rounded shadow p-5" style="max-width:500px; transition: transform 0.3s;">
+   
+        <div class="mb-4">
+            <h1 class="display-1 text-danger animate__animated animate__shakeX">🚫</h1>
+        </div>
+
+     
+        <h3 class="mb-3 text-dark">Lo sentimos, no tienes permisos para acceder a esta funcionalidad.</h3>
+        <p class="fw-bold text-danger mb-4" style="letter-spacing:1px; font-size:1.2rem;">ACCESO DENEGADO</p>
+
+    
+        <a asp-area="@area" asp-controller="@home" asp-action="@action" class="btn btn-primary btn-lg px-4 btn-access">
+            Volver a mi inicio
+        </a>
+    </div>
+</div>
+
+<style>
+  
+    @@keyframes shake {
+        0%
+
+    {
+        transform: rotate(0deg);
+    }
+
+    25% {
+        transform: rotate(-15deg);
+    }
+
+    50% {
+        transform: rotate(15deg);
+    }
+
+    75% {
+        transform: rotate(-10deg);
+    }
+
+    100% {
+        transform: rotate(0deg);
+    }
+
+    }
+
+    .animate__shakeX {
+        display: inline-block;
+        animation: shake 1s infinite;
+    }
+
+   
+    .btn-access {
+        background-color: #003d82;
+        transition: all 0.3s ease;
+    }
+
+        .btn-access:hover {
+            background-color: #2c9fa3;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            color: #fff;
+        }
+
+   
+    .text-center.bg-white:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 25px rgba(0,0,0,0.2);
+    }
+</style>
+

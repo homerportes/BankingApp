@@ -6,6 +6,7 @@ using BankingApp.Core.Application.Interfaces;
 using BankingApp.Core.Application.ViewModels.Loan;
 using BankingApp.Core.Application.ViewModels.User;
 using BankingApp.Core.Domain.Common.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Collections.Generic;
@@ -13,6 +14,7 @@ using System.Threading.Tasks;
 
 namespace YourNamespace.Areas.Admin.Controllers
 {
+    [Authorize(Roles = "ADMIN")]
     [Area("Admin")]
     public class LoansController : Controller
     {

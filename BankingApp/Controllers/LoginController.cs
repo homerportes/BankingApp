@@ -22,8 +22,14 @@ namespace BankingApp.Controllers
 
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string message = null!)
         {
+
+            if (!string.IsNullOrEmpty(message))
+                TempData["ErrorMessage"] = message;
+
+
+
             // Si ya hay un usuario autenticado
             if (User.Identity?.IsAuthenticated == true)
             {
@@ -155,16 +161,13 @@ namespace BankingApp.Controllers
             return RedirectToRoute(new { controller = "Login", action = "Index" });
         }
 
-        public async Task<IActionResult> AccessDenied()
+        public  ActionResult AccessDenied()
         {
             // Si hay un usuario autenticado, cerrar su sesión
-            if (User.Identity?.IsAuthenticated == true)
-            {
-                await _accountServiceForWebApp.SignOutAsync();
-            }
+            
 
-            TempData["ErrorMessage"] = "No tienes permisos para acceder a esta página o tu sesión ha expirado. Por favor, inicia sesión nuevamente.";
-            return RedirectToRoute(new { controller = "Login", action = "Index" });
+
+            return View();
         }
 
         public async Task<IActionResult> ConfirmEmail(string userId, string token)

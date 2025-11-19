@@ -12,7 +12,6 @@ namespace BankingApp.Areas.Client.Controllers
 {
 
     [Area("Client")]
-    
     [Authorize(Roles = "CLIENT")]
     public class TransferencesController : Controller
     {
