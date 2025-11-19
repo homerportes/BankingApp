@@ -18,9 +18,10 @@ namespace BankingApp.Infraestructure.Persistence.EntitiesConfigurations
             builder.Property(x => x.ClientId).IsRequired();
             builder.Property(x => x.PublicId).IsRequired();
             builder.Property(x => x.OutstandingBalance).IsRequired().HasPrecision(18, 2);
-            builder.Property(x => x.InterestRate).IsRequired().HasPrecision(18,4);
+            builder.Property(x => x.InterestRate).IsRequired().HasPrecision(18, 2);
             builder.Property(x => x.LoanTermInMonths).IsRequired();
             builder.Property(x => x.Status).IsRequired();
+            builder.Property(x => x.Amount).IsRequired().HasPrecision(18, 2);
 
 
             builder.HasMany(x => x.Installments)

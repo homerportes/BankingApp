@@ -10,7 +10,7 @@ using System.Security.Claims;
 namespace BankingApi.Controllers.v1
 {
     [Authorize(AuthenticationSchemes = "Bearer", Roles = "ADMIN")]
-    [Route("api/v{version::apiVersion}/creditcards")]
+    [Route("api/v{version::apiVersion}/credit-card")]
     public class CreditCardsController : BaseApiController
     {
         private readonly ICreditCardService _creditCardService;
@@ -24,9 +24,10 @@ namespace BankingApi.Controllers.v1
 
         [HttpGet(Name = "ObtenerTodasLasTarjetas")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+
         public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 20, [FromQuery] string? estado = null, [FromQuery] string? cedula = null)
         {
             try
@@ -113,7 +114,6 @@ namespace BankingApi.Controllers.v1
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Create([FromBody] CreateCreditCardDto dto)
@@ -146,20 +146,24 @@ namespace BankingApi.Controllers.v1
 
             try
             {
-                // Verificar que el cliente existe
                 var client = await _userService.GetUserById(dto.ClientId);
                 if (client == null)
                 {
-                    return NotFound("El cliente especificado no existe");
+                    return BadRequest("El cliente especificado no existe");
                 }
 
-                // Verificar que el cliente tiene rol CLIENT
-                if (!client.Role.Equals("CLIENT", StringComparison.OrdinalIgnoreCase))
+
+
+                if (EnumMapper<AppRoles>.FromString( client.Role)!=AppRoles.CLIENT)
                 {
                     return BadRequest("Solo se pueden asignar tarjetas a usuarios con rol de cliente");
                 }
 
-                // Obtener el ID del admin logueado
+                if (!client.IsActive)
+                {
+                    return BadRequest("El cliente debe estar activo para asignarle una tarjeta");
+                }
+
                 var adminId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 if (string.IsNullOrEmpty(adminId))
                 {
@@ -214,13 +218,11 @@ namespace BankingApi.Controllers.v1
             {
                 CreditCardDto? card = null;
 
-                // Intentar buscar por ID numérico
                 if (int.TryParse(id, out int numericId))
                 {
                     card = await _creditCardService.GetByIdAsync(numericId);
                 }
 
-                // Si no se encontró por ID, intentar buscar por número de tarjeta
                 if (card == null)
                 {
                     card = await _creditCardService.GetByNumberAsync(id);
@@ -231,7 +233,6 @@ namespace BankingApi.Controllers.v1
                     return NotFound("La tarjeta especificada no existe");
                 }
 
-                // Verificar que el nuevo límite no sea menor que la deuda actual
                 if (dto.CreditLimitAmount < card.TotalAmountOwed)
                 {
                     return BadRequest("El nuevo límite no puede ser inferior al monto adeudado actual");
@@ -264,13 +265,11 @@ namespace BankingApi.Controllers.v1
             {
                 CreditCardDto? card = null;
 
-                // Intentar buscar por ID numérico
                 if (int.TryParse(id, out int numericId))
                 {
                     card = await _creditCardService.GetByIdAsync(numericId);
                 }
 
-                // Si no se encontró por ID, intentar buscar por número de tarjeta
                 if (card == null)
                 {
                     card = await _creditCardService.GetByNumberAsync(id);
@@ -281,7 +280,6 @@ namespace BankingApi.Controllers.v1
                     return NotFound("La tarjeta especificada no existe");
                 }
 
-                // Verificar que no tenga deuda pendiente
                 if (card.TotalAmountOwed > 0)
                 {
                     return BadRequest("Para cancelar esta tarjeta, el cliente debe saldar la totalidad de la deuda pendiente");

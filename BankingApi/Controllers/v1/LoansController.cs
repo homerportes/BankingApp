@@ -69,11 +69,18 @@ namespace BankingApi.Controllers.v1
                 return BadRequest("El intervalo  de tiempo debe ser mayor a 0");
             var user = await _userService.GetUserById(request.ClientId);
             if (user == null) return BadRequest("No existe ningun cliente asociado a ese Id");
+            int[] allowedTerms = new[] { 6, 12, 18, 24, 30, 36, 42, 48, 54, 60 };
+            if (!allowedTerms.Contains(request.LoanTermInMonths))
+            {
+               
+               return BadRequest("Plazo inválido. Seleccionar 6,12,...,60 meses.");
+            }
 
-            
-                var requestResult = await _loanService.HandleCreateRequest(request);
+            var requestResult = await _loanService.HandleCreateRequest(request);
                 if (requestResult.ClientHasActiveLoan) return BadRequest("El usuario ya tiene un prestamo activo");
-                if (requestResult.ClientIsHighRisk) return Conflict("El usuario es de alto riesgo");
+                if (requestResult.ClientIsAlreadyHighRisk) return Conflict("El usuario ya es de alto riesgo");
+            if (requestResult.ClientIsHighRisk) return Conflict("El usuario se convertiría en cliente alto riesgo");
+
             if (requestResult.LoanCreated) return Created();
 
             else return BadRequest();

@@ -16,6 +16,11 @@ namespace BankingApp.Core.Application.Mappings.EntitiesAndDtos
         public LoanEntityMappingProfile()
         {
             CreateMap<Loan, LoanDto>()
+                .ForMember(r => r.TotalInstallmentsCount, opt => opt.MapFrom(src => src.Installments.Count()))
+                .ForMember(r=>r.InterestRate, opt=>opt.MapFrom(src=>src.InterestRate))
+                .ForMember(r => r.TotalLoanAmount, opt => opt.MapFrom(src => src.Amount))
+
+
                 .ForMember(r => r.TotalInstallmentsCount, opt => opt.MapFrom(src => src.Installments!.Count()))
            .ForMember(r => r.PaidInstallmentsCount, opt => opt.MapFrom(src => src.Installments!.Where(r => r.IsPaid).Count()));
 
@@ -36,7 +41,6 @@ namespace BankingApp.Core.Application.Mappings.EntitiesAndDtos
 
             CreateMap<DetailsLoanHomeClientDto, DetailsLoanHomeClientViewModel>()
                 .ReverseMap();
-
 
 
 
