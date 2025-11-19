@@ -50,6 +50,7 @@ namespace BankingApp.Core.Application.Services
                 TodayTransactionsCount = await _transacctionRepository.GetAllQuery().Where(r=>r.DateTime== DateTime.Now.Date).CountAsync(),
 
                 DayPaysCount = await Payments.Where(p => p.DateTime.Date == DateTime.Now.Date).CountAsync(),
+
                 TotalPaysCount = await Payments.CountAsync(),
                 TotalActiveClientsCount = await _userService.GetActiveClientsCount(),
                 TotalInactiveClientsCount = totalActiveClients,
