@@ -12,164 +12,130 @@
     @if (Model.ListAccountClient == null || !Model.ListAccountClient.Any())
     {
         <div class="text-center mt-5">
-            <h4 class="text-muted">😔 No tienes productos <span class="text-dark">Registrados</span></h4>
+            <h4 class="text-muted"> No tienes productos <span class="text-dark">Registrados</span></h4>
             <p class="text-secondary">Cuando te asignen una cuenta o producto, aparecerá aquí.</p>
         </div>
     }
     else
     {
         <h3 class="accounts-title mt-5">Mis Cuentas</h3>
-
-        <div class="row g-4 mt-2">
+        <div class="list-group mt-2">
             @foreach (var item in Model.ListAccountClient)
             {
-                <div class="col-md-4 col-sm-6">
-                    <div class="account-card">
-
-                        <div class="account-header">
-                            <i class="bi bi-bank2"></i> Cuenta: @item.Number
-                        </div>
-
+                <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center mb-2 account-strip p-3 shadow-sm rounded">
+                    <div class="flex-grow-1">
+                        <div><strong>Cuenta:</strong> @item.Number</div>
+                        <div><strong>Tipo:</strong>@( @item.Type==AccountType.PRIMARY?" Primaria":" Secundaria")</div>
+                    </div>
+                    <div class="text-end">
                         <div class="balance-label">Balance disponible</div>
-
-                        <div class="balance-amount">
+                        <div class="balance-amount fs-5 fw-bold">
                             @(item.Banlace < 0 ? "0 RD$" : $"{item.Banlace:N2} RD$")
                         </div>
-
-                        <div class="account-header mt-2">
-                            Tipo: @item.Type
-                        </div>
-
-                        <div class="text-center mt-3">
-                            <a asp-area="Client"
-                               asp-controller="Home"
-                               asp-action="DetailsTransaction"
-                               asp-route-number="@item.Number"
-                               class="btn btn-details btn-primary">
-                                Ver Detalles
-                            </a>
-                        </div>
-
+                        <a asp-area="Client"
+                           asp-controller="Home"
+                           asp-action="DetailsTransaction"
+                           asp-route-number="@item.Number"
+                           class="btn btn-sm btn-primary mt-2">
+                            Ver Detalles
+                        </a>
                     </div>
                 </div>
             }
         </div>
     }
 
-
-  
     @if (Model.ListLoanHomeClient != null && Model.ListLoanHomeClient.Any())
     {
         <h3 class="accounts-title mt-5">Mis Préstamos</h3>
-
-        <div class="row g-4 mt-2">
+        <div class="list-group mt-2">
             @foreach (var loan in Model.ListLoanHomeClient)
             {
-                <div class="col-md-4 col-sm-6">
-                    <div class="account-card">
-
-
-                        <div class="balance-amount">
-
-                            <i class="bi bi-hash"></i>   Id: @loan.Number
-                            
-                        </div>
-
-
-                        <div class="account-header">
-                            <i class="bi bi-cash"></i> Monto Prestado: @loan.LoanedAmountTotal.ToString("N2") RD$
-                        </div>
-
-                        <div class="balance-label">Saldo Pendiente</div>
-
-                        <div class="balance-amount">
-                            @loan.OutstandingBalance.ToString("N2") RD$
-                        </div>
-
-                        <div class="account-header">Total Cuotas: @loan.installmentsTotalAmount</div>
-
-                        <div class="account-header">
-                            Cuotas pagadas: @loan.installmentsTotalAmountPaid / @loan.installmentsTotalAmount
-                        </div>
-
-                        <div class="account-header">Tasa de Interés: @loan.InterestRate.ToString("N2")%</div>
-
-                        <div class="account-header">Plazo: @loan.LoanTermInMonths meses</div>
-
-                        <div class="account-header">
-                            Estado:
+                <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center mb-2 account-strip p-3 shadow-sm rounded">
+                    <div class="flex-grow-1">
+                        <div><strong>Id:</strong> @loan.Number</div>
+                        <div><strong>Monto Prestado:</strong> @loan.LoanedAmountTotal.ToString("N2") RD$</div>
+                        <div><strong>Saldo Pendiente:</strong> @loan.OutstandingBalance.ToString("N2") RD$</div>
+                        <div><strong>Cuotas:</strong> @loan.installmentsTotalAmountPaid / @loan.installmentsTotalAmount</div>
+                        <div><strong>Tasa de Interés:</strong> @loan.InterestRate.ToString("N2")%</div>
+                        <div><strong>Plazo:</strong> @loan.LoanTermInMonths meses</div>
+                    </div>
+                    <div class="text-end">
+                        <div>
+                            <strong>Estado:</strong>
                             @if (loan.IsDelinquent)
                             {
-                                <span class="text-danger bg-warning px-2 rounded">En Mora</span>
+                                <span class="badge bg-danger">En Mora</span>
                             }
                             else
                             {
-                                <span class="text-success bg-body-secondary px-2 rounded">Al Día</span>
+                                <span class="badge bg-success">Al Día</span>
                             }
                         </div>
-
-                        <div class="text-center mt-3">
-                            <a asp-area="Client"
-                               asp-controller="Home"
-                               asp-action="DetailsLoan"
-                               asp-route-LoanId="@loan.Id"
-                               class="btn btn-details btn-primary">
-                                Ver Detalles
-                            </a>
-                        </div>
-
+                        <a asp-area="Client"
+                           asp-controller="Home"
+                           asp-action="DetailsLoan"
+                           asp-route-LoanId="@loan.Id"
+                           class="btn btn-sm btn-primary mt-2">
+                            Ver Detalles
+                        </a>
                     </div>
                 </div>
             }
         </div>
     }
 
-
-   
     @if (Model.ListCredtiCardHomeClient != null && Model.ListCredtiCardHomeClient.Any())
     {
         <h3 class="accounts-title mt-5">Mis Tarjetas</h3>
-
-        <div class="row g-4 mt-2">
+        <div class="list-group mt-2">
             @foreach (var card in Model.ListCredtiCardHomeClient)
             {
-                <div class="col-md-4 col-sm-6">
-                    <div class="account-card">
-
-                        <div class="account-header">
-                            <i class="bi bi-credit-card"></i> Número: @card.Number
-                        </div>
-
-                        <div class="balance-label">Monto Límite</div>
-
-                        <div class="balance-amount">
-                            @card.CreditLimitAmount.ToString("N2") RD$
-                        </div>
-
-                        <div class="account-header mt-2">
-                            Monto adeudado: @card.TotalAmountOwed.ToString("N2") RD$
-                        </div>
-
-                        <div class="account-header">
-                            Expira: @card.ExpirationDate.ToString("MM/yy")
-                        </div>
-
-                        <div class="text-center mt-3">
-                            <a asp-area="Client"
-                               asp-controller="Home"
-                               asp-action="DetailsCredtiCard"
-                               asp-route-Number="@card.Number"
-                               class="btn btn-details btn-primary">
-                                Ver Detalles
-                            </a>
-                        </div>
-
+                <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center mb-2 account-strip p-3 shadow-sm rounded">
+                    <div class="flex-grow-1">
+                        <div><strong>Número:</strong> @card.Number</div>
+                        <div><strong>Expira:</strong> @card.ExpirationDate.ToString("MM/yy")</div>
+                    </div>
+                    <div class="text-end">
+                        <div><strong>Monto Límite:</strong> @card.CreditLimitAmount.ToString("N2") RD$</div>
+                        <div><strong>Monto adeudado:</strong> @card.TotalAmountOwed.ToString("N2") RD$</div>
+                        <a asp-area="Client"
+                           asp-controller="Home"
+                           asp-action="DetailsCredtiCard"
+                           asp-route-Number="@card.Number"
+                           class="btn btn-sm btn-primary mt-2">
+                            Ver Detalles
+                        </a>
                     </div>
                 </div>
             }
         </div>
     }
-
 </div>
 
+<style>
+    .account-strip {
+        background-color: #fff;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
 
+        .account-strip:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+    .balance-label {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+
+    .balance-amount {
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+
+    .accounts-title {
+        font-weight: 600;
+        color: #343a40;
+    }
+</style>

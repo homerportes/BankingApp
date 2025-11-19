@@ -16,7 +16,9 @@ namespace BankingApp.Core.Application.ViewModels.Dashboards
         public required decimal AverageClientsDebt { get; set; }
         public required int TotalIssuedCreditCardsCount { get; set; }
         public required int TotalClientCreditCardsCount { get; set; }
+        public int TodayTransactionsCount { get; internal set; }
 
+        public decimal AverageClientsDebtActiveAndInactive { get;  set; }
 
 
     }

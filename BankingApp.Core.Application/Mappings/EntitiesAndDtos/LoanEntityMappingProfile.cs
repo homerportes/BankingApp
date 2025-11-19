@@ -27,7 +27,7 @@ namespace BankingApp.Core.Application.Mappings.EntitiesAndDtos
 
             CreateMap<Loan, DataLoanHomeClientDto>()
                  .ForMember(s => s.Id, opt => opt.MapFrom(src => src.Id))
-                 .ForMember(s => s.LoanedAmountTotal, opt => opt.MapFrom(src => src.TotalLoanAmount))
+                 .ForMember(s => s.LoanedAmountTotal, opt => opt.MapFrom(src => src.Amount))
                  .ForMember(s => s.OutstandingBalance, opt => opt.MapFrom(src => src.OutstandingBalance))
                  .ForMember(s => s.InterestRate, opt => opt.MapFrom(src => src.InterestRate))
                  .ForMember(s => s.LoanTermInMonths, opt => opt.MapFrom(src => src.LoanTermInMonths))

@@ -78,7 +78,7 @@ namespace BankingApp.Core.Application.Services
 
 
 
-           public async Task<LoanPaginationResultDto> GetAllFiltered(
+           public async Task<LoanPaginationResultDto> GetAllFilteredAPI(
            int page = 1,
            int pageSize = 20,
            string? state = null,
@@ -156,6 +156,19 @@ namespace BankingApp.Core.Application.Services
             };
         }
 
+        public async Task<decimal> GetAverageSystemDebt()
+        {
+            var clientIds = await _UserService.GetAllClientIds();
+
+            if (clientIds == null || clientIds.Count == 0)
+                return 0;
+
+            var totalDebt = await _repo.GetAllQuery()
+                .Where(r => clientIds.Contains(r.ClientId))
+                .SumAsync(r => r.OutstandingBalance);
+
+            return totalDebt / clientIds.Count;
+        }
 
 
         public async Task<decimal> GetTotalLoanDebt()
@@ -265,6 +278,17 @@ namespace BankingApp.Core.Application.Services
                 LoadId = loan.PublicId,
                 Installments = _mapper.Map<List<InstallmentDto>>(loan.Installments)
             };
+        }
+
+
+        public async Task<decimal> GetLoanRate(string Id)
+        {
+            return await _repo
+                .GetAllQuery()
+                .Where(r => r.PublicId == Id)
+                .Select(r => r.InterestRate).FirstAsync();
+
+       
         }
 
         public static decimal DecimalPow(decimal baseValue, int exponent)
@@ -383,6 +407,7 @@ namespace BankingApp.Core.Application.Services
         {
             var result = new OperationResultDto { IsSuccessful = false };
 
+            // Obtener préstamo con cuotas
             var loan = await _repo
                 .GetAllQueryWithInclude(new List<string> { "Installments" })
                 .FirstOrDefaultAsync(l => l.PublicId == publicId);
@@ -400,10 +425,10 @@ namespace BankingApp.Core.Application.Services
             }
 
             int n = loan.LoanTermInMonths;
-            decimal P = loan.Amount;
-            decimal annualInterest = newRate;
-            decimal monthlyRate = (annualInterest / 100m) / 12m;
+            decimal P = loan.Amount; // capital inicial
+            decimal monthlyRate = (newRate / 100m) / 12m;
 
+            // Calcular nueva cuota mensual
             decimal onePlusRPowN = DecimalPow(1m + monthlyRate, n);
             decimal newInstallmentValue = P * (monthlyRate * onePlusRPowN) / (onePlusRPowN - 1m);
             newInstallmentValue = Math.Round(newInstallmentValue, 2, MidpointRounding.ToEven);
@@ -411,22 +436,29 @@ namespace BankingApp.Core.Application.Services
             await _unitOfWork.BeginTransactionAsync();
             try
             {
+                // Actualizar tasa y fecha
                 loan.InterestRate = newRate;
                 loan.UpdatedAt = DateTime.Now;
 
+                // Recalcular cuotas pendientes
                 foreach (var installment in loan.Installments!.Where(i => !i.IsPaid))
                 {
                     installment.Value = newInstallmentValue;
                     installment.IsModified = true;
                 }
 
+                // Actualizar saldo pendiente
+                loan.OutstandingBalance = loan.Installments
+                    .Where(i => !i.IsPaid)
+                    .Sum(i => i.Value);
+
+                // Guardar cambios
                 await _repo.UpdateByObjectAsync(loan);
                 await _installmentRepo.UpdateRangeAsync(loan.Installments!.ToList());
 
                 await _unitOfWork.CommitAsync();
 
                 result.IsSuccessful = true;
-
                 result.StatusMessage = $"Tasa actualizada correctamente. Cada cuota pendiente ahora es {newInstallmentValue:C}.";
 
                 // Enviar correo al cliente
@@ -450,9 +482,6 @@ namespace BankingApp.Core.Application.Services
                     Subject = "Actualización de tasa de interés",
                     BodyHtml = emailBody
                 });
-
-                result.StatusMessage = "Tasa actualizada correctamente.";
-
             }
             catch (Exception ex)
             {
