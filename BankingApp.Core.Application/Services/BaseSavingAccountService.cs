@@ -111,8 +111,10 @@ namespace BankingApp.Core.Application.Services
                     Type = TransactionType.DEBIT,
                     Origin = accountFrom.Number,
                     Amount = tranferenceRequest.Amount,
+                    Description = DescriptionTransaction.TRANSFER,
                     Status = OperationStatus.APPROVED,
                     OperationId= operationId,
+
                     DateTime = now
                 });
 
@@ -123,7 +125,7 @@ namespace BankingApp.Core.Application.Services
                     Beneficiary = accountTo.Number,
                     Type = TransactionType.CREDIT,
                     Origin = accountFrom.Number,
-
+                    Description = DescriptionTransaction.TRANSFER,
                     Amount = tranferenceRequest.Amount,
                     Status = OperationStatus.APPROVED,
                     DateTime = now,

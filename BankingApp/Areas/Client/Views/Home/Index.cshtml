@@ -9,46 +9,52 @@
 
 <div class="container mt-4">
 
-   
-    <h2 class="accounts-title text-center">Mis Productos</h2>
+    @if (Model.ListAccountClient == null || !Model.ListAccountClient.Any())
+    {
+        <div class="text-center mt-5">
+            <h4 class="text-muted">😔 No tienes productos <span class="text-dark">Registrados</span></h4>
+            <p class="text-secondary">Cuando te asignen una cuenta o producto, aparecerá aquí.</p>
+        </div>
+    }
+    else
+    {
+        <h3 class="accounts-title mt-5">Mis Cuentas</h3>
 
-   
-    <h3 class="accounts-title mt-5">Mis Cuentas</h3>
+        <div class="row g-4 mt-2">
+            @foreach (var item in Model.ListAccountClient)
+            {
+                <div class="col-md-4 col-sm-6">
+                    <div class="account-card">
 
-    <div class="row g-4 mt-2">
-        @foreach (var item in Model.ListAccountClient)
-        {
-            <div class="col-md-4 col-sm-6">
-                <div class="account-card">
+                        <div class="account-header">
+                            <i class="bi bi-bank2"></i> Cuenta: @item.Number
+                        </div>
 
-                    <div class="account-header">
-                        <i class="bi bi-bank2"></i> Cuenta: @item.Number
+                        <div class="balance-label">Balance disponible</div>
+
+                        <div class="balance-amount">
+                            @(item.Banlace < 0 ? "0 RD$" : $"{item.Banlace:N2} RD$")
+                        </div>
+
+                        <div class="account-header mt-2">
+                            Tipo: @item.Type
+                        </div>
+
+                        <div class="text-center mt-3">
+                            <a asp-area="Client"
+                               asp-controller="Home"
+                               asp-action="DetailsTransaction"
+                               asp-route-number="@item.Number"
+                               class="btn btn-details btn-primary">
+                                Ver Detalles
+                            </a>
+                        </div>
+
                     </div>
-
-                    <div class="balance-label">Balance disponible</div>
-
-                    <div class="balance-amount">
-                        @(item.Banlace < 0 ? "0 RD$" : $"{item.Banlace:N2} RD$")
-                    </div>
-
-                    <div class="account-header mt-2">
-                        Tipo: @item.Type
-                    </div>
-
-                    <div class="text-center mt-3">
-                        <a asp-area="Client"
-                           asp-controller="Home"
-                           asp-action="DetailsTransaction"
-                           asp-route-number="@item.Number"
-                           class="btn btn-details btn-primary">
-                            Ver Detalles
-                        </a>
-                    </div>
-
                 </div>
-            </div>
-        }
-    </div>
+            }
+        </div>
+    }
 
 
   
@@ -61,6 +67,14 @@
             {
                 <div class="col-md-4 col-sm-6">
                     <div class="account-card">
+
+
+                        <div class="balance-amount">
+
+                            <i class="bi bi-hash"></i>   Id: @loan.Number
+                            
+                        </div>
+
 
                         <div class="account-header">
                             <i class="bi bi-cash"></i> Monto Prestado: @loan.LoanedAmountTotal.ToString("N2") RD$
