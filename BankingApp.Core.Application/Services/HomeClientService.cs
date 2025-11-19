@@ -144,10 +144,12 @@ namespace BankingApp.Core.Application.Services
                     return new List<DataLoanHomeClientDto>();
                 }
 
+                var unitLoan = entities.DistinctBy(d => d.ClientId);
+
 
                 List<DataLoanHomeClientDto> result = new List<DataLoanHomeClientDto>();
 
-                foreach (var loan in entities)
+                foreach (var loan in unitLoan)
                 {
                     var dto = _mapper.Map<DataLoanHomeClientDto>(loan);
 

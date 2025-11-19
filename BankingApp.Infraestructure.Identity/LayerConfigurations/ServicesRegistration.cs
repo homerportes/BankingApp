@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using System.Security.Claims;
@@ -50,6 +51,7 @@ namespace BankingApp.Infraestructure.Identity.LayerConfigurations
 
 
 
+
             services.Configure<DataProtectionTokenProviderOptions>(opt =>
             {
                 opt.TokenLifespan = TimeSpan.FromHours(12);
@@ -68,6 +70,23 @@ namespace BankingApp.Infraestructure.Identity.LayerConfigurations
                 opt.LoginPath = "/Login/Index";
                 opt.AccessDeniedPath = "/Login/AccessDenied";
                 opt.SlidingExpiration = true;
+
+
+                opt.Events.OnRedirectToLogin = context =>
+                {
+                    
+                    var redirectUri = context.RedirectUri;
+                    if (!redirectUri.Contains("?"))
+                        redirectUri += "?message=" + Uri.EscapeDataString("No tienes permisos para acceder a esta sección.");
+                    else
+                        redirectUri += "&message=" + Uri.EscapeDataString("No tienes permisos para acceder a esta sección.");
+
+                    context.Response.Redirect(redirectUri);
+                    return Task.CompletedTask;
+                };
+
+
+
             });
 
             // Configurar para incluir roles en claims
