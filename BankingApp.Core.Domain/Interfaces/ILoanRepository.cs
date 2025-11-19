@@ -12,12 +12,14 @@ namespace BankingApp.Core.Domain.Interfaces
         Task<bool> LoanPublicIdExists(string id);
         Task<Loan> UpdateByObjectAsync(Loan entity);
         Task<List<Loan>> GetLoanListByIdClient(string idCliente);
-        Task<Loan?> PayLoan( Guid idLoan, decimal amount,int value);
+        Task<Loan?> PayLoan( Guid idLoan, decimal amount,int value, bool? IsActive = true);
         Task<Loan?> GetLoanByPublicId( string publicId);
         Task<Loan?> GetByNumberAsync(string loanNumber);
         Task<int> GetAllLoansCount();
         Task<int> GetActiveLoansCount();
+
         Task<decimal> GetActiveClientsLoanDebt(HashSet<string> activeUserIds);
+
 
     }
 }

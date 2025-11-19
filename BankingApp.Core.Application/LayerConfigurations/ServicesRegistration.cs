@@ -30,6 +30,7 @@ namespace BankingApp.Core.Application.LayerConfigurations
             services.AddScoped<ITransactionToBeneficiaryService, TransactionExpressService>();
 
             services.AddScoped<ICashAdvancesServices, CashAdvanceService>();
+            services.AddScoped<IHomeClietService, HomeClientService>();
 
             services.AddScoped<ITellerService, TellerService>();
             services.AddScoped<IDashboardsStatsService, DashboardStatsService>();

@@ -107,7 +107,7 @@ namespace BankingApp.Areas.Client.Controllers
                 Transaccion.Type = TransactionType.CREDIT;
                 Transaccion.AccountId = validateAmount!.AccounId;
                 Transaccion.AccountNumber = vm.Cuenta!;
-                Transaccion.DateTime = DateTime.UtcNow;
+                Transaccion.DateTime = DateTime.Now;
                 Transaccion.Description = DescriptionTransaction.Transaccion_A_Prestamo;
 
                 var salvar = await transactionService.AddAsync(Transaccion);
@@ -150,7 +150,7 @@ namespace BankingApp.Areas.Client.Controllers
             Approve.Type = TransactionType.CREDIT;
             Approve.AccountId = validateAmount!.AccounId;
             Approve.AccountNumber = vm.Cuenta!;
-            Approve.DateTime = DateTime.UtcNow;
+            Approve.DateTime = DateTime.Now;
             Approve.Description = DescriptionTransaction.Transaccion_A_Prestamo;
 
             var guardar = await transactionToLoanService.AddAsync(Approve);

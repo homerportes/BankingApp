@@ -1,0 +1,49 @@
+﻿
+.blue-gradient-card {
+    background: linear-gradient(135deg, var(--color-azul-oscuro), var(--color-azul-medio), var(--color-azul-claro) );
+    border-radius: var(--radius);
+    padding: 20px;
+    color: white;
+    box-shadow: var(--shadow);
+    animation: fadeIn .4s ease-in-out;
+}
+
+
+.card-header-custom {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+
+.blue-gradient-card .detail-row {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.blue-gradient-card .detail-label {
+    font-weight: 600;
+    color: #f0f0f0;
+}
+
+.blue-gradient-card .detail-value {
+    font-weight: 600;
+}
+
+
+.blue-gradient-card .amount {
+    font-size: 1.3rem;
+    font-weight: bold;
+}
+
+
+.status-approved {
+    background: #28a745 !important;
+    padding: 5px 14px;
+    border-radius: 12px;
+}
+
+.status-rejected {
+    background: #dc3545 !important;
+    padding: 5px 14px;
+    border-radius: 12px;
+}

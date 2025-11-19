@@ -70,6 +70,15 @@ namespace BankingApp.Areas.Client.Controllers
         {
             var user = await userManager.GetUserAsync(User);
 
+            var ValidateDebit = await transactionToCreditCard.ValidateDebitCreditCard(vm.CreditCard);
+            if(ValidateDebit != null)
+            {
+
+                ModelState.AddModelError(string.Empty, $"{ValidateDebit}");
+                ViewBag.CuentasAhorros = await transactionService.CuentaListAsync(user!.Id);
+                ViewBag.CreditCars = await transactionToCreditCard.GetCreditCardByIdUser(user!.Id);
+                return View(vm);    
+            }
 
             var validateAmount = await transactionService.ValidateAmount(vm.Account,vm.Amount);
             if (validateAmount != null && validateAmount.IsSuccess == false)
@@ -78,10 +87,10 @@ namespace BankingApp.Areas.Client.Controllers
                 //registrar transaccion en caso de ser rechazada
                 var Transaccion = mapper.Map<CreateTransactionDto>(vm);
                 Transaccion.Status = OperationStatus.DECLINED;
-                Transaccion.Type = TransactionType.DEBIT;
+                Transaccion.Type = TransactionType.CREDIT;
                 Transaccion.AccountId = validateAmount!.AccounId;
                 Transaccion.AccountNumber = vm.Account;
-                Transaccion.DateTime = DateTime.UtcNow;
+                Transaccion.DateTime = DateTime.Now;
                 Transaccion.Description = DescriptionTransaction.Trasaccion_A_Tarjeta;
 
                 var salvar = await transactionService.AddAsync(Transaccion);
@@ -103,7 +112,7 @@ namespace BankingApp.Areas.Client.Controllers
             TransaccionApprove.Type = TransactionType.CREDIT;
             TransaccionApprove.AccountId = validateAmount!.AccounId;
             TransaccionApprove.AccountNumber = vm.Account;
-            TransaccionApprove.DateTime = DateTime.UtcNow;
+            TransaccionApprove.DateTime = DateTime.Now;
             TransaccionApprove.Description = DescriptionTransaction.Trasaccion_A_Tarjeta;
 
             var gualdar = await transactionToCreditCard.AddAsync(TransaccionApprove);

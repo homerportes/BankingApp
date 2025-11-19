@@ -25,9 +25,18 @@ namespace BankingApp.Core.Application.Mappings.EntitiesAndDtos
                 .ForMember(s => s.IsExist, opt => opt.MapFrom(src => src.IsExist))
                 .ForMember(s => s.LastName, opt => opt.Ignore())
                 .ForMember(s => s.Gmail, opt => opt.Ignore());
-               
 
-            
+
+
+
+
+            CreateMap<Transaction, DataTransactionHomeClientDto>()
+                .ForMember(s => s.Fecha, opt => opt.MapFrom(src => src.DateTime))
+                .ForMember(s => s.Monto, opt => opt.MapFrom(src => src.Amount))
+                .ReverseMap();
+             
+
+
         }
         
 

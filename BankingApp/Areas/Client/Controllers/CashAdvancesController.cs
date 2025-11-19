@@ -96,12 +96,12 @@ namespace BankingApp.Areas.Client.Controllers
                 var Transaccion = mapper.Map<CreateTransactionDto>(vm);
                 Transaccion.Status = OperationStatus.DECLINED;
                 Transaccion.Type = TransactionType.PURCHASE;
-                Transaccion.AccountId =validateAmountOwedCreditCard!.AccountId;
-                Transaccion.AccountNumber = vm.CreditCard;
-                Transaccion.DateTime = DateTime.UtcNow;
+                Transaccion.AccountId =validateAmount!.AccounId;
+                Transaccion.AccountNumber = vm.Account;
+                Transaccion.DateTime = DateTime.Now;
                 Transaccion.Description = DescriptionTransaction.Cash_Advance;
 
-                var salvar = await transactionService.AddAsync(Transaccion);
+                var salvar = await cashAdvancesServices.AddAsync(Transaccion);
             }
 
 
@@ -125,7 +125,7 @@ namespace BankingApp.Areas.Client.Controllers
             TransaccionApproved.Type = TransactionType.CREDIT;
             TransaccionApproved.AccountId = validateAmount!.AccounId;
             TransaccionApproved.AccountNumber = vm.Account;
-            TransaccionApproved.DateTime = DateTime.UtcNow;
+            TransaccionApproved.DateTime = DateTime.Now;
             TransaccionApproved.Description = DescriptionTransaction.Cash_Advance;
 
 
@@ -135,7 +135,7 @@ namespace BankingApp.Areas.Client.Controllers
             {
                 ViewBag.CuentasAhorros = await transactionService.CuentaListAsync(user!.Id);
                 ViewBag.CreditCard = await transactionToCreditCard.GetCreditCardByIdUser(user!.Id);
-                ModelState.AddModelError(string.Empty, "No se pudo realizan la transaccion");
+                ModelState.AddModelError(string.Empty, "No se pudo realizar la transaccion");
                 return View(vm);
 
             }
@@ -147,7 +147,7 @@ namespace BankingApp.Areas.Client.Controllers
             CreditCardTransaccion.Type = TransactionType.PURCHASE;
             CreditCardTransaccion.AccountId = validateAmount!.AccounId;
             CreditCardTransaccion.AccountNumber = vm.Account;
-            CreditCardTransaccion.DateTime = DateTime.UtcNow;
+            CreditCardTransaccion.DateTime = DateTime.Now;
             CreditCardTransaccion.Description = DescriptionTransaction.Cash_Advance;
 
 

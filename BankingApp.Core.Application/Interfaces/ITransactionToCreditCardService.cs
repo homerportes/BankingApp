@@ -6,12 +6,14 @@ using System.Transactions;
 
 namespace BankingApp.Core.Application.Interfaces
 {
-    public interface ITransactionToCreditCardService : IGenericService<Transaction,CreateTransactionDto>
+    public interface ITransactionToCreditCardService : IGenericService<Transaction, CreateTransactionDto>
     {
 
 
         Task<List<string>> GetCreditCardByIdUser(string idUsuario);
         Task<CreditCardDto?> DebitTotalAmountOwedAsync(string number, decimal amount);
+        Task<string?> ValidateDebitCreditCard(string BeneficiaryId);
+
 
 
     }

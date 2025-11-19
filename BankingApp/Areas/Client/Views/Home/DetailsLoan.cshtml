@@ -1,0 +1,130 @@
+﻿@model DetailsLoanListHomeClientViewModel
+
+@{
+    ViewData["Title"] = "Detalles del Préstamo";
+    Layout = "_LayoutClient";
+}
+
+<link rel="stylesheet" href="~/css/LoanDetailStyle.css" />
+
+<div class="container mt-4">
+
+    <h2 class="page-title text-center mb-4">
+        <i class="bi bi-cash-coin me-2"></i>
+        Detalles del Préstamo
+    </h2>
+
+    <div class="loan-summary-card mb-4 shadow-sm">
+        <div class="p-3 d-flex flex-wrap justify-content-around text-center">
+
+            <div class="summary-item">
+                <span class="summary-label">Cuotas Totales</span>
+                <span class="summary-value">@Model.LoanHomeClientViewModels.Count()</span>
+            </div>
+
+            <div class="summary-item">
+                <span class="summary-label">Pagadas</span>
+                <span class="summary-value text-success">
+                    @Model.LoanHomeClientViewModels.Count(x => x.IsPaid)
+                </span>
+            </div>
+
+            <div class="summary-item">
+                <span class="summary-label">En Mora</span>
+                <span class="summary-value text-danger">
+                    @Model.LoanHomeClientViewModels.Count(x => x.IsDelinquent)
+                </span>
+            </div>
+
+        </div>
+    </div>
+
+  
+    <div class="table-responsive shadow-sm">
+        <table class="table table-custom align-middle">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Fecha de Pago</th>
+                    <th>Monto</th>
+                    <th>Estado</th>
+                    <th>Mora</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @if (Model.LoanHomeClientViewModels != null && Model.LoanHomeClientViewModels.Any())
+                {
+                    int index = 1;
+                    foreach (var item in Model.LoanHomeClientViewModels)
+                    {
+                        <tr>
+                            <td>@index</td>
+
+                            <td>
+                                <i class="bi bi-calendar2-week me-1 text-primary"></i>
+                                @item.PayDate.ToString("dd/MM/yyyy")
+                            </td>
+
+                            <td>
+                                <span class="amount">@item.Value.ToString("N2") RD$</span>
+                            </td>
+
+                            <td class="text-center">
+                                @if (item.IsPaid)
+                                {
+                                    <span class="badge-status paid">
+                                        <i class="bi bi-check-circle-fill me-1"></i> Pagada
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge-status pending">
+                                        <i class="bi bi-hourglass-split me-1"></i> Pendiente
+                                    </span>
+                                }
+                            </td>
+
+                            <td class="text-center">
+                                @if (item.IsDelinquent)
+                                {
+                                    <span class="badge-status delinquent">
+                                        <i class="bi bi-exclamation-octagon-fill me-1"></i> En Mora
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge-status clear">
+                                        <i class="bi bi-dash-circle-fill me-1"></i> Sin Mora
+                                    </span>
+                                }
+                            </td>
+                        </tr>
+
+                        index++;
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">
+                            <i class="bi bi-journal-x display-6 d-block mb-2"></i>
+                            No hay cuotas registradas para este préstamo.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+
+        </table>
+    </div>
+
+    <div class="text-center mt-4">
+        <a asp-area="Client" asp-controller="Home" asp-action="Index" class="btn-back btn btn-outline-warning">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
+
+</div>
+
+
+
