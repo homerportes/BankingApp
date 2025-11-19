@@ -26,6 +26,8 @@ namespace BankingApp.Core.Application.Services
             _mapper = mapper;
         }
 
+
+
         public async Task<List<AccountDto>> GetAllAccountsAsync(int page, int pageSize, string? cedula = null, string? estado = null, string? tipo = null)
         {
             var accounts = await _accountRepository.GetAllList();
@@ -176,5 +178,7 @@ namespace BankingApp.Core.Application.Services
             var transactions = _mapper.Map<List<TransactionViewModel>>(accountWithTransactions.Transactions);
             return transactions.OrderByDescending(t => t.TransactionDate).ToList();
         }
+
+
     }
 }

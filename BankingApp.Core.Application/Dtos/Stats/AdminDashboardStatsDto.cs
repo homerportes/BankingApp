@@ -20,5 +20,7 @@ namespace BankingApp.Core.Application.Dtos.Stats
         public required decimal AverageClientsDebt { get; set; }
         public required int TotalIssuedCreditCardsCount { get;  set; }
         public required int TotalClientCreditCardsCount { get;  set; }
+        public decimal AverageClientsDebtActiveAndInactive { get;  set; }
+        public int TodayTransactionsCount { get; internal set; }
     }
 }

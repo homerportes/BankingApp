@@ -16,8 +16,9 @@ namespace BankingApp.Core.Application.Mappings.DtosAndViewModels
 
         public LoanDtoToViewModelMappingProfile()
         {
-            CreateMap<LoanDto, LoanViewModel>();
-
+            CreateMap<LoanDto, LoanViewModel>()
+                .ForMember(DEST => DEST.OutstandingBalance, opt => opt.MapFrom(src => src.OutstandingBalance))
+                            .ForMember(DEST => DEST.Amount, opt => opt.MapFrom(src => src.TotalLoanAmount));
 
             CreateMap<DetailedLoanDto, DetailedLoanViewModel>();
             CreateMap<InstallmentDto, InstallmentViewModel>();

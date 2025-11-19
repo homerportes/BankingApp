@@ -13,6 +13,6 @@ namespace BankingApp.Core.Application.ViewModels.Loan
 
         public LoanStatus? FilterStatus { get; set; }
         public int MaxPages { get; set; }
-
+        public bool? FilterCompleted { get; set; }
     }
 }

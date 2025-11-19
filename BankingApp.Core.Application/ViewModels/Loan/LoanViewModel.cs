@@ -1,4 +1,5 @@
 ﻿using BankingApp.Core.Domain.Common.Enums;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,7 +25,7 @@ namespace BankingApp.Core.Application.ViewModels.Loan
 
 
 
-        public decimal TotalLoanAmount { get; set; }
+        public decimal Amount { get; set; }
 
 
 
@@ -46,6 +47,9 @@ namespace BankingApp.Core.Application.ViewModels.Loan
 
         public required int LoanTermInMonths { get; set; }
 
+
+
+        public required string LoanStatus { get; set; }
 
 
         public required LoanStatus Status { get; set; }

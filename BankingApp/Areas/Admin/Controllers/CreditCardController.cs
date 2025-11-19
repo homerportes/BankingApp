@@ -36,6 +36,8 @@ namespace BankingApp.Areas.Admin.Controllers
                 List<CreditCardViewModel> viewModels;
                 int totalRecords = 0;
 
+                var allCards = await _creditCardService.GetAllAsync(1, 10000, "ALL");
+
                 if (!string.IsNullOrEmpty(cedula))
                 {
                     cedula = cedula.Trim();
@@ -45,56 +47,44 @@ namespace BankingApp.Areas.Admin.Controllers
                     {
                         TempData["Warning"] = $"No se encontró ningún cliente con la cédula '{cedula}'. Verifique el número e intente nuevamente.";
                         viewModels = new List<CreditCardViewModel>();
+                        ViewBag.Cedula = cedula;
+                        ViewBag.Estado = estado;
+                        ViewBag.CurrentPage = 1;
+                        ViewBag.TotalPages = 1;
+                        ViewBag.PageSize = pageSize;
+                        ViewBag.TotalRecords = 0;
+                        return View(viewModels);
                     }
                     else
                     {
-                        var allCards = await _creditCardService.GetAllAsync(1, 10000, "ALL");
-                        var userCards = allCards.Where(c => c.ClientId == user.Id).ToList();
-
-                        if (!string.IsNullOrEmpty(estado))
-                        {
-                            userCards = userCards.Where(c => c.Status.ToString() == estado).ToList();
-                        }
-
-                        var sortedCards = userCards
-                            .OrderByDescending(c => c.Status == BankingApp.Core.Domain.Common.Enums.CardStatus.ACTIVE)
-                            .ThenByDescending(c => c.Id)
-                            .ToList();
-
-                        totalRecords = sortedCards.Count;
-
-                        var paginatedCards = sortedCards
-                            .Skip((page - 1) * pageSize)
-                            .Take(pageSize)
-                            .ToList();
-
-                        viewModels = _mapper.Map<List<CreditCardViewModel>>(paginatedCards);
+                        allCards = allCards.Where(c => c.ClientId == user.Id).ToList();
                         ViewBag.UserName = $"{user.Name} {user.LastName}";
                     }
                 }
-                else
+
+                if (!string.IsNullOrEmpty(estado))
                 {
-                    var allCreditCards = await _creditCardService.GetAllAsync(1, 10000, estado);
-
-                    var sortedCards = allCreditCards
-                        .OrderByDescending(c => c.Status == BankingApp.Core.Domain.Common.Enums.CardStatus.ACTIVE)
-                        .ThenByDescending(c => c.Id)
-                        .ToList();
-
-                    totalRecords = sortedCards.Count;
-
-                    var paginatedCards = sortedCards
-                        .Skip((page - 1) * pageSize)
-                        .Take(pageSize)
-                        .ToList();
-
-                    viewModels = _mapper.Map<List<CreditCardViewModel>>(paginatedCards);
+                    allCards = allCards.Where(c => c.Status.ToString() == estado).ToList();
                 }
+
+                var sortedCards = allCards
+                    .OrderByDescending(c => c.Status == BankingApp.Core.Domain.Common.Enums.CardStatus.ACTIVE)
+                    .ThenByDescending(c => c.Id)
+                    .ToList();
+
+                totalRecords = sortedCards.Count;
+
+                var paginatedCards = sortedCards
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
+
+                viewModels = _mapper.Map<List<CreditCardViewModel>>(paginatedCards);
 
                 ViewBag.Cedula = cedula;
                 ViewBag.Estado = estado;
                 ViewBag.CurrentPage = page;
-                ViewBag.TotalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
+                ViewBag.TotalPages = Math.Max(1, (int)Math.Ceiling(totalRecords / (double)pageSize));
                 ViewBag.PageSize = pageSize;
                 ViewBag.TotalRecords = totalRecords;
 
@@ -106,6 +96,7 @@ namespace BankingApp.Areas.Admin.Controllers
                 return View(new List<CreditCardViewModel>());
             }
         }
+
 
         // GET: Admin/CreditCard/Details/5
         public async Task<IActionResult> Details(int id)

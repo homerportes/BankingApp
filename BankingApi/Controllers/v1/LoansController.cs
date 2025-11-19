@@ -36,7 +36,7 @@ namespace BankingApi.Controllers.v1
                 if (user == null) return BadRequest("No existe ningun usuario asociado a esa cedula");
                 clientId = user.Id;
             }
-            var all=await  _loanService.GetAllFiltered(page, pageSize, state,clientId);
+            var all=await  _loanService.GetAllFilteredAPI(page, pageSize, state,clientId);
 
             return Ok(all);
         }
