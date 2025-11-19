@@ -39,11 +39,13 @@ namespace BankingApp.Core.Application.LayerConfigurations
             });
 
             EnumMapper<AccountType>.AddAliases(new()
-            {
+            {    { "primaria", AccountType.PRIMARY },
+
                 { "primary", AccountType.PRIMARY },
                 { "primario", AccountType.PRIMARY },
+                   { "secundaria", AccountType.SECONDARY },
+
                 { "secondary", AccountType.SECONDARY },
-                { "secundaria", AccountType.SECONDARY },
 
 
             });
