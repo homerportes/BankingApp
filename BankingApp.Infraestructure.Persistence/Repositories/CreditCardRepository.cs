@@ -5,6 +5,8 @@ using BankingApp.Infraestructure.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualBasic;
 using System.ComponentModel.DataAnnotations;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace BankingApp.Infraestructure.Persistence.Repositories
 {
@@ -38,6 +40,17 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
                 .AnyAsync(c => c.Number == cardNumber);
         }
 
+
+        private string HashCVC(string cvc)
+        {
+            using (var sha256 = SHA256.Create())
+            {
+                var bytes = Encoding.UTF8.GetBytes(cvc);
+                var hash = sha256.ComputeHash(bytes);
+                return Convert.ToBase64String(hash);
+            }
+        }
+
         public async Task<bool> CardDataIsValidForPaymentAsync(string cardNumber, int monthExpiration, int yearExpiration, string cvc)
         {
             if (string.IsNullOrWhiteSpace(cardNumber) || string.IsNullOrWhiteSpace(cvc))
@@ -65,7 +78,9 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
             if (card.ExpirationDate < DateTime.Now || card.ExpirationDate != providedExpiration)
                 return false;
 
-            if (card.CVC != cvc)
+
+            var hashed = HashCVC(cvc);
+            if (card.CVC != hashed)
                 return false;
 
             return true;

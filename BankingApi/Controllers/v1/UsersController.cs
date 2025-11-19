@@ -264,12 +264,10 @@ namespace BankingApi.Controllers.v1
 
                 dto.Roles = new List<string> { "COMMERCE" };
 
-                //Validar que no tenga usuario
                 var commerceHasUser = await _commerceService.CommerceAlreadyHasUser(commerceId ?? 0);
 
                 if (commerceHasUser) return BadRequest("El comercio ya tiene un usuario asociado");
 
-                // Crear usuario
                 var result = await _bankAccountService.CreateUserWithAmount(dto, currentUser?.Id ?? "", true);
                 if (result == null)
                     return StatusCode(StatusCodes.Status500InternalServerError, "Error interno al crear el usuario.");

@@ -92,8 +92,9 @@ namespace BankingApp.Infraestructure.Persistence.Migrations
                     ClientId = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PublicId = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     TotalLoanAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    Amount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     OutstandingBalance = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    InterestRate = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    InterestRate = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     LoanTermInMonths = table.Column<int>(type: "int", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -119,6 +120,7 @@ namespace BankingApp.Infraestructure.Persistence.Migrations
                     Beneficiary = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
                     Description = table.Column<int>(type: "int", maxLength: 100, nullable: false),
+                    OperationId = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     TellerId = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>

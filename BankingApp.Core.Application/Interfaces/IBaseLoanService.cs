@@ -24,5 +24,6 @@ namespace BankingApp.Core.Application.Interfaces
         Task<CreateLoanResult> SendEmail(LoanRequest request, CreateLoanResult createLoanResult);
         Task<decimal> GetClientLoansDebt(string clientId);
         Task<CreateLoanResult> HandleCreateRequest(LoanRequest request);
+        Task<decimal> GetAverageLoanDebt();
     }
 }

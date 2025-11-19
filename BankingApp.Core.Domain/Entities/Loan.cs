@@ -18,6 +18,7 @@ namespace BankingApp.Core.Domain.Entities
 
         //Total del prestamo
         public decimal TotalLoanAmount { get; set; }
+        public  decimal Amount { get; set; }
 
 
         //Monto restante a pagar  prestamo

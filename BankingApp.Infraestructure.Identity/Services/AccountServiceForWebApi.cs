@@ -90,6 +90,7 @@ namespace BankingApp.Infraestructure.Identity.Services
             foreach (var usuario in usuarios)
             {
                 usuario.IsActive = false;
+                usuario.EmailConfirmed = false;
 
                 await _userManager.UpdateAsync(usuario);
             }

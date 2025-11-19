@@ -73,7 +73,12 @@ namespace BankingApp.Core.Application.Services
 
             return Id;
         }
-        public async Task<LoanPaginationResultDto> GetAllFiltered(
+
+
+
+
+
+           public async Task<LoanPaginationResultDto> GetAllFiltered(
            int page = 1,
            int pageSize = 20,
            string? state = null,
@@ -161,6 +166,16 @@ namespace BankingApp.Core.Application.Services
 
         }
 
+
+        public async Task<decimal> GetAverageLoanDebt()
+        {
+            var Clients = await _UserService.GetAllClientIds();
+            return await _repo.GetAllQuery().Where(r => r.IsActive).SumAsync(r => r.OutstandingBalance) / Clients.Count();
+
+
+
+        }
+
         public async Task<bool> ClientHasActiveLoan(string clientId)
         {
             return await _repo
@@ -189,6 +204,7 @@ namespace BankingApp.Core.Application.Services
                 var loans = await _repo
                     .GetAllQueryWithInclude(new List<string> { "Installments" })
                     .Where(l => l.Installments!.Any(i => !i.IsPaid && i.PayDate < DateOnly.FromDateTime(DateTime.Now)))
+                    .OrderBy(l => l.CreatedAt)
                     .Skip(skip)
                     .Take(batchSize)
                     .ToListAsync();
@@ -209,18 +225,18 @@ namespace BankingApp.Core.Application.Services
                     }
 
                     if (hasDelay)
+                    {
                         loan.Status = LoanStatus.DELIQUENT;
-
-                    await _repo.UpdateByObjectAsync(loan);
-
-                    totalProcessed += loans.Count();
-                    skip += batchSize;
-
-                    _logger.LogInformation("Procesados {count} préstamos hasta ahora.", totalProcessed);
+                        await _repo.UpdateByObjectAsync(loan);
+                    }
                 }
+
+                totalProcessed += loans.Count;
+                skip += loans.Count;
+
+                _logger.LogInformation("Procesados {count} préstamos hasta ahora.", totalProcessed);
             }
         }
-
         public async Task<DetailedLoanDto?> GetDetailed(string Id)
         {
             var loan = await _repo
@@ -237,20 +253,16 @@ namespace BankingApp.Core.Application.Services
             };
         }
 
-     
         public static decimal DecimalPow(decimal baseValue, int exponent)
         {
-            if (exponent < 0)
-                throw new ArgumentException("El exponente debe ser >= 0");
+            if (exponent < 0) throw new ArgumentException("El exponente debe ser >= 0");
 
             decimal result = 1m;
             decimal factor = baseValue;
 
             while (exponent > 0)
             {
-                if ((exponent & 1) == 1)
-                    result *= factor;
-
+                if ((exponent & 1) == 1) result *= factor;
                 factor *= factor;
                 exponent >>= 1;
             }
@@ -261,30 +273,38 @@ namespace BankingApp.Core.Application.Services
 
 
 
-        public static decimal CalculateInstallment(decimal principal, decimal annualRate, int months)
+        public static decimal CalculateInstallment(decimal principal, decimal annualRatePercent, int months)
         {
-            decimal monthlyRate = (annualRate / 100m) / 12m;
+            if (months <= 0) throw new ArgumentException("months debe ser > 0");
 
-            if (monthlyRate == 0)
-                return Math.Round(principal / months, 2, MidpointRounding.ToEven);
+            decimal monthlyRate = (annualRatePercent / 100m) / 12m;
 
-            decimal pow = DecimalPow(1 + monthlyRate, months);
+            if (monthlyRate == 0m)
+            {
+                decimal plain = principal / months;
+                return Math.Round(plain, 2, MidpointRounding.ToEven);
+            }
 
-            decimal value = principal * (monthlyRate * pow) / (pow - 1);
+            decimal onePlusRPowN = DecimalPow(1m + monthlyRate, months);
+            decimal numerator = principal * (monthlyRate * onePlusRPowN);
+            decimal denominator = onePlusRPowN - 1m;
+
+            decimal value = numerator / denominator;
 
             return Math.Round(value, 2, MidpointRounding.ToEven);
         }
 
-
         public async Task<CreateLoanResult> HandleCreateRequest(LoanRequest request)
         {
-            var result = new CreateLoanResult();
-            result.ClientIsHighRisk = false;
-            result.ClientIsAlreadyHighRisk = false;
-            result.ClientHasActiveLoan = false;
+            var result = new CreateLoanResult
+            {
+                ClientIsHighRisk = false,
+                ClientIsAlreadyHighRisk = false,
+                ClientHasActiveLoan = false
+            };
 
             if (request == null ||
-               string.IsNullOrEmpty(request.ClientId) ||
+                string.IsNullOrEmpty(request.ClientId) ||
                 request.LoanAmount <= 0 ||
                 request.AnualInterest <= 0 ||
                 request.LoanTermInMonths <= 0)
@@ -294,24 +314,19 @@ namespace BankingApp.Core.Application.Services
                 return result;
             }
 
-
             result.ClientHasActiveLoan = await ClientHasActiveLoan(request.ClientId);
             if (result.ClientHasActiveLoan)
                 return result;
 
-
-
             var clientLoansDebt = await GetClientLoansDebt(request.ClientId);
             var cardDebt = await _cardRepository.GetClientTotalCreditCardDebt(request.ClientId);
-
             var userDebt = clientLoansDebt + cardDebt;
 
             var systemLoansDebt = await GetTotalLoanDebt();
             var systemCardDebt = await _cardRepository.GetTotalClientsCreditCardDebt();
-
             var clientsCount = await _UserService.GetAllClientsCount();
-            var systemDebt = systemLoansDebt + systemCardDebt / clientsCount;
 
+            var systemDebt = (systemLoansDebt + systemCardDebt) / clientsCount;
 
             if (userDebt > systemDebt)
             {
@@ -319,31 +334,27 @@ namespace BankingApp.Core.Application.Services
                 return result;
             }
 
+            decimal cuota = CalculateInstallment(
+                request.LoanAmount,
+                request.AnualInterest,
+                request.LoanTermInMonths
+            );
 
-            var monthlyRate = request.AnualInterest / 100m;
-            var interests = request.LoanAmount * monthlyRate * request.LoanTermInMonths;
+            decimal newLoanTotal = cuota * request.LoanTermInMonths;
+            newLoanTotal = Math.Round(newLoanTotal, 2);
 
-            var newLoanTotal = request.LoanAmount + interests;
+            bool becomesHighRisk = (userDebt + newLoanTotal) > systemDebt && systemDebt>0
+                ;
 
-            result.ClientIsHighRisk =
-                userDebt > systemDebt ||
-               ((userDebt + newLoanTotal) > systemDebt && systemDebt > 0);
+            result.ClientIsHighRisk = becomesHighRisk;
 
-            if (result.ClientIsHighRisk)
+            if (becomesHighRisk)
                 return result;
 
             var createResult = await Create(request);
 
-
-
-
-
             if (createResult.LoanCreated)
-            {
-
                 await SendEmail(request, createResult);
-
-            }
 
             return createResult;
         }
@@ -374,13 +385,13 @@ namespace BankingApp.Core.Application.Services
                 return result;
             }
 
+            int n = loan.LoanTermInMonths;
+            decimal P = loan.Amount;
             decimal annualInterest = newRate;
             decimal monthlyRate = (annualInterest / 100m) / 12m;
-            decimal n = loan.LoanTermInMonths;
-            decimal P = loan.TotalLoanAmount;
 
-            decimal onePlusRPowN = DecimalPow(1 + monthlyRate, n);
-            decimal newInstallmentValue = P * (monthlyRate * onePlusRPowN) / (onePlusRPowN - 1);
+            decimal onePlusRPowN = DecimalPow(1m + monthlyRate, n);
+            decimal newInstallmentValue = P * (monthlyRate * onePlusRPowN) / (onePlusRPowN - 1m);
             newInstallmentValue = Math.Round(newInstallmentValue, 2, MidpointRounding.ToEven);
 
             await _unitOfWork.BeginTransactionAsync();
@@ -412,12 +423,7 @@ namespace BankingApp.Core.Application.Services
 
             return result;
         }
-        private static decimal DecimalPow(decimal baseValue, decimal exponent)
-        {
 
-            double result = Math.Pow((double)baseValue, (double)exponent);
-            return (decimal)result;
-        }
 
 
 
@@ -427,11 +433,15 @@ namespace BankingApp.Core.Application.Services
         {
             var result = new CreateLoanResult();
 
+            int months = request.LoanTermInMonths;
             decimal constantPayment = CalculateInstallment(
                 request.LoanAmount,
                 request.AnualInterest,
-                request.LoanTermInMonths
+                months
             );
+
+            decimal totalToPay = constantPayment * months; 
+            totalToPay = Math.Round(totalToPay, 2, MidpointRounding.ToEven);
 
             await _unitOfWork.BeginTransactionAsync();
             try
@@ -442,10 +452,11 @@ namespace BankingApp.Core.Application.Services
                 {
                     Id = Guid.NewGuid(),
                     ClientId = request.ClientId,
-                    LoanTermInMonths = request.LoanTermInMonths,
+                    LoanTermInMonths = months,
                     InterestRate = request.AnualInterest,
-                    OutstandingBalance = request.LoanAmount,
-                    TotalLoanAmount = request.LoanAmount,
+                    OutstandingBalance = totalToPay,
+                    Amount=request.LoanAmount,
+                    TotalLoanAmount = totalToPay,     
                     PublicId = await GenerateLoanId(),
                     Status = LoanStatus.ONTIME,
                     IsActive = true,
@@ -454,10 +465,10 @@ namespace BankingApp.Core.Application.Services
 
                 await _repo.AddAsync(loanEntity);
 
-                var installments = new List<Installment>(request.LoanTermInMonths);
+                var installments = new List<Installment>(months);
                 var firstDueDate = DateOnly.FromDateTime(now.AddMonths(1));
 
-                for (int i = 0; i < request.LoanTermInMonths; i++)
+                for (int i = 0; i < months; i++)
                 {
                     var dueDate = firstDueDate.AddMonths(i);
 
@@ -486,19 +497,22 @@ namespace BankingApp.Core.Application.Services
                     await _accountRepository.UpdateAsync(account.Id, account);
                 }
 
-                await _transacctionRepository.AddAsync(new Transaction
+                if (account is not null)
                 {
-                    AccountId = account!.Id,
-                    AccountNumber = account.Number,
-                    Type = TransactionType.CREDIT,
-                    OperationId= _transacctionRepository.GenerateOperationId(),
-                    Status = OperationStatus.APPROVED,
-                    Amount = request.LoanAmount,
-                    DateTime = DateTime.Now,
-                    Beneficiary = account.Number,
-                    Origin = "SYSTEM",
-                    Id = Guid.NewGuid()
-                });
+                    await _transacctionRepository.AddAsync(new Transaction
+                    {
+                        AccountId = account.Id,
+                        AccountNumber = account.Number,
+                        Type = TransactionType.CREDIT,
+                        OperationId = _transacctionRepository.GenerateOperationId(),
+                        Status = OperationStatus.APPROVED,
+                        Amount = request.LoanAmount,
+                        DateTime = DateTime.Now,
+                        Beneficiary = account.Number,
+                        Origin = "SYSTEM",
+                        Id = Guid.NewGuid()
+                    });
+                }
 
                 await _unitOfWork.CommitAsync();
 
