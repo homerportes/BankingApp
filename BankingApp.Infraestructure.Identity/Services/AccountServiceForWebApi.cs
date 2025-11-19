@@ -1,6 +1,8 @@
 ﻿using BankingApp.Core.Application.Dtos.Login;
 using BankingApp.Core.Application.Dtos.User;
 using BankingApp.Core.Application.Interfaces;
+using BankingApp.Core.Domain.Common.Enums;
+using BankingApp.Core.Domain.Interfaces;
 using BankingApp.Core.Domain.Settings;
 using BankingApp.Infraestructure.Identity.Entities;
 using InvestmentApp.Infrastructure.Identity.Services;
@@ -24,13 +26,14 @@ namespace BankingApp.Infraestructure.Identity.Services
         private readonly JwtSettings _jwtSettings;
         private readonly SignInManager<AppUser> _signInManager;
 
+        private readonly ICommerceUserRepository _commerceRepository;
 
-
-        public AccountServiceForWebApi(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, IEmailService emailService, IOptions<JwtSettings> jwtSettings) : base(userManager, emailService)
+        public AccountServiceForWebApi(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, IEmailService emailService, IOptions<JwtSettings> jwtSettings, ICommerceUserRepository  commerceUserRepository) : base(userManager, emailService)
         {
             _signInManager = signInManager;
             _userManager = userManager;
             _jwtSettings = jwtSettings.Value;
+            _commerceRepository = commerceUserRepository;
         }
 
         public override Task<UserResponseDto> ForgotPasswordAsync(ForgotPasswordRequestDto request, bool? isApi = false)
@@ -90,6 +93,7 @@ namespace BankingApp.Infraestructure.Identity.Services
             foreach (var usuario in usuarios)
             {
                 usuario.IsActive = false;
+                usuario.EmailConfirmed = false;
 
                 await _userManager.UpdateAsync(usuario);
             }
@@ -99,36 +103,60 @@ namespace BankingApp.Infraestructure.Identity.Services
 
 
         #region private methods
+        #region private methods
         private async Task<JwtSecurityToken> GenerateJWToken(AppUser user)
         {
             var userClaims = await _userManager.GetClaimsAsync(user);
             var roles = await _userManager.GetRolesAsync(user);
-            var rolesClaims = new List<Claim>();
-            foreach (var role in roles)
-            {
-                rolesClaims.Add(new Claim("roles", role));
-            }
-            var claims = new[]
-            {
-                new Claim (JwtRegisteredClaimNames.Sub,user.UserName?? ""),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim ("uid", user.Id)
-            }.Union(userClaims).Union(rolesClaims);
 
-            var simetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
-            var signingCredentials = new SigningCredentials(simetricSecurityKey, SecurityAlgorithms.HmacSha256);
+            var rolesClaims = roles
+                .Select(r => new Claim("roles", r))
+                .ToList();
+
+            Claim? commerceClaim = null;
+
+            if (roles.Contains(AppRoles.COMMERCE.ToString()))
+            {
+                var commerceId = await _commerceRepository.GetCommerceAsociatedToUserId(user.Id);
+
+                if (commerceId.HasValue)
+                {
+                    commerceClaim = new Claim("commerceId", commerceId.Value.ToString());
+                }
+            }
+
+                    var claims = new List<Claim>
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.UserName ?? ""),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim("uid", user.Id)
+            };
+
+            claims.AddRange(userClaims);
+            claims.AddRange(rolesClaims);
+
+            if (commerceClaim != null)
+                claims.Add(commerceClaim);
+
+            var symmetricSecurityKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
+
+            var signingCredentials = new SigningCredentials(
+                symmetricSecurityKey,
+                SecurityAlgorithms.HmacSha256);
+
             var token = new JwtSecurityToken(
                 issuer: _jwtSettings.Issuer,
                 audience: _jwtSettings.Audience,
                 claims: claims,
                 expires: DateTime.Now.AddMinutes(_jwtSettings.DurationInMinutes),
                 signingCredentials: signingCredentials
+            );
 
-
-
-                );
             return token;
         }
+        #endregion
+
         #endregion
     }
 }

@@ -117,6 +117,19 @@ namespace BankingApi.Controllers.v1
             if (dto.Password != dto.ConfirmPassword)
                 return BadRequest("Las contraseñas no coinciden.");
 
+            bool hasMinLength = dto.Password.Length >= 8;
+
+            bool hasUpperCase = dto.Password.Any(char.IsUpper);
+
+            bool hasDigit = dto.Password.Any(char.IsDigit);
+
+            bool hasSpecialChar = dto.Password.Any(ch => !char.IsLetterOrDigit(ch));
+
+            if (!hasMinLength || !hasUpperCase || !hasDigit || !hasSpecialChar)
+            {
+                return BadRequest("La contraseña debe tener al menos 8 caracteres, incluir una mayúscula, un número y un carácter especial.");
+            }
+
             if (!new EmailAddressAttribute().IsValid(dto.Email))
                 return BadRequest("El formato del correo electrónico no es válido.");
 
@@ -207,7 +220,6 @@ namespace BankingApi.Controllers.v1
             if (!ModelState.IsValid)
                 return BadRequest("Faltan uno o más parámetros requeridos en la solicitud.");
 
-            // Validar campos vacíos o por defecto
             var missingFields = new List<string>();
             if (string.IsNullOrWhiteSpace(dto.UserName) || dto.UserName == "string") missingFields.Add("usuario");
             if (string.IsNullOrWhiteSpace(dto.Email) || dto.Email == "string") missingFields.Add("correo");
@@ -220,7 +232,6 @@ namespace BankingApi.Controllers.v1
             if (missingFields.Any())
                 return BadRequest(new { mensaje = "Faltan campos requeridos.", camposFaltantes = missingFields });
 
-            // Validaciones de formato
             if (dto.Password != dto.ConfirmPassword)
                 return BadRequest("Las contraseñas no coinciden.");
 
@@ -251,14 +262,12 @@ namespace BankingApi.Controllers.v1
                 if (enumRole != AppRoles.COMMERCE)
                     return BadRequest("Rol inválido");
 
-                dto.Roles = new List<string> { "commerce" };
+                dto.Roles = new List<string> { "COMMERCE" };
 
-                //Validar que no tenga usuario
                 var commerceHasUser = await _commerceService.CommerceAlreadyHasUser(commerceId ?? 0);
 
                 if (commerceHasUser) return BadRequest("El comercio ya tiene un usuario asociado");
 
-                // Crear usuario
                 var result = await _bankAccountService.CreateUserWithAmount(dto, currentUser?.Id ?? "", true);
                 if (result == null)
                     return StatusCode(StatusCodes.Status500InternalServerError, "Error interno al crear el usuario.");
@@ -390,9 +399,11 @@ namespace BankingApi.Controllers.v1
             {
                 return BadRequest("El ID del usuario es requerido");
             }
-
-
            
+
+
+
+
             try
 
 

@@ -17,12 +17,66 @@ namespace BankingApi.Controllers.v1
     {
         private readonly IUserService _userService;
         private readonly IPaymentService _paymentService;
+        private readonly ICommerceService _commerceService;
 
-        public PaysController(IUserService userService, IPaymentService paymentService)
+        public PaysController(IUserService userService, IPaymentService paymentService, ICommerceService commerceService)
         {
             _userService = userService;
             _paymentService = paymentService;
+            _commerceService = commerceService;
         }
+
+        [HttpGet("get-transactions/{commerceId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+
+        public async Task<IActionResult> GetAllTransactions([FromRoute] int? commerceId, int page=1, int pageSize = 20)
+        {
+
+
+            var currentUser = await _userService.GetCurrentUserAsync();
+            var userRole = EnumMapper<AppRoles>.FromString(currentUser.Role);
+            int commerceIdToUse;
+
+            if (userRole == AppRoles.ADMIN)
+            {
+                if (!commerceId.HasValue)
+                    return BadRequest("El ID del comercio es requerido para administradores.");
+
+                if (commerceId <= 0)
+                    return BadRequest("El ID del comercio es inválido.");
+
+                var commerce = await _commerceService.GetByIdAsync(commerceId ?? 0);
+                if (commerce == null) return BadRequest("El id proporcionado no está asociado a ningún comercio");
+                commerceIdToUse = commerceId.Value;
+
+
+            }
+            else
+            {
+
+                var commerceIdFromToken = User.FindFirst("commerceId")?.Value;
+
+                if (string.IsNullOrWhiteSpace(commerceIdFromToken))
+                    return Unauthorized("El usuario no está asociado a ningún comercio.");
+
+                commerceIdToUse = int.Parse(commerceIdFromToken);
+            }
+
+            var data = await _paymentService.GetTransactionsForCommerceId(commerceIdToUse, page, pageSize);
+
+            return Ok(data);
+
+        }
+
+
+
+
+
+
+
         [HttpPost("process-payment/{commerceId}")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -30,43 +84,54 @@ namespace BankingApi.Controllers.v1
 
         public async Task<IActionResult> ProcessPayment([FromRoute] int? commerceId, [FromBody] PaymentRequestDto request)
         {
-            // Validaciones iniciales
             if (request == null)
                 return BadRequest("El cuerpo de la solicitud no puede estar vacío.");
 
-            if (commerceId.HasValue && commerceId <= 0)
-                return BadRequest("El ID del comercio es inválido.");
+            var currentUser = await _userService.GetCurrentUserAsync();
+            var userRole = EnumMapper<AppRoles>.FromString(currentUser.Role);
 
+            // Validaciones generales de pago
             if (string.IsNullOrWhiteSpace(request.CardNumber) || request.CardNumber.Length != 16 || !request.CardNumber.All(char.IsDigit))
-                return BadRequest("El número de tarjeta debe contener 16 dígitos y solo números.");
+                return BadRequest("El número de tarjeta debe contener 16 dígitos.");
 
             if (request.MonthExpirationCard < 1 || request.MonthExpirationCard > 12)
-                return BadRequest("El mes de vencimiento es inválido (debe estar entre 01 y 12).");
+                return BadRequest("Mes de vencimiento inválido.");
 
             if (request.YearExpirationCard < 2000 || request.YearExpirationCard > 9999)
-                return BadRequest("El año de vencimiento es inválido (debe tener 4 dígitos).");
+                return BadRequest("Año de vencimiento inválido.");
 
             if (string.IsNullOrWhiteSpace(request.Cvc) || request.Cvc.Length != 3 || !request.Cvc.All(char.IsDigit))
-                return BadRequest("El CVC es inválido (debe tener 3 dígitos numéricos).");
+                return BadRequest("CVC inválido.");
 
             if (request.TransactionAmount <= 0)
-                return BadRequest("El monto de la transacción debe ser mayor a 0.");
+                return BadRequest("Monto inválido.");
 
-            var currentUser = await _userService.GetCurrentUserAsync();
-            var userRole = EnumMapper<AppRoles>.FromString(currentUser!.Role);
             int commerceIdToUse;
+
 
             if (userRole == AppRoles.ADMIN)
             {
                 if (!commerceId.HasValue)
-                    return BadRequest("El identificador del comercio es requerido para rol administrador.");
+                    return BadRequest("El ID del comercio es requerido para administradores.");
 
+                if (commerceId <= 0)
+                    return BadRequest("El ID del comercio es inválido.");
+
+                var commerce=await _commerceService.GetByIdAsync(commerceId??0);
+                if (commerce == null) return BadRequest("El id proporcionado no está asociado a ningún comercio");
                 commerceIdToUse = commerceId.Value;
+
+
             }
             else
             {
-                // Obtener de jwt
-                commerceIdToUse = 0; 
+       
+                var commerceIdFromToken = User.FindFirst("commerceId")?.Value;
+
+                if (string.IsNullOrWhiteSpace(commerceIdFromToken))
+                    return Unauthorized("El usuario no está asociado a ningún comercio.");
+
+                commerceIdToUse = int.Parse(commerceIdFromToken);
             }
 
             try
@@ -76,22 +141,20 @@ namespace BankingApi.Controllers.v1
                 if (payResult.IsCompleted)
                     return NoContent();
 
-                if (!string.IsNullOrWhiteSpace(payResult.Message))
-                    return BadRequest(payResult.Message);
-
-                return BadRequest("Pago no realizado.");
+                return BadRequest(payResult.Message ?? "Pago no realizado.");
             }
-            catch (Exception ex)
+            catch
             {
-                return StatusCode(500, "Ocurrió un error al procesar el pago.");
+                return StatusCode(500, "Error al procesar el pago.");
             }
         }
+
 
 
 
     }
 
 
-    
+
 
 }

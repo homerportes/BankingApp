@@ -6,5 +6,6 @@ namespace BankingApp.Core.Domain.Interfaces
     {
         Task<bool> CommerceIsValid(int id);
         Task<string?> GetAssociatedCommerceUserId(int commerceId);
+        Task<List<string>> GetAssociatesCommerceUsersId(int commerceId);
     }
 }

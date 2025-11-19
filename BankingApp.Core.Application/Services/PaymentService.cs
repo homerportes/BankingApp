@@ -1,5 +1,7 @@
-﻿using BankingApp.Core.Application.Dtos.Email;
+﻿using AutoMapper;
+using BankingApp.Core.Application.Dtos.Email;
 using BankingApp.Core.Application.Dtos.Payment;
+using BankingApp.Core.Application.Dtos.Transaction;
 using BankingApp.Core.Application.Interfaces;
 using BankingApp.Core.Domain.Common.Enums;
 using BankingApp.Core.Domain.Entities;
@@ -27,8 +29,9 @@ namespace BankingApp.Core.Application.Services
         private readonly IPurchaseRepository _purchaseRepository;
         private readonly IUserService _userService;
         private readonly IEmailService _emailService;
+        private readonly IMapper _mapper;
 
-        public PaymentService(ICreditCardRepository creditCardRepository , ITransacctionRepository transacctionRepository, ICommerceRepository commerceRepository, IUnitOfWork unitOfWork, IAccountRepository accountRepository, IPurchaseRepository purchaseRepository, IUserService userService, IEmailService emailService)
+        public PaymentService(ICreditCardRepository creditCardRepository , ITransacctionRepository transacctionRepository, ICommerceRepository commerceRepository, IUnitOfWork unitOfWork, IAccountRepository accountRepository, IPurchaseRepository purchaseRepository, IUserService userService, IEmailService emailService, IMapper mapper)
         {
             _transactionRepository= transacctionRepository;
             _creditCardRepository= creditCardRepository;
@@ -38,6 +41,39 @@ namespace BankingApp.Core.Application.Services
             _purchaseRepository=purchaseRepository;
             _userService= userService;
             _emailService = emailService;
+            _mapper = mapper;
+        }
+
+        public async Task<List<CommerceTransactionDto>> GetTransactionsForCommerceId(int commerceId, int page, int pageSize)
+        {
+            var usersCommerceAssociated = await _commerceRepository.GetAssociatesCommerceUsersId(commerceId);
+
+            if (usersCommerceAssociated == null || !usersCommerceAssociated.Any())
+                return new List<CommerceTransactionDto>();
+
+
+            var accountNumbers = await _accountRepository
+                .GetAllQuery()
+                .Where(a => usersCommerceAssociated.Contains(a.UserId))
+                .Select(a => a.Number)
+                .ToListAsync();
+
+            if (accountNumbers == null || !accountNumbers.Any())
+                return new List<CommerceTransactionDto>();
+
+
+            var query = _transactionRepository
+                .GetAllQuery()
+                .Where(t => accountNumbers.Contains(t.Beneficiary));
+
+
+            var transactions = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+
+            return _mapper.Map<List<CommerceTransactionDto>>(transactions);
         }
 
 
@@ -86,6 +122,18 @@ namespace BankingApp.Core.Application.Services
                 commerceAccount.Balance += requestDto.TransactionAmount;
                 await _accountRepository.UpdateAsync(commerceAccount.Id, commerceAccount);
 
+                var transaction =new Transaction
+                {
+                    AccountNumber = commerceAccount.Number,
+                    Beneficiary=commerceAccount.Number,
+                    Status= OperationStatus.APPROVED,
+                    Origin=creditCard.Number,
+                    Amount= requestDto.TransactionAmount,
+                    Type= TransactionType.CREDIT
+                    
+                };
+
+                await _transactionRepository.AddAsync(transaction);
                 // Registrar consumo
                 var purchase = new Purchase
                 {
