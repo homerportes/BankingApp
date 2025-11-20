@@ -11,7 +11,7 @@ namespace BankingApp.Infraestructure.Identity.Seeds
         {
             await userManager.CreateAsync(new AppUser
             {
-                DocumentIdNumber = "",
+                DocumentIdNumber = "10234567356",
                 LastName = "",
                 Name = "",
                 UserName = "superAdmin",

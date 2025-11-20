@@ -1,0 +1,133 @@
+@model BankingApp.Core.Application.ViewModels.CreditCard.CreditCardViewModel
+
+@{
+    ViewData["Title"] = "Tarjeta Creada Exitosamente";
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">@ViewData["Title"]</h1>
+    </div>
+
+    <!-- Alerta de éxito -->
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill"></i> <strong>¡Tarjeta creada exitosamente!</strong>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+
+    <!-- Alerta de advertencia importante -->
+    <div class="alert alert-warning" role="alert">
+        <i class="bi bi-exclamation-triangle-fill"></i> <strong>IMPORTANTE:</strong> Esta información se mostrará <strong>UNA SOLA VEZ</strong>. Guarda estos datos en un lugar seguro antes de continuar.
+    </div>
+
+    <!-- Tarjeta visual de crédito -->
+    <div class="row justify-content-center mb-4">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; border-radius: 15px;">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-4">
+                        <h5 class="mb-0"><i class="bi bi-credit-card-2-front"></i> Tarjeta de Crédito</h5>
+                        <span class="badge badge-light">ACTIVA</span>
+                    </div>
+                    
+                    <!-- Número de tarjeta -->
+                    <div class="mb-4">
+                        <small class="text-white-50 d-block mb-1">NÚMERO DE TARJETA</small>
+                        <h3 class="mb-0 font-weight-bold" style="letter-spacing: 2px;">
+                            @{
+                                var cardNumber = Model.CardNumber;
+                                var formatted = string.Join(" ", Enumerable.Range(0, cardNumber.Length / 4)
+                                    .Select(i => cardNumber.Substring(i * 4, 4)));
+                            }
+                            @formatted
+                        </h3>
+                    </div>
+
+                    <div class="row">
+                        <!-- Titular -->
+                        <div class="col-md-6 mb-3">
+                            <small class="text-white-50 d-block mb-1">TITULAR</small>
+                            <h6 class="mb-0 font-weight-bold text-uppercase">@Model.ClientName</h6>
+                        </div>
+
+                        <!-- Fecha de expiración -->
+                        <div class="col-md-3 mb-3">
+                            <small class="text-white-50 d-block mb-1">VENCE</small>
+                            <h6 class="mb-0 font-weight-bold">@Model.ExpirationDate.ToString("MM/yy")</h6>
+                        </div>
+
+                        <!-- CVC -->
+                        <div class="col-md-3 mb-3">
+                            <small class="text-white-50 d-block mb-1">CVC</small>
+                            <h6 class="mb-0 font-weight-bold">@Model.CVC</h6>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detalles adicionales -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Información de la Tarjeta</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <p class="mb-1 text-muted"><small>Cliente</small></p>
+                            <p class="mb-0 font-weight-bold">@Model.ClientName</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <p class="mb-1 text-muted"><small>Límite de Crédito</small></p>
+                            <p class="mb-0 font-weight-bold text-success">RD$ @Model.CreditLimit.ToString("N2")</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <p class="mb-1 text-muted"><small>Crédito Disponible</small></p>
+                            <p class="mb-0 font-weight-bold text-primary">RD$ @Model.AvailableCredit.ToString("N2")</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <p class="mb-1 text-muted"><small>Fecha de Creación</small></p>
+                            <p class="mb-0">@Model.CreatedDate.ToString("dd/MM/yyyy HH:mm")</p>
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <!-- Instrucciones -->
+                    <div class="alert alert-info mb-0" role="alert">
+                        <i class="bi bi-info-circle-fill"></i> <strong>Recomendaciones de Seguridad:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Guarda el <strong>número de tarjeta</strong> y el <strong>CVC</strong> en un lugar seguro</li>
+                            <li>Nunca compartas estos datos por correo electrónico o teléfono</li>
+                            <li>El cliente debe memorizar o guardar estos datos de forma segura</li>
+                            <li><strong>Esta información NO volverá a mostrarse completamente</strong></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botones de acción -->
+    <div class="text-center mb-4">
+        <a asp-action="Index" class="btn btn-primary btn-lg">
+            <i class="bi bi-list"></i> Ir a Listado de Tarjetas
+        </a>
+        <button onclick="window.print()" class="btn btn-secondary btn-lg">
+            <i class="bi bi-printer"></i> Imprimir
+        </button>
+    </div>
+</div>
+
+<style>
+    @@media print {
+        .btn, .alert-warning, .alert-info {
+            display: none !important;
+        }
+    }
+</style>

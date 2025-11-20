@@ -15,7 +15,7 @@ namespace BankingApp.Infraestructure.Identity.Seeds
             //agregando un usuario de tipo cliente
             await userManager.CreateAsync(new AppUser
             {
-                DocumentIdNumber = "",
+                DocumentIdNumber = "10232567856",
                 LastName = "",
                 Name = "BeeThree",
                 UserName = "Client02",
