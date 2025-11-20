@@ -31,6 +31,24 @@
                             <div class="form-text">Cuenta desde la cual se realizará el pago</div>
                         </div>
 
+
+                        <div class="mb-3">
+                            <label asp-for="Amount" class="form-label">
+                                <i class="bi bi-currency-dollar"></i> Monto del Pago
+                            </label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text">RD$</span>
+                                <input asp-for="Amount"
+                                       class="form-control"
+                                       placeholder="0.00"
+                                       type="number"
+                                       step="0.01"
+                                       min="0.01" />
+                            </div>
+                            <span asp-validation-for="Amount" class="text-danger"></span>
+                        </div>
+
+
                         <div class="mb-3">
                             <label asp-for="LoanNumber" class="form-label">
                                 <i class="bi bi-file-earmark-text"></i> Número de Préstamo
@@ -44,21 +62,7 @@
                             <div class="form-text">Préstamo al que se aplicará el pago</div>
                         </div>
 
-                        <div class="mb-3">
-                            <label asp-for="Amount" class="form-label">
-                                <i class="bi bi-currency-dollar"></i> Monto del Pago
-                            </label>
-                            <div class="input-group input-group-lg">
-                                <span class="input-group-text">RD$</span>
-                                <input asp-for="Amount" 
-                                       class="form-control" 
-                                       placeholder="0.00"
-                                       type="number"
-                                       step="0.01"
-                                       min="0.01" />
-                            </div>
-                            <span asp-validation-for="Amount" class="text-danger"></span>
-                        </div>
+                       
 
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-danger btn-lg">

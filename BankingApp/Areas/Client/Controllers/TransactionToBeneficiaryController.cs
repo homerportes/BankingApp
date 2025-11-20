@@ -215,7 +215,7 @@ namespace BankingApp.Areas.Client.Controllers
             var pathClient = Path.Combine(webHostEnvironment.WebRootPath, "HTML", "notificaciones", "NotificationToBeneficiary.html");
             string template = await System.IO.File.ReadAllTextAsync(pathClient);
 
-            template = template.Replace("{{AMOUNT}}", Transaccion.Amount.ToString("C", new CultureInfo("es-DO")))
+            template = template.Replace("{{AMOUNT}}", credit!.Amount.ToString("C", new CultureInfo("es-DO")))
                                .Replace("{{DATE}}", Transaccion.DateTime.ToString("dd/MM/yyyy HH:mm"));
 
             await emailService.SendAsync(new EmailRequestDto()
@@ -231,7 +231,7 @@ namespace BankingApp.Areas.Client.Controllers
             var pathBeneficiary = Path.Combine(webHostEnvironment.WebRootPath, "HTML", "notificaciones", "NotificationTransactionExpressBeneficiary.html");
             string _template = await System.IO.File.ReadAllTextAsync(pathBeneficiary);
 
-            _template = _template.Replace("{{AMOUNT}}", Transaccion.Amount.ToString("C", new CultureInfo("es-DO")))
+            _template = _template.Replace("{{AMOUNT}}", credit!.Amount.ToString("C", new CultureInfo("es-DO")))
                                  .Replace("{{DATE}}", Transaccion.DateTime.ToString("dd/MM/yyyy HH:mm"));
 
             await emailService.SendAsync(new EmailRequestDto()

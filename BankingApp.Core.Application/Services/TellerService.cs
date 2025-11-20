@@ -5,6 +5,8 @@ using BankingApp.Core.Domain.Common.Enums;
 using BankingApp.Core.Domain.Entities;
 using BankingApp.Core.Domain.Interfaces;
 using BankingApp.Infraestructure.Persistence.Repositories;
+using System.Buffers;
+using OperationStatus = BankingApp.Core.Domain.Common.Enums.OperationStatus;
 
 namespace BankingApp.Core.Application.Services
 {
@@ -21,6 +23,7 @@ namespace BankingApp.Core.Application.Services
         private readonly IUserService _userService;
         private readonly IEmailService _emailService;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ITransactionToLoanService loanService;
 
         public TellerService(
             IAccountRepository accountRepository,
@@ -30,7 +33,8 @@ namespace BankingApp.Core.Application.Services
             IInstallmentRepository installmentRepository,
             IUserService userService,
             IEmailService emailService,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            ITransactionToLoanService loanService)
         {
             _accountRepository = accountRepository;
             _transactionRepository = transactionRepository;
@@ -40,6 +44,7 @@ namespace BankingApp.Core.Application.Services
             _userService = userService;
             _emailService = emailService;
             _unitOfWork = unitOfWork;
+            this.loanService = loanService;
         }
 
         public async Task<TellerDashboardViewModel> GetTellerDashboardDataAsync(string tellerId)
@@ -51,12 +56,14 @@ namespace BankingApp.Core.Application.Services
 
                 var tellerTransactions = await _transactionRepository.GetTransactionsByTellerAndDateAsync(tellerId, today, tomorrow);
 
+                var tellerTransactionApprove =  tellerTransactions.Where(t => t.Status == OperationStatus.APPROVED).ToList();
+
                 var dashboard = new TellerDashboardViewModel
                 {
-                    TotalTransactionsToday = tellerTransactions.Count,
-                    TotalDepositsToday = tellerTransactions.Count(t => t.Type == TransactionType.CREDIT && t.Origin == "DEPÓSITO"),
-                    TotalWithdrawalsToday = tellerTransactions.Count(t => t.Type == TransactionType.DEBIT && t.Beneficiary == "RETIRO"),
-                    TotalPaymentsToday = tellerTransactions.Count(t =>
+                    TotalTransactionsToday = tellerTransactionApprove.Count,
+                    TotalDepositsToday = tellerTransactionApprove.Count(t => t.Type == TransactionType.CREDIT && t.Origin == "DEPÓSITO"),
+                    TotalWithdrawalsToday = tellerTransactionApprove.Count(t => t.Type == TransactionType.DEBIT && t.Beneficiary == "RETIRO"),
+                    TotalPaymentsToday = tellerTransactionApprove.Count(t =>
                         (t.Type == TransactionType.DEBIT && t.Beneficiary != "RETIRO" && t.Beneficiary.Length > 9) ||
                         (t.Type == TransactionType.DEBIT && t.Beneficiary.Length == 9))
                 };
@@ -102,7 +109,7 @@ namespace BankingApp.Core.Application.Services
             }
         }
 
-        public async Task<(bool IsValid, string AccountHolderName, decimal Balance, string Message)> ValidateAccountForWithdrawalAsync(string accountNumber)
+        public async Task<(bool IsValid, string AccountHolderName, decimal Balance, string Message)> ValidateAccountForWithdrawalAsync(string accountNumber,decimal amount, string tellerId)
         {
             try
             {
@@ -124,6 +131,31 @@ namespace BankingApp.Core.Application.Services
                     return (false, string.Empty, 0, "No se encontró el titular de la cuenta.");
                 }
 
+
+                if(account.Balance < amount)
+                {
+                    var operationId1 = _transactionRepository.GenerateOperationId();
+                    var transactionDeclined = new Transaction
+                    {
+                        Amount = amount,
+                        DateTime = DateTime.Now,
+                        Type = TransactionType.DEBIT,
+                        Origin = accountNumber,
+                        Beneficiary = "RETIRO",
+                        AccountNumber = accountNumber,
+                        AccountId = account.Id,
+                        Status = OperationStatus.DECLINED,
+                        Description = DescriptionTransaction.WITHDRAWAL,
+                        OperationId = operationId1,
+
+                        TellerId = tellerId
+                    };
+
+                    await _transactionRepository.AddAsync(transactionDeclined);
+                    return (false, string.Empty, 0, "El monto digitado excede el balance disponnble de la cuenta.");
+
+                }
+
                 var accountHolderName = $"{user.Name} {user.LastName}";
                 return (true, accountHolderName, account.Balance, string.Empty);
             }
@@ -133,7 +165,7 @@ namespace BankingApp.Core.Application.Services
             }
         }
 
-        public async Task<(bool IsValid, string CardHolderName, decimal CurrentDebt, string Message)> ValidateCreditCardPaymentAsync(string accountNumber, string cardNumber)
+        public async Task<(bool IsValid, string CardHolderName, decimal CurrentDebt, string Message)> ValidateCreditCardPaymentAsync(string accountNumber, string cardNumber,decimal amount, string tellerId)
         {
             try
             {
@@ -151,14 +183,63 @@ namespace BankingApp.Core.Application.Services
 
                 if (creditCard.TotalAmountOwed <= 0)
                 {
+                    var operationId = _transactionRepository.GenerateOperationId();
+                    // Registrar la transacción rechazada
+                    var transaction = new Transaction
+                    {
+                        Amount = amount,
+                        DateTime = DateTime.Now,
+                        Type = TransactionType.DEBIT,
+                        Origin = accountNumber,
+                        Beneficiary = cardNumber,
+                        AccountNumber = accountNumber,
+                        AccountId = account.Id,
+                        Status = OperationStatus.DECLINED,
+                        Description = DescriptionTransaction.CREDITCARDPAYMENT,
+                        TellerId = tellerId,
+                        OperationId = operationId
+                    };
+
+                    await _transactionRepository.AddAsync(transaction);
                     return (false, string.Empty, 0, "La tarjeta no tiene deuda pendiente.");
                 }
+
+
+
+
+                if (account.Balance < amount)
+                {
+                    var operationId = _transactionRepository.GenerateOperationId();
+
+                    // Registrar la transacción rchazada
+                    var transaction = new Transaction
+                    {
+                        Amount = amount,
+                        DateTime = DateTime.Now,
+                        Type = TransactionType.DEBIT,
+                        Origin = accountNumber,
+                        Beneficiary = cardNumber,
+                        AccountNumber = accountNumber,
+                        AccountId = account.Id,
+                        Status = OperationStatus.DECLINED,
+                        Description = DescriptionTransaction.CREDITCARDPAYMENT,
+                        TellerId = tellerId,
+                        OperationId = operationId
+                    };
+
+                    await _transactionRepository.AddAsync(transaction);
+                    return (false, string.Empty, 0, "El monto excede el saldo disponible de la cuenta.");
+                }
+
+
 
                 var user = await _userService.GetUserById(creditCard.ClientId);
                 if (user == null)
                 {
                     return (false, string.Empty, 0, "No se encontró el titular de la tarjeta.");
                 }
+
+
 
                 var cardHolderName = $"{user.Name} {user.LastName}";
                 return (true, cardHolderName, creditCard.TotalAmountOwed, string.Empty);
@@ -169,36 +250,68 @@ namespace BankingApp.Core.Application.Services
             }
         }
 
-        public async Task<(bool IsValid, string LoanHolderName, decimal RemainingBalance, string Message)> ValidateLoanPaymentAsync(string accountNumber, string loanNumber)
+        public async Task<(bool IsValid, string LoanHolderName, decimal RemainingBalance, string Message, Guid IdLoan)> ValidateLoanPaymentAsync(string accountNumber, string loanNumber,decimal amount,string tellerId)
         {
             try
             {
-                var account = await _accountRepository.GetAccountByNumber(accountNumber);
-                if (account == null || account.Status != AccountStatus.ACTIVE)
-                {
-                    return (false, string.Empty, 0, "La cuenta origen no es válida o está inactiva.");
-                }
+              
 
                 var loan = await _loanRepository.GetByNumberAsync(loanNumber);
                 if (loan == null || !loan.IsActive)
                 {
-                    return (false, string.Empty, 0, "El número de préstamo ingresado no es válido o está completado.");
+                    return (false, string.Empty, 0, "El número de préstamo ingresado no es válido o está completado.",loan!.Id);
+                }
+
+
+                var account = await _accountRepository.GetAccountByNumber(accountNumber);
+                if (account == null || account.Status != AccountStatus.ACTIVE)
+                {
+                    return (false, string.Empty, 0, "La cuenta origen no es válida o está inactiva.", loan!.Id);
+                }
+
+                if (account.Balance < amount )
+                {
+
+
+                    var operationId = _transactionRepository.GenerateOperationId();
+                    // Registrar la transacción
+                    var transaction = new Transaction
+                    {
+                        Amount = amount,
+                        DateTime = DateTime.Now,
+                        Type = TransactionType.DEBIT,
+                        Origin = accountNumber,
+                        Beneficiary = loanNumber,
+                        AccountNumber = accountNumber,
+                        AccountId = account.Id,
+                        Status = OperationStatus.DECLINED,
+                        Description = DescriptionTransaction.LOANPAYMENT,
+                        TellerId = tellerId,
+                        OperationId = operationId
+                    };
+
+
+                    await _transactionRepository.AddAsync(transaction);
+                    return (false, string.Empty, 0, "El balance digitado excede el saldo disponible..", loan!.Id);
                 }
 
                 var user = await _userService.GetUserById(loan.ClientId);
                 if (user == null)
                 {
-                    return (false, string.Empty, 0, "No se encontró el titular del préstamo.");
+                    return (false, string.Empty, 0, "No se encontró el titular del préstamo.", loan!.Id);
                 }
 
                 var loanHolderName = $"{user.Name} {user.LastName}";
-                return (true, loanHolderName, loan.OutstandingBalance, string.Empty);
+                return (true, loanHolderName, loan.OutstandingBalance, string.Empty, loan!.Id);
             }
             catch
             {
-                return (false, string.Empty, 0, "Error al validar el pago.");
+                return (false, string.Empty, 0, "Error al validar el pago.",new Guid());
             }
         }
+
+
+
 
         public async Task<(bool IsValid, string DestinationAccountHolderName, string Message)> ValidateThirdPartyTransactionAsync(string sourceAccountNumber, string destinationAccountNumber)
         {
@@ -316,9 +429,11 @@ namespace BankingApp.Core.Application.Services
 
                 if (account.Balance < model.Amount)
                 {
+                   
                     await _unitOfWork.RollbackAsync();
                     return (false, "El monto excede el saldo disponible.");
                 }
+
 
                 // Debitar el monto de la cuenta
                 await _accountRepository.DebitBalance(model.AccountNumber, model.Amount);
@@ -418,9 +533,11 @@ namespace BankingApp.Core.Application.Services
 
                 // Debitar de la cuenta
                 await _accountRepository.DebitBalance(model.AccountNumber, actualAmountToPay);
+           
 
                 // Reducir la deuda de la tarjeta
-                await _creditCardRepository.DebitTotalAmountOwedAsync(model.CardNumber, actualAmountToPay);
+               var creditWithDebit =  await _creditCardRepository.DebitTotalAmountOwedAsync(model.CardNumber, actualAmountToPay);
+                var  NuevaDeuda = Math.Max(creditWithDebit!.TotalAmountOwed,0);
 
 
                 var operationId = _transactionRepository.GenerateOperationId();
@@ -464,7 +581,7 @@ namespace BankingApp.Core.Application.Services
                     });
                 }
 
-                return (true, $"Pago realizado exitosamente por RD${actualAmountToPay:N2}. Nueva deuda: RD${(creditCard.TotalAmountOwed - actualAmountToPay):N2}");
+                return (true, $"Pago realizado exitosamente por RD${actualAmountToPay:N2}. Nueva deuda: RD${NuevaDeuda:N2}");
             }
             catch (Exception ex)
             {
@@ -480,9 +597,12 @@ namespace BankingApp.Core.Application.Services
             }
         }
 
+
+
+
         public async Task<(bool Success, string Message)> ProcessLoanPaymentAsync(LoanPaymentViewModel model, string tellerId)
         {
-            await _unitOfWork.BeginTransactionAsync();
+         
             try
             {
                 var account = await _accountRepository.GetAccountByNumber(model.AccountNumber);
@@ -490,80 +610,42 @@ namespace BankingApp.Core.Application.Services
 
                 if (account == null)
                 {
-                    await _unitOfWork.RollbackAsync();
+                   
                     return (false, $"No se encontró la cuenta con número {model.AccountNumber}.");
                 }
 
                 if (account.Status != AccountStatus.ACTIVE)
                 {
-                    await _unitOfWork.RollbackAsync();
                     return (false, $"La cuenta {model.AccountNumber} está inactiva y no puede realizar operaciones.");
                 }
 
                 if (loan == null)
                 {
-                    await _unitOfWork.RollbackAsync();
+                    
                     return (false, $"No se encontró el préstamo con número {model.LoanNumber}.");
                 }
 
                 if (!loan.IsActive)
                 {
-                    await _unitOfWork.RollbackAsync();
+                   
                     return (false, "El préstamo ya está completado o cancelado.");
                 }
 
                 if (account.Balance < model.Amount)
                 {
-                    await _unitOfWork.RollbackAsync();
+                   
                     return (false, $"Saldo insuficiente. La cuenta tiene RD${account.Balance:N2} y se requieren RD${model.Amount:N2}.");
                 }
 
-                // Obtener las cuotas pendientes ordenadas por fecha
-                var pendingInstallments = await _installmentRepository.GetPendingInstallmentsByLoanIdAsync(loan.Id);
 
-                decimal remainingAmount = model.Amount;
-                decimal totalPaid = 0;
 
-                foreach (var installment in pendingInstallments.OrderBy(i => i.PayDate))
-                {
-                    if (remainingAmount <= 0) break;
-
-                    if (remainingAmount >= installment.Value)
-                    {
-                        // Pagar la cuota completa
-                        installment.IsPaid = true;
-                        installment.IsDelinquent = false;
-                        var updatedInstallment = await _installmentRepository.UpdateInstallmentOnPaymentAsync(installment.Id, installment, installment.Value);
-
-                        remainingAmount -= installment.Value;
-                        totalPaid += installment.Value;
-                    }
-                    else
-                    {
-                        // Pago parcial - devolvemos el excedente
-                        break;
-                    }
-                }
-
-                // Debitar solo el monto utilizado de la cuenta
-                await _accountRepository.DebitBalance(model.AccountNumber, totalPaid);
-
-                // Actualizar el saldo restante del préstamo
-                loan.OutstandingBalance -= totalPaid;
-
-                // Verificar si el préstamo está completado
-                if (loan.OutstandingBalance <= 0)
-                {
-                    loan.IsActive = false;
-                }
-
-                await _loanRepository.UpdateByObjectAsync(loan);
+                var transact = await loanService.PayLoanAsync(model.LoanId, model.Amount);
                 var operationId = _transactionRepository.GenerateOperationId();
 
                 // Registrar la transacción
                 var transaction = new Transaction
                 {
-                    Amount = totalPaid,
+                    Amount = loan.Amount,
                     DateTime = DateTime.Now,
                     Type = TransactionType.DEBIT,
                     Origin = model.AccountNumber,
@@ -578,8 +660,7 @@ namespace BankingApp.Core.Application.Services
 
          
                 await _transactionRepository.AddAsync(transaction);
-                await _unitOfWork.CommitAsync();
-
+            
                 // Enviar correo al cliente
                 var user = await _userService.GetUserById(loan.ClientId);
                 if (user != null)
@@ -590,16 +671,15 @@ namespace BankingApp.Core.Application.Services
                         To = user.Email,
                         Subject = $"Pago realizado al préstamo {model.LoanNumber}",
                         BodyHtml = $"Estimado {user.Name} {user.LastName},<br/><br/>" +
-                               $"Se ha realizado un pago a su préstamo {model.LoanNumber} por un monto de RD${totalPaid:N2}.<br/>" +
+                               $"Se ha realizado un pago a su préstamo {model.LoanNumber} por un monto de RD${model.Amount:N2}.<br/>" +
                                $"Cuenta origen: *{accountLast4}<br/>" +
                                $"Fecha y hora: {DateTime.Now:dd/MM/yyyy HH:mm}<br/><br/>" +
                                $"Gracias por confiar en nosotros."
                     });
                 }
 
-                var message = totalPaid < model.Amount
-                    ? $"Pago procesado por RD${totalPaid:N2}. Se devolvió RD${model.Amount - totalPaid:N2} a su cuenta."
-                    : $"Pago realizado exitosamente por RD${totalPaid:N2}.";
+                var message = "Pago realizado exitosamente.";
+
 
                 return (true, message);
             }
@@ -609,6 +689,8 @@ namespace BankingApp.Core.Application.Services
                 return (false, "Error al procesar el pago.");
             }
         }
+
+
 
         public async Task<(bool Success, string Message)> ProcessThirdPartyTransactionAsync(ThirdPartyTransactionViewModel model, string tellerId)
         {
@@ -627,11 +709,32 @@ namespace BankingApp.Core.Application.Services
                 if (destinationAccount == null || destinationAccount.Status != AccountStatus.ACTIVE)
                 {
                     await _unitOfWork.RollbackAsync();
+
                     return (false, "Cuenta destino inválida o inactiva.");
                 }
 
                 if (sourceAccount.Balance < model.Amount)
                 {
+
+                    var operationIdDeclined = _transactionRepository.GenerateOperationId();
+                    // Registrar transacción DÉBITO en cuenta origen
+                    var debitTransactionDeclined = new Transaction
+                    {
+                        Amount = model.Amount,
+                        DateTime = DateTime.Now,
+                        Type = TransactionType.DEBIT,
+                        Origin = model.SourceAccountNumber,
+                        Beneficiary = model.DestinationAccountNumber,
+                        AccountNumber = model.SourceAccountNumber,
+                        AccountId = sourceAccount.Id,
+                        Status = OperationStatus.DECLINED,
+                        Description = DescriptionTransaction.TRANSFER,
+                        TellerId = tellerId,
+                        OperationId = operationIdDeclined
+                    };
+
+                    await _transactionRepository.AddAsync(debitTransactionDeclined);
+
                     await _unitOfWork.RollbackAsync();
                     return (false, "El monto excede el saldo disponible.");
                 }

@@ -7,7 +7,7 @@ namespace BankingApp.Areas.Client.Controllers
     [Area("Client")]
     public class TransactionController : Controller
     {
-
+        // no eliminar este controlador
         public IActionResult Index()
         {
             return View();
