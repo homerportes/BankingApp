@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BankingApp.Infraestructure.Persistence.Migrations
 {
     [DbContext(typeof(BankingContext))]
-    [Migration("20251119173105_InitialMigration")]
-    partial class InitialMigration
+    [Migration("20251120213448_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -339,10 +339,6 @@ namespace BankingApp.Infraestructure.Persistence.Migrations
                     b.Property<int>("Description")
                         .HasMaxLength(100)
                         .HasColumnType("int");
-
-                    b.Property<string>("OperationId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Origin")
                         .IsRequired()
