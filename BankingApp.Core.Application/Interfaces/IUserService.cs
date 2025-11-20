@@ -23,5 +23,6 @@ namespace BankingApp.Core.Application.Interfaces
         Task<HashSet<string>> GetActiveClientsIds();
         Task<List<UserBasicInfoDto>> GetUsersBasicInfoAsync(List<string> ids);
         Task<int> GetAllClientsCount();
+        Task<UserDto?> GetUserByName(string name);
     }
 }

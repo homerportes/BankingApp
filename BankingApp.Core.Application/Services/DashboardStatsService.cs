@@ -53,7 +53,7 @@ namespace BankingApp.Core.Application.Services
 
                 TotalPaysCount = await Payments.CountAsync(),
                 TotalActiveClientsCount = await _userService.GetActiveClientsCount(),
-                TotalInactiveClientsCount = totalActiveClients,
+                TotalInactiveClientsCount = await _userService.GetInactiveClientsCount(),
                 TotalAsignedProductsCount = totalAccounts + await _loanRepository.GetAllLoansCount() + await _creditCardRepository.GetTotalCreditCardsWithClient(),
                 TotalCurrentLoansCount = await _loanRepository.GetActiveLoansCount(),
                 TotalActiveCreditCardsCount = await _creditCardRepository.GetTotalActiveCreditCards(),

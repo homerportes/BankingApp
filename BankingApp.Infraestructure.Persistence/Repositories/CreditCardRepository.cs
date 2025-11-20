@@ -75,7 +75,7 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
                 return false; 
             }
 
-            if (card.ExpirationDate < DateTime.Now || card.ExpirationDate != providedExpiration)
+            if (card.ExpirationDate != providedExpiration)
                 return false;
 
 
@@ -157,7 +157,7 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
             return await _context.Set<CreditCard>().Where( c => c.ClientId == clientId && c.Status == CardStatus.ACTIVE)
                 .ToListAsync();
         }
-
+       
 
 
         public async Task< int> GetTotalIssuedCreditCards()

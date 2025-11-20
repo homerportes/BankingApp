@@ -19,9 +19,6 @@ namespace BankingApp.Infraestructure.Persistence.EntitiesConfigurations
             builder.Property(x => x.AccountNumber).IsRequired();
             builder.Property(x => x.AccountId);
             builder.Property(x => x.TellerId).IsRequired(false);
-            builder.Property(x => x.OperationId).IsRequired(true);
-
-
             builder.Property(x => x.Description).IsRequired().HasMaxLength(100);
 
         }
