@@ -29,5 +29,7 @@ namespace BankingApp.Core.Application.Dtos.CreditCard
         public CardStatus Status { get; set; }
 
         public string? AdminId { get; set; }
+
+        public string ? CVC {  get; set; }
     }
 }

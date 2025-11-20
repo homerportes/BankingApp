@@ -17,7 +17,6 @@ namespace BankingApp.Core.Application.Services
         public async Task<Transaction> CreateDeclinedTransactionAsync(string accountFrom, string accountTo, decimal amount)
         {
             var now = DateTime.Now;
-            var operationId = _transacctionRepository.GenerateOperationId();
 
             var transaction = new Transaction
             {
@@ -29,7 +28,6 @@ namespace BankingApp.Core.Application.Services
                 Amount = amount,
                 Description = DescriptionTransaction.TRANSFER,
                 Status = OperationStatus.DECLINED,
-                OperationId = operationId,
                 DateTime = now
             };
 

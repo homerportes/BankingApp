@@ -102,7 +102,6 @@ namespace BankingApp.Core.Application.Services
                 await _repo.UpdateAsync(accountTo.Id, accountTo);
 
                 var now = DateTime.Now;
-                var operationId = _transactionRepo.GenerateOperationId();
                 await _transactionRepo.AddAsync(new Transaction
                 {
                     Id = Guid.NewGuid(),
@@ -113,7 +112,6 @@ namespace BankingApp.Core.Application.Services
                     Amount = tranferenceRequest.Amount,
                     Description = DescriptionTransaction.TRANSFER,
                     Status = OperationStatus.APPROVED,
-                    OperationId= operationId,
 
                     DateTime = now
                 });
@@ -129,7 +127,6 @@ namespace BankingApp.Core.Application.Services
                     Amount = tranferenceRequest.Amount,
                     Status = OperationStatus.APPROVED,
                     DateTime = now,
-                     OperationId= operationId
                 });
 
                 await _unitOfWork.CommitAsync();

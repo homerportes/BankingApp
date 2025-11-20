@@ -36,7 +36,9 @@ namespace BankingApi.Controllers.v1
         {
 
 
-            var currentUser = await _userService.GetCurrentUserAsync();
+            var user = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+            var currentUser = await _userService.GetUserByName(user);
             var userRole = EnumMapper<AppRoles>.FromString(currentUser.Role);
             int commerceIdToUse;
 
@@ -86,8 +88,9 @@ namespace BankingApi.Controllers.v1
         {
             if (request == null)
                 return BadRequest("El cuerpo de la solicitud no puede estar vacío.");
+            var user = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
-            var currentUser = await _userService.GetCurrentUserAsync();
+            var currentUser = await _userService.GetUserByName(user);
             var userRole = EnumMapper<AppRoles>.FromString(currentUser.Role);
 
             // Validaciones generales de pago

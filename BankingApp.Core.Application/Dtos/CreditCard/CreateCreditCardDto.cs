@@ -13,5 +13,6 @@ namespace BankingApp.Core.Application.Dtos.CreditCard
         [Range(0.01, double.MaxValue, ErrorMessage = "El límite de crédito debe ser mayor a 0")]
         [JsonProperty("limite")]
         public decimal CreditLimitAmount { get; set; }
+
     }
 }

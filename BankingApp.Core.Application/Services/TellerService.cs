@@ -146,7 +146,6 @@ namespace BankingApp.Core.Application.Services
                         AccountId = account.Id,
                         Status = OperationStatus.DECLINED,
                         Description = DescriptionTransaction.WITHDRAWAL,
-                        OperationId = operationId1,
 
                         TellerId = tellerId
                     };
@@ -197,7 +196,6 @@ namespace BankingApp.Core.Application.Services
                         Status = OperationStatus.DECLINED,
                         Description = DescriptionTransaction.CREDITCARDPAYMENT,
                         TellerId = tellerId,
-                        OperationId = operationId
                     };
 
                     await _transactionRepository.AddAsync(transaction);
@@ -224,7 +222,6 @@ namespace BankingApp.Core.Application.Services
                         Status = OperationStatus.DECLINED,
                         Description = DescriptionTransaction.CREDITCARDPAYMENT,
                         TellerId = tellerId,
-                        OperationId = operationId
                     };
 
                     await _transactionRepository.AddAsync(transaction);
@@ -287,7 +284,6 @@ namespace BankingApp.Core.Application.Services
                         Status = OperationStatus.DECLINED,
                         Description = DescriptionTransaction.LOANPAYMENT,
                         TellerId = tellerId,
-                        OperationId = operationId
                     };
 
 
@@ -378,7 +374,6 @@ namespace BankingApp.Core.Application.Services
                     Status = OperationStatus.APPROVED,
                     Description = DescriptionTransaction.DEPOSIT,
                     TellerId = tellerId,
-                    OperationId = operationId
                 };
 
                 await _transactionRepository.AddAsync(transaction);
@@ -451,7 +446,6 @@ namespace BankingApp.Core.Application.Services
                     AccountId = account.Id,
                     Status = OperationStatus.APPROVED,
                     Description = DescriptionTransaction.WITHDRAWAL,
-                    OperationId = operationId,
 
                     TellerId = tellerId
                 };
@@ -554,7 +548,6 @@ namespace BankingApp.Core.Application.Services
                     Status = OperationStatus.APPROVED,
                     Description = DescriptionTransaction.CREDITCARDPAYMENT,
                     TellerId = tellerId,
-                    OperationId = operationId
                 };
 
        
@@ -640,7 +633,6 @@ namespace BankingApp.Core.Application.Services
 
 
                 var transact = await loanService.PayLoanAsync(model.LoanId, model.Amount);
-                var operationId = _transactionRepository.GenerateOperationId();
 
                 // Registrar la transacción
                 var transaction = new Transaction
@@ -655,7 +647,6 @@ namespace BankingApp.Core.Application.Services
                     Status = OperationStatus.APPROVED,
                     Description = DescriptionTransaction.LOANPAYMENT,
                     TellerId = tellerId
-                    ,OperationId = operationId
                 };
 
          
@@ -730,7 +721,6 @@ namespace BankingApp.Core.Application.Services
                         Status = OperationStatus.DECLINED,
                         Description = DescriptionTransaction.TRANSFER,
                         TellerId = tellerId,
-                        OperationId = operationIdDeclined
                     };
 
                     await _transactionRepository.AddAsync(debitTransactionDeclined);
@@ -760,7 +750,6 @@ namespace BankingApp.Core.Application.Services
                     Status = OperationStatus.APPROVED,
                     Description = DescriptionTransaction.TRANSFER,
                     TellerId = tellerId,
-                    OperationId=operationId
                 };
 
                 await _transactionRepository.AddAsync(debitTransaction);
@@ -778,7 +767,6 @@ namespace BankingApp.Core.Application.Services
                     Status = OperationStatus.APPROVED,
                     Description = DescriptionTransaction.TRANSFER,
                     TellerId = tellerId,
-                    OperationId = operationId
 
                 };
 

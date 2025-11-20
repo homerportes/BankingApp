@@ -573,7 +573,6 @@ namespace BankingApp.Core.Application.Services
                         AccountId = account.Id,
                         AccountNumber = account.Number,
                         Type = TransactionType.CREDIT,
-                        OperationId = _transacctionRepository.GenerateOperationId(),
                         Status = OperationStatus.APPROVED,
                         Amount = request.LoanAmount,
                         DateTime = DateTime.Now,

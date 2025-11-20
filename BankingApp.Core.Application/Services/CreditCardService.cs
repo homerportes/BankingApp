@@ -159,7 +159,7 @@ namespace BankingApp.Core.Application.Services
         {
             var random = new Random();
             var cvc = random.Next(100, 1000).ToString();
-            return await Task.FromResult(HashCVC(cvc));
+            return cvc;
         }
 
         private string HashCVC(string cvc)
@@ -174,10 +174,11 @@ namespace BankingApp.Core.Application.Services
 
         public async Task<CreditCardDto> CreateAsync(string clientId, decimal creditLimit, string adminId)
         {
-            var cardNumber = await GenerateCardNumber();
+            var cardNumber = await  GenerateCardNumber();
             var cvc = await GenerateCVC();
+            var hashed = HashCVC(cvc);
+
             var expirationDate = DateTime.Now.AddYears(3);
-            // Guardar el último día del mes
             expirationDate = new DateTime(expirationDate.Year, expirationDate.Month, DateTime.DaysInMonth(expirationDate.Year, expirationDate.Month));
 
             var creditCard = new CreditCard
@@ -188,7 +189,7 @@ namespace BankingApp.Core.Application.Services
                 CreditLimitAmount = creditLimit,
                 ExpirationDate = expirationDate,
                 TotalAmountOwed = 0,
-                CVC = cvc,
+                CVC = hashed,
                 Status = CardStatus.ACTIVE,
                 AdminId = adminId
             };
@@ -198,6 +199,7 @@ namespace BankingApp.Core.Application.Services
             var cardDto = _mapper.Map<CreditCardDto>(creditCard);
             var user = await _userService.GetUserById(clientId);
             cardDto.ClientName = user != null ? $"{user.Name} {user.LastName}" : "";
+            cardDto.CVC = cvc;
 
             return cardDto;
         }
