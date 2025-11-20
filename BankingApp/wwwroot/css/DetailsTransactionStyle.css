@@ -1,49 +1,66 @@
 ﻿
-.blue-gradient-card {
-    background: linear-gradient(135deg, var(--color-azul-oscuro), var(--color-azul-medio), var(--color-azul-claro) );
-    border-radius: var(--radius);
-    padding: 20px;
-    color: white;
-    box-shadow: var(--shadow);
-    animation: fadeIn .4s ease-in-out;
+.transaction-card-clean {
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 18px 22px;
+    margin-bottom: 20px;
+    transition: transform .15s ease, box-shadow .15s ease;
 }
 
+    .transaction-card-clean:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 18px rgba(0,0,0,0.10);
+    }
 
-.card-header-custom {
-    font-size: 1rem;
-    font-weight: 700;
-    margin-bottom: 12px;
-}
+    /* HEADER */
+    .transaction-card-clean .header {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
 
+    .transaction-card-clean .icon i {
+        font-size: 1.2rem;
+        color: #495057;
+    }
 
-.blue-gradient-card .detail-row {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
-}
+    /* BODY */
+    .transaction-card-clean .body {
+        font-size: 0.95rem;
+        color: #444;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
 
-.blue-gradient-card .detail-label {
-    font-weight: 600;
-    color: #f0f0f0;
-}
+    .transaction-card-clean strong {
+        color: #212529;
+    }
 
-.blue-gradient-card .detail-value {
-    font-weight: 600;
-}
-
-
-.blue-gradient-card .amount {
-    font-size: 1.3rem;
+.amount {
+    font-size: 1.1rem;
     font-weight: bold;
 }
 
-
-.status-approved {
-    background: #28a745 !important;
-    padding: 5px 14px;
-    border-radius: 12px;
+/* FOOTER */
+.transaction-card-clean .footer {
+    margin-top: 15px;
+    display: flex;
+    justify-content: flex-end;
 }
 
-.status-rejected {
-    background: #dc3545 !important;
-    padding: 5px 14px;
-    border-radius: 12px;
+.status-badge {
+    font-size: 0.85rem;
+    padding: 6px 12px;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+/* Empty state */
+.empty-state i {
+    opacity: .5;
 }

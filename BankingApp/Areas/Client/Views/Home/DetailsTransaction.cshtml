@@ -35,37 +35,33 @@
 
             @foreach (var item in Model.DataTransactionHomeClient)
             {
-                <div class="transaction-card blue-gradient-card shadow-sm">
+                <div class="transaction-card-clean shadow-sm">
 
-                    <div class="card-header-custom text-white">
-                        <i class="bi bi-arrow-left-right me-1"></i>
-                        <span class="fw-bold">Transacción</span>
+                    <!-- HEADER -->
+                    <div class="header">
+                        <span class="icon"><i class="bi bi-arrow-left-right"></i></span>
+                        Transacción
                     </div>
 
-                    <div class="detail-row">
-                        <span class="detail-label">Fecha:</span>
-                        <span class="detail-value text-white">
-                            @item.Fecha.ToString("dd/MM/yyyy hh:mm tt")
-                        </span>
-                    </div>
+                    <!-- BODY -->
+                    <div class="body">
 
-                    <div class="detail-row">
-                        <span class="detail-label">Monto:</span>
-                        <span class="detail-value amount @(item.Monto >= 0 ? "text-success" : "text-danger")">
-                            @((item.Monto > 0 ? item.Monto : 0) + " RD$")
-                        </span>
-                    </div>
+                        <div><strong>Fecha:</strong> @item.Fecha.ToString("dd/MM/yyyy hh:mm tt")</div>
 
-                    <div class="detail-row">
-                        <span class="detail-label">Tipo:</span>
-                        <span class="detail-value text-white">
+                        <div>
+                            <strong>Monto:</strong>
+                            <span class="amount @(item.Monto >= 0 ? "text-success" : "text-danger")">
+                                @((item.Monto > 0 ? item.Monto : 0) + " RD$")
+                            </span>
+                        </div>
+
+                        <div>
+                            <strong>Tipo:</strong>
                             @(item.Type == TransactionType.DEBIT ? "DÉBITO" : "CRÉDITO")
-                        </span>
-                    </div>
+                        </div>
 
-                    <div class="detail-row">
-                        <span class="detail-label">Beneficiario:</span>
-                        <span class="detail-value text-white">
+                        <div>
+                            <strong>Beneficiario:</strong>
                             @(
                                                 item.Description == DescriptionTransaction.Transaccion_Express ? item.Beneficiary :
                                                 item.Description == DescriptionTransaction.Transaccion_A_Beneficiario ? item.Beneficiary :
@@ -77,16 +73,13 @@
                                                 item.Description == DescriptionTransaction.CREDITCARDPAYMENT ? item.Beneficiary![^4..] :
                                                 item.Description == DescriptionTransaction.LOANPAYMENT ? item.Beneficiary :
                                                 item.Description == DescriptionTransaction.TRANSFER ? item.Beneficiary :
-                                                item.Description == DescriptionTransaction.DISBURSEMENT ? "Tu, prestamo" :
+                                                item.Description == DescriptionTransaction.DISBURSEMENT ? "Tú, préstamo" :
                                                 "No tuvo beneficiario"
                                                 )
-                        </span>
-                    </div>
+                        </div>
 
-                    <div class="detail-row">
-                        <span class="detail-label">Origen:</span>
-
-                        <span class="detail-value text-white">
+                        <div>
+                            <strong>Origen:</strong>
                             @(
                                                 item.Description == DescriptionTransaction.Transaccion_Express ? item.Origin :
                                                 item.Description == DescriptionTransaction.Transaccion_A_Beneficiario ? item.Origin :
@@ -101,20 +94,19 @@
                                                 item.Description == DescriptionTransaction.TRANSFER ? item.Origin :
                                                 "No tiene origen"
                                                 )
-                    </span>
-                </div>
+                    </div>
 
-                    <div class="detail-row">
-                        <span class="detail-label">Estado:</span>
+                    </div>
 
-                        <span class="status text-white @(item.Status == OperationStatus.APPROVED ? "status-approved" : "status-rejected")">
+                    <!-- FOOTER -->
+                    <div class="footer">
+                        <span class="badge status-badge @(item.Status == OperationStatus.APPROVED ? "bg-success" : "bg-danger")">
                             @(item.Status == OperationStatus.APPROVED ? "APROBADA" : "RECHAZADA")
                         </span>
                     </div>
 
                 </div>
                 }
-
         </div>
 
         <div class="text-center mt-4">
@@ -124,6 +116,5 @@
         </div>
     }
 </div>
-
 
 
