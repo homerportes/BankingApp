@@ -77,6 +77,6 @@ namespace BankingApp.Core.Application.Interfaces
         /// <summary>
         /// Valida cuentas para transacción entre terceros
         /// </summary>
-        Task<(bool IsValid, string DestinationAccountHolderName, string Message)> ValidateThirdPartyTransactionAsync(string sourceAccountNumber, string destinationAccountNumber);
+        Task<(bool IsValid, string DestinationAccountHolderName, string Message)> ValidateThirdPartyTransactionAsync(string sourceAccountNumber, string destinationAccountNumber, decimal amount);
     }
 }

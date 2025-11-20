@@ -435,6 +435,13 @@ namespace BankingApp.Core.Application.Services
                 }
 
                 var data = await beneficiaryService.ValidateAccountNumberExist(number);
+                if(data == null || !data.IsExist)
+                {
+
+                    return null;
+                
+                }
+
                 var entity = await accountRepository.GetAccountByNumber(number);
 
                 if (data != null && entity != null)

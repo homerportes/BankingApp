@@ -252,7 +252,7 @@ namespace BankingApp.Areas.Admin.Controllers
                 
                 var accountDto = _mapper.Map<BankingApp.Core.Application.Dtos.Account.AccountDto>(viewModel);
                 accountDto.Balance = viewModel.InitialBalance;
-
+                accountDto.UserId = viewModel.ClientId; 
                 await _savingsAccountService.CreateSecondaryAccountAsync(accountDto, adminId!);
 
                 TempData["Success"] = "Cuenta de ahorro secundaria asignada exitosamente";

@@ -41,19 +41,20 @@ namespace BankingApp.Core.Application.Services
 
             var totalAccounts = await _accountRepository.CountSavingAccountsByUserIds(await _userService.GetAllClientIds());
             var totalActiveClients = await _userService.GetActiveClientsCount();
-
+            var ClientInactive = await _userService.GetInactiveClientsCount();
+        
             var Payments = _transacctionRepository.GetAllQuery().Where(r => r.Description == DescriptionTransaction.LOANPAYMENT || r.Description == DescriptionTransaction.CREDITCARDPAYMENT);
             return new AdminDashboardStatsDto
             {
 
                 TotalTransactionsCount = await _transacctionRepository.GetAllQuery().CountAsync(),
-                TodayTransactionsCount = await _transacctionRepository.GetAllQuery().Where(r=>r.DateTime== DateTime.Now.Date).CountAsync(),
+                TodayTransactionsCount = await _transacctionRepository.GetAllQuery().Where(r => r.DateTime == DateTime.Now.Date).CountAsync(),
 
                 DayPaysCount = await Payments.Where(p => p.DateTime.Date == DateTime.Now.Date).CountAsync(),
 
                 TotalPaysCount = await Payments.CountAsync(),
                 TotalActiveClientsCount = await _userService.GetActiveClientsCount(),
-                TotalInactiveClientsCount = totalActiveClients,
+                TotalInactiveClientsCount = ClientInactive,
                 TotalAsignedProductsCount = totalAccounts + await _loanRepository.GetAllLoansCount() + await _creditCardRepository.GetTotalCreditCardsWithClient(),
                 TotalCurrentLoansCount = await _loanRepository.GetActiveLoansCount(),
                 TotalActiveCreditCardsCount = await _creditCardRepository.GetTotalActiveCreditCards(),

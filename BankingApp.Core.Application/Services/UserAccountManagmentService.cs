@@ -4,6 +4,7 @@ using BankingApp.Core.Application.Dtos.Transaction.Transference;
 using BankingApp.Core.Application.Dtos.User;
 using BankingApp.Core.Application.Interfaces;
 using BankingApp.Core.Domain.Common.Enums;
+using BankingApp.Core.Domain.Entities;
 using BankingApp.Core.Domain.Interfaces;
 using BankingApp.Infraestructure.Persistence.Repositories;
 using System;
@@ -20,14 +21,18 @@ namespace BankingApp.Core.Application.Services
         private readonly IMapper _mapper;
         private readonly IAccountServiceForWebAPP _accountUserService;
         private readonly ISavingsAccountServiceForWebApp _SavingAccountService;
+        private readonly ITransacctionRepository transacctionRepository;
 
-        public UserAccountManagmentService(IUnitOfWork unitOfWork, IMapper mapper, IAccountServiceForWebAPP accountUserService , ISavingsAccountServiceForWebApp SavingAccountService)
+        public UserAccountManagmentService(IUnitOfWork unitOfWork, IMapper mapper, IAccountServiceForWebAPP accountUserService , ISavingsAccountServiceForWebApp SavingAccountService, ITransacctionRepository transacctionRepository)
         {
-           _unitOfWork = unitOfWork;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
-            _accountUserService=accountUserService;
+            _accountUserService = accountUserService;
             _SavingAccountService = SavingAccountService;
+            this.transacctionRepository = transacctionRepository;
         }
+
+
         public async Task<RegisterUserWithAccountResponseDto> CreateUserWithAmount(CreateUserDto request, string AdminId, bool ForApi=false, string? origin=null)
         {
             var response = new RegisterUserWithAccountResponseDto();
@@ -57,7 +62,22 @@ namespace BankingApp.Core.Application.Services
                 Number = await _SavingAccountService.GenerateAccountNumber(),
                 Balance = request.InitialAmount ?? 0,
                 AdminId = AdminId
-            };                await _SavingAccountService.AddAsync(accountDto);
+            };  await _SavingAccountService.AddAsync(accountDto);
+
+                var operationId = transacctionRepository.GenerateOperationId();
+                await transacctionRepository.AddAsync(new Transaction
+                {
+                    Id = Guid.NewGuid(),
+                    AccountNumber = accountDto.Number,
+                    Beneficiary = accountDto.Number,
+                    Type = TransactionType.CREDIT,
+                    Origin = "SYSTEM***",
+                    Description = DescriptionTransaction.DEPOSIT,
+                    Amount = accountDto.Balance,
+                    Status = OperationStatus.APPROVED,
+                    DateTime = DateTime.Now,
+                    OperationId = operationId
+                });
 
                 response = _mapper.Map<RegisterUserWithAccountResponseDto>(user);
                 response.EntityId = user.Id;
@@ -83,6 +103,9 @@ namespace BankingApp.Core.Application.Services
                 return response;
             }
         }
+
+
+
 
         public async Task<RegisterUserWithAccountResponseDto> EditUserAndAmountAsync(UpdateUserDto request, string AdminId, bool ForApi = false, string? origin = null)
         {
@@ -126,6 +149,21 @@ namespace BankingApp.Core.Application.Services
 
                     account.Balance += request.AdditionalBalance.Value;
                     await _SavingAccountService.UpdateAsync(account.Id, account);
+
+                    var operationId = transacctionRepository.GenerateOperationId();
+                    await transacctionRepository.AddAsync(new Transaction
+                    {
+                        Id = Guid.NewGuid(),
+                        AccountNumber = account.Number,
+                        Beneficiary = account.Number,
+                        Type = TransactionType.CREDIT,
+                        Origin = "SYSTEM***",
+                        Description = DescriptionTransaction.DEPOSIT,
+                        Amount = request.AdditionalBalance.Value,
+                        Status = OperationStatus.APPROVED,
+                        DateTime = DateTime.Now,
+                        OperationId = operationId
+                    });
                 }
 
                 await _unitOfWork.CommitAsync();

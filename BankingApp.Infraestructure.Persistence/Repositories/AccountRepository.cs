@@ -35,7 +35,7 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
         public async Task<int> CountSavingAccountsByUserIds(HashSet<string> userIds)
         {
             return await _context.Set<Account>()
-                .CountAsync(a => userIds.Contains(a.UserId) && a.Type == AccountType.PRIMARY);
+                .CountAsync(a => userIds.Contains(a.UserId) && a.Type == AccountType.PRIMARY ||  a.Type == AccountType.SECONDARY && a.Status == AccountStatus.ACTIVE);
         }
 
 

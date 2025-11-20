@@ -500,6 +500,10 @@ namespace BankingApp.Infraestructure.Identity.Services
                 .Distinct()
                 .CountAsync();
         }
+
+
+
+
         public async Task<int> GetInactiveClientsCount()
         {
             var clientRoleId = await _identityContext.Roles

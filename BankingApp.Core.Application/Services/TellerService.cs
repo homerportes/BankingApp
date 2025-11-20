@@ -313,7 +313,7 @@ namespace BankingApp.Core.Application.Services
 
 
 
-        public async Task<(bool IsValid, string DestinationAccountHolderName, string Message)> ValidateThirdPartyTransactionAsync(string sourceAccountNumber, string destinationAccountNumber)
+        public async Task<(bool IsValid, string DestinationAccountHolderName, string Message)> ValidateThirdPartyTransactionAsync(string sourceAccountNumber, string destinationAccountNumber, decimal amount)
         {
             try
             {
@@ -321,6 +321,13 @@ namespace BankingApp.Core.Application.Services
                 if (sourceAccount == null || sourceAccount.Status != AccountStatus.ACTIVE)
                 {
                     return (false, string.Empty, "La cuenta origen no es válida o está inactiva.");
+                }
+
+
+           
+                if (sourceAccount.Balance < amount)
+                {
+                    return (false, string.Empty, "El monto digitado excede el saldo disponble, favor verificar");
                 }
 
                 var destinationAccount = await _accountRepository.GetAccountByNumber(destinationAccountNumber);

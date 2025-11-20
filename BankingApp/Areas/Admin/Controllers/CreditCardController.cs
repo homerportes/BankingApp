@@ -37,6 +37,7 @@ namespace BankingApp.Areas.Admin.Controllers
                 int totalRecords = 0;
 
                 var allCards = await _creditCardService.GetAllAsync(1, 10000, "ALL");
+                var cardsActive = allCards.Where(s => s.Status == Core.Domain.Common.Enums.CardStatus.ACTIVE).ToList();
 
                 if (!string.IsNullOrEmpty(cedula))
                 {
@@ -62,24 +63,59 @@ namespace BankingApp.Areas.Admin.Controllers
                     }
                 }
 
-                if (!string.IsNullOrEmpty(estado))
+
+            
+                if (estado == null && cedula != null)
+                {
+
+                    allCards = allCards.Where(c => c.Status == Core.Domain.Common.Enums.CardStatus.ACTIVE 
+                    || c.Status == Core.Domain.Common.Enums.CardStatus.CANCELLED).ToList();
+
+                }else if (!string.IsNullOrEmpty(estado))
                 {
                     allCards = allCards.Where(c => c.Status.ToString() == estado).ToList();
                 }
 
-                var sortedCards = allCards
-                    .OrderByDescending(c => c.Status == BankingApp.Core.Domain.Common.Enums.CardStatus.ACTIVE)
-                    .ThenByDescending(c => c.Id)
-                    .ToList();
 
-                totalRecords = sortedCards.Count;
 
-                var paginatedCards = sortedCards
-                    .Skip((page - 1) * pageSize)
-                    .Take(pageSize)
-                    .ToList();
+                if (estado == null && cedula == null)
+                {
+                    var Active = cardsActive
+                      .OrderByDescending(c => c.Status == BankingApp.Core.Domain.Common.Enums.CardStatus.ACTIVE)
+                      .ThenByDescending(c => c.Id)
+                      .ToList();
 
-                viewModels = _mapper.Map<List<CreditCardViewModel>>(paginatedCards);
+
+                    totalRecords = Active.Count;
+
+                    var paginatedCardActive = Active
+                        .Skip((page - 1) * pageSize)
+                        .Take(pageSize)
+                        .ToList();
+
+                    viewModels = _mapper.Map<List<CreditCardViewModel>>(paginatedCardActive);
+
+
+                }
+                else
+                {
+
+                    var sortedCards = allCards
+                           .OrderByDescending(c => c.Status == BankingApp.Core.Domain.Common.Enums.CardStatus.ACTIVE)
+                           .ThenByDescending(c => c.Id)
+                           .ToList();
+
+
+                    totalRecords = sortedCards.Count;
+
+                    var paginatedCards = sortedCards
+                        .Skip((page - 1) * pageSize)
+                        .Take(pageSize)
+                        .ToList();
+
+                    viewModels = _mapper.Map<List<CreditCardViewModel>>(paginatedCards);
+                }
+
 
                 ViewBag.Cedula = cedula;
                 ViewBag.Estado = estado;
@@ -162,7 +198,7 @@ namespace BankingApp.Areas.Admin.Controllers
                     clientDebts[client.Id] = clientDebt;
                 }
 
-                decimal averageDebt = clientCount > 0 ? totalDebt / clientCount : 0;
+                decimal averageDebt = clientCount > 0 ? (totalDebt / clients.Count) : 0;
                 ViewBag.AverageDebt = averageDebt;
                 ViewBag.ClientDebts = clientDebts;
 

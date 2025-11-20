@@ -10,20 +10,21 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BankingApp.Core.Application.Services
 {
-    public class SavingsAccountServiceForWebApp :BaseSavingAccountService, ISavingsAccountServiceForWebApp
+    public class SavingsAccountServiceForWebApp : BaseSavingAccountService, ISavingsAccountServiceForWebApp
     {
         private readonly IAccountRepository _accountRepository;
         private readonly IUserService _userService;
         private readonly IMapper _mapper;
-
+        private readonly ITransacctionRepository transacctionRepository;
         public SavingsAccountServiceForWebApp(
             IAccountRepository accountRepository,
             IUserService userService,
-            IMapper mapper, IUnitOfWork unitOfWork, ITransacctionRepository transacctionRepository):base(accountRepository,mapper,transacctionRepository, unitOfWork)
+            IMapper mapper, IUnitOfWork unitOfWork, ITransacctionRepository transacctionRepository) : base(accountRepository, mapper, transacctionRepository, unitOfWork)
         {
             _accountRepository = accountRepository;
             _userService = userService;
             _mapper = mapper;
+            this.transacctionRepository = transacctionRepository;
         }
 
 
@@ -51,7 +52,16 @@ namespace BankingApp.Core.Application.Services
                 }
             }
 
-            if (!string.IsNullOrEmpty(estado))
+
+
+            if (estado == null && cedula != null)
+            {
+
+                accountsList = accountsList.Where(a => a.Status == AccountStatus.ACTIVE || a.Status == AccountStatus.CANCELLED)
+                  .ToList();
+
+            }
+            else if (!string.IsNullOrEmpty(estado))
             {
                 if (Enum.TryParse<AccountStatus>(estado, out var statusEnum))
                 {
@@ -60,9 +70,11 @@ namespace BankingApp.Core.Application.Services
             }
             else
             {
-                
+
                 accountsList = accountsList.Where(a => a.Status == AccountStatus.ACTIVE).ToList();
             }
+
+
 
             if (!string.IsNullOrEmpty(tipo))
             {
@@ -72,8 +84,9 @@ namespace BankingApp.Core.Application.Services
                 }
             }
 
+
             var sortedAccounts = accountsList
-                .OrderByDescending(a => a.Status == AccountStatus.ACTIVE)
+                .OrderByDescending(a => a.Status == AccountStatus.ACTIVE) 
                 .ThenByDescending(a => a.CreatedAt)
                 .ToList();
 
@@ -103,18 +116,19 @@ namespace BankingApp.Core.Application.Services
         public async Task<AccountDto?> GetPrimaryAccountByClientIdAsync(string clientId)
         {
             var accounts = await _accountRepository.GetAllList();
-            var primaryAccount = accounts?.FirstOrDefault(a => 
-                a.UserId == clientId && 
+            var primaryAccount = accounts?.FirstOrDefault(a =>
+                a.UserId == clientId &&
                 a.Type == AccountType.PRIMARY &&
                 a.Status == AccountStatus.ACTIVE);
-            
+
             return primaryAccount != null ? _mapper.Map<AccountDto>(primaryAccount) : null;
         }
 
         public async Task<AccountDto> CreateSecondaryAccountAsync(AccountDto accountDto, string adminId)
         {
             var accountNumber = await GenerateAccountNumber();
-            
+
+
             var account = _mapper.Map<Account>(accountDto);
             account.Number = accountNumber;
             account.Type = AccountType.SECONDARY;
@@ -122,15 +136,38 @@ namespace BankingApp.Core.Application.Services
             account.CreatedAt = DateTime.Now;
             account.AdminId = adminId;
             account.Balance = accountDto.Balance;
-
+            account.UserId = accountDto.UserId;
             var createdAccount = await _accountRepository.AddAsync(account);
+
+
+
+            var operationId1 = transacctionRepository.GenerateOperationId();
+            var transaction = new Transaction
+            {
+                Amount = accountDto.Balance,
+                DateTime = DateTime.Now,
+                Type = TransactionType.CREDIT,
+                Origin = "System***",
+                Beneficiary = accountNumber,
+                AccountNumber = accountNumber,
+                AccountId = account.Id,
+                Status = OperationStatus.APPROVED,
+                Description = DescriptionTransaction.DEPOSIT,
+                OperationId = operationId1,
+                TellerId = null
+            };
+
+            await transacctionRepository.AddAsync(transaction);
+
             return _mapper.Map<AccountDto>(createdAccount);
         }
+
+
 
         public async Task<bool> CancelAccountAsync(int accountId)
         {
             var account = await _accountRepository.GetByIdAsync(accountId);
-            
+
             if (account == null || account.Type == AccountType.PRIMARY)
                 return false;
 
@@ -144,11 +181,31 @@ namespace BankingApp.Core.Application.Services
                     {
                         primaryAccountEntity.Balance += account.Balance;
                         await _accountRepository.UpdateAsync(primaryAccount.Id, primaryAccountEntity);
+
+
+                        var operationId1 = transacctionRepository.GenerateOperationId();
+                        var transaction = new Transaction
+                        {
+                            Amount = account.Balance,
+                            DateTime = DateTime.Now,
+                            Type = TransactionType.CREDIT,
+                            Origin = account.Number,
+                            Beneficiary = primaryAccountEntity.Number,
+                            AccountNumber = primaryAccountEntity.Number,
+                            AccountId = account.Id,
+                            Status = OperationStatus.APPROVED,
+                            Description = DescriptionTransaction.TRANSFER,
+                            OperationId = operationId1,
+                            TellerId = null
+                        };
+
+                        await transacctionRepository.AddAsync(transaction);
+
                     }
-                    
                     account.Balance = 0;
                 }
             }
+
 
             account.Status = AccountStatus.CANCELLED;
             await _accountRepository.UpdateAsync(accountId, account);
@@ -165,13 +222,13 @@ namespace BankingApp.Core.Application.Services
         public async Task<List<TransactionViewModel>> GetAccountTransactionsAsync(int accountId)
         {
             var account = await _accountRepository.GetByIdAsync(accountId);
-            
+
             if (account == null)
                 return new List<TransactionViewModel>();
 
             var accounts = await _accountRepository.GetAllListWithInclude(new List<string> { "Transactions" });
             var accountWithTransactions = accounts?.FirstOrDefault(a => a.Id == accountId);
-            
+
             if (accountWithTransactions?.Transactions == null || !accountWithTransactions.Transactions.Any())
                 return new List<TransactionViewModel>();
 

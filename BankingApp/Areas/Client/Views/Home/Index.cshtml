@@ -56,7 +56,8 @@
                         <div><strong>Id:</strong> @loan.Number</div>
                         <div><strong>Monto Prestado:</strong> @loan.LoanedAmountTotal.ToString("N2") RD$</div>
                         <div><strong>Saldo Pendiente:</strong> @loan.OutstandingBalance.ToString("N2") RD$</div>
-                        <div><strong>Cuotas:</strong> @loan.installmentsTotalAmountPaid / @loan.installmentsTotalAmount</div>
+                        <div><strong>Total cuotas:</strong>@loan.installmentsTotalAmount</div>
+                        <div><strong>Cuotas pagadas:</strong> @loan.installmentsTotalAmountPaid / @loan.installmentsTotalAmount</div>
                         <div><strong>Tasa de Interés:</strong> @loan.InterestRate.ToString("N2")%</div>
                         <div><strong>Plazo:</strong> @loan.LoanTermInMonths meses</div>
                     </div>

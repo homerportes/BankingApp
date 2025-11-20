@@ -31,7 +31,7 @@ namespace BankingApp.Core.Domain.Entities
         public DescriptionTransaction Description { get; set; }
 
         ///quirat
-        public   string OperationId { get; set; } 
+        public   string OperationId { get; set; } = string.Empty;
 
         // Campo para identificar al cajero que realizó la transacción (si aplica)
         public string? TellerId { get; set; }
