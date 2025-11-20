@@ -579,7 +579,7 @@ namespace BankingApp.Core.Application.Services
                         DateTime = DateTime.Now,
                         Description = DescriptionTransaction.DISBURSEMENT,
                         Beneficiary = account.Number,
-                        Origin = "SYSTEM",
+                        Origin = loanEntity.PublicId.ToString(),
                         Id = Guid.NewGuid()
                     });
                 }
