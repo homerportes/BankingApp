@@ -578,7 +578,7 @@ namespace BankingApp.Core.Application.Services
                         Amount = request.LoanAmount,
                         DateTime = DateTime.Now,
                         Beneficiary = account.Number,
-                        Origin = "SYSTEM",
+                        Origin = loanEntity.PublicId.ToString(),
                         Id = Guid.NewGuid()
                     });
                 }

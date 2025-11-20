@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BankingApp.Core.Application.Dtos.Transaction.Transference;
 using BankingApp.Core.Application.Interfaces;
+using BankingApp.Core.Application.Services;
 using BankingApp.Core.Application.ViewModels.Transferences;
 using BankingApp.Core.Domain.Common.Enums;
 using BankingApp.Core.Domain.Entities;
@@ -16,14 +17,17 @@ namespace BankingApp.Areas.Client.Controllers
     public class TransferencesController : Controller
     {
         private readonly IUserAccountManagementService _userAccountManagement;
-        private readonly ITransacctionRepository transacctionRepository;
         private readonly IMapper _mapper;
+        private readonly ITranferencesService _tranferencesService;
 
-        public TransferencesController(IUserAccountManagementService userAccountManagement, IMapper mapper, ITransacctionRepository transacctionRepository)
+        public TransferencesController(IUserAccountManagementService userAccountManagement, IMapper mapper, ITranferencesService tranferencesService)
+
         {
             _userAccountManagement = userAccountManagement;
             _mapper = mapper;
-            this.transacctionRepository = transacctionRepository;
+            _tranferencesService = tranferencesService;
+
+
         }
 
 
@@ -71,21 +75,8 @@ namespace BankingApp.Areas.Client.Controllers
             {
                 ModelState.AddModelError(string.Empty, $"La cuenta {vm.AccountNumberFrom} no tiene fondos suficientes para realizar la transferencia");
                 var now = DateTime.Now;
-                var operationId = transacctionRepository.GenerateOperationId();
-                await transacctionRepository.AddAsync(new Transaction
-                {
-                    //registrar transferencia en caso de ser rechazada
-                    Id = Guid.NewGuid(),
-                    AccountNumber = vm.AccountNumberFrom!,
-                    Beneficiary = vm.AccountNumberTo!,
-                    Type = TransactionType.DEBIT,
-                    Origin = vm.AccountNumberFrom!,
-                    Amount = vm.Amount,
-                    Description = DescriptionTransaction.TRANSFER,
-                    Status = OperationStatus.DECLINED,
-                    OperationId = operationId,
-                    DateTime = now
-                });
+                var transaction = await _tranferencesService.CreateDeclinedTransactionAsync(vm.AccountNumberFrom!, vm.AccountNumberTo!, vm.Amount);
+
 
                 vm.HasError = true;
                 return View("Index", vm);

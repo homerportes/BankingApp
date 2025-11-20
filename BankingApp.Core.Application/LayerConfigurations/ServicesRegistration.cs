@@ -35,6 +35,7 @@ namespace BankingApp.Core.Application.LayerConfigurations
             services.AddScoped<ITellerService, TellerService>();
             services.AddScoped<IDashboardsStatsService, DashboardStatsService>();
 
+            services.AddScoped<ITranferencesService, TranferencesService>();
 
 
             services.AddScoped<ISavingAccountServiceForApi, SavingAccountServiceForApi>();
