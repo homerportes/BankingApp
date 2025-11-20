@@ -122,6 +122,10 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
         }
 
 
+        public void AddWithoutSave(Transaction transaction)
+        {
+            context.Set<Transaction>().Add(transaction);
+        }
 
     }
 }

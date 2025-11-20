@@ -450,7 +450,8 @@ namespace BankingApp.Core.Application.Services
                     TellerId = tellerId
                 };
 
-                await _transactionRepository.AddAsync(transaction);
+                _transactionRepository.AddWithoutSave(transaction);
+                
                 await _unitOfWork.CommitAsync();
 
                 // Enviar correo al cliente
