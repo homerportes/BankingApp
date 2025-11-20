@@ -246,10 +246,7 @@ namespace BankingApp.Infraestructure.Persistence.Migrations
 
                     b.Property<decimal>("InterestRate")
                         .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)")
-
-                        .HasPrecision(18, 4)
-                        .HasColumnType("decimal(18,4)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");

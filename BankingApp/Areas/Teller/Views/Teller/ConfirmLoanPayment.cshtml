@@ -15,13 +15,9 @@
                     </h4>
                 </div>
                 <div class="card-body">
-                    <div class="alert alert-warning" role="alert">
-                        <i class="bi bi-info-circle-fill"></i> 
-                        Por favor, revise los datos antes de confirmar la operación.
-                    </div>
-
+                   
                     <div class="mb-4">
-                        <h5 class="text-muted mb-3">Detalles de la Operación:</h5>
+                        <h5 class="text-muted mb-3">¿Está seguro de que desea procesar este préstamo? Esta acción no se puede deshacer</h5>
                         
                         <div class="row mb-3">
                             <div class="col-6 text-muted">
@@ -32,55 +28,7 @@
                             </div>
                         </div>
 
-                        <div class="row mb-3">
-                            <div class="col-6 text-muted">
-                                <i class="bi bi-hash"></i> Cuenta Origen:
-                            </div>
-                            <div class="col-6">
-                                <strong>@Model.AccountNumber</strong>
-                            </div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <div class="col-6 text-muted">
-                                <i class="bi bi-file-earmark-text"></i> Préstamo:
-                            </div>
-                            <div class="col-6">
-                                <strong>@Model.LoanNumber</strong>
-                            </div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <div class="col-6 text-muted">
-                                <i class="bi bi-exclamation-circle"></i> Saldo Pendiente:
-                            </div>
-                            <div class="col-6">
-                                <strong class="text-danger">RD$ @Model.RemainingBalance.ToString("N2")</strong>
-                            </div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <div class="col-6 text-muted">
-                                <i class="bi bi-currency-dollar"></i> Monto del Pago:
-                            </div>
-                            <div class="col-6">
-                                <strong class="text-success fs-4">RD$ @Model.Amount.ToString("N2")</strong>
-                            </div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <div class="col-6 text-muted">
-                                <i class="bi bi-calculator"></i> Saldo después del pago:
-                            </div>
-                            <div class="col-6">
-                                @{
-                                    var remainingAfterPayment = Model.RemainingBalance - Model.Amount;
-                                    if (remainingAfterPayment < 0) remainingAfterPayment = 0;
-                                }
-                                <strong>RD$ @remainingAfterPayment.ToString("N2")</strong>
-                            </div>
-                        </div>
-
+                    
                         @if (Model.Amount > Model.RemainingBalance)
                         {
                             <div class="alert alert-info small" role="alert">
@@ -88,14 +36,7 @@
                             </div>
                         }
 
-                        <div class="row">
-                            <div class="col-6 text-muted">
-                                <i class="bi bi-calendar-check"></i> Fecha:
-                            </div>
-                            <div class="col-6">
-                                <strong>@DateTime.Now.ToString("dd/MM/yyyy HH:mm")</strong>
-                            </div>
-                        </div>
+                        
                     </div>
 
                     <form asp-area="Teller" asp-controller="Teller" asp-action="ConfirmLoanPayment" method="post">

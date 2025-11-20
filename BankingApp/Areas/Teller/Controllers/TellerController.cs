@@ -142,7 +142,7 @@ namespace BankingApp.Areas.Teller.Controllers
             }
 
             var tellerId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
-            var validationResult = await _tellerService.ValidateAccountForWithdrawalAsync(model.AccountNumber);
+            var validationResult = await _tellerService.ValidateAccountForWithdrawalAsync(model.AccountNumber,model.Amount,tellerId);
 
             if (!validationResult.IsValid)
             {
@@ -241,7 +241,7 @@ namespace BankingApp.Areas.Teller.Controllers
             }
 
             var tellerId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
-            var validationResult = await _tellerService.ValidateCreditCardPaymentAsync(model.AccountNumber, model.CardNumber);
+            var validationResult = await _tellerService.ValidateCreditCardPaymentAsync(model.AccountNumber, model.CardNumber,model.Amount,tellerId);
 
             if (!validationResult.IsValid)
             {
@@ -346,6 +346,7 @@ namespace BankingApp.Areas.Teller.Controllers
             return View(new LoanPaymentViewModel());
         }
 
+
         [HttpPost]
         public async Task<IActionResult> LoanPayment(LoanPaymentViewModel model)
         {
@@ -355,7 +356,7 @@ namespace BankingApp.Areas.Teller.Controllers
             }
 
             var tellerId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
-            var validationResult = await _tellerService.ValidateLoanPaymentAsync(model.AccountNumber, model.LoanNumber);
+            var validationResult = await _tellerService.ValidateLoanPaymentAsync(model.AccountNumber, model.LoanNumber,model.Amount,tellerId);
 
             if (!validationResult.IsValid)
             {
@@ -364,12 +365,15 @@ namespace BankingApp.Areas.Teller.Controllers
             }
 
             model.RemainingBalance = validationResult.RemainingBalance;
-
+            model.LoanId = validationResult.IdLoan;
             TempData["LoanPaymentModel"] = System.Text.Json.JsonSerializer.Serialize(model);
             TempData["LoanHolderName"] = validationResult.LoanHolderName;
             TempData["TellerId"] = tellerId;
+       
             return RedirectToAction(nameof(ConfirmLoanPayment));
         }
+
+
 
         [HttpGet]
         public IActionResult ConfirmLoanPayment()
@@ -389,6 +393,8 @@ namespace BankingApp.Areas.Teller.Controllers
             
             return View(model);
         }
+
+
 
         [HttpPost]
         public async Task<IActionResult> ConfirmLoanPayment(bool confirm)

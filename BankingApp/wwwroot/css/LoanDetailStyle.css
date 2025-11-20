@@ -1,8 +1,8 @@
 ﻿/* Tarjeta resumen */
 .loan-summary-card {
-    background: linear-gradient(135deg, var(--color-azul-oscuro), var(--color-azul-medio), var(--color-azul-claro) );
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef, #dfe2e6);
     border-radius: var(--radius);
-    color: white;
+    color: #333;
     box-shadow: var(--shadow);
 }
 

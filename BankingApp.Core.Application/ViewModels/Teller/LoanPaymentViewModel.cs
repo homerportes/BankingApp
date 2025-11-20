@@ -6,7 +6,10 @@ namespace BankingApp.Core.Application.ViewModels.Teller
     /// ViewModel para realizar pagos a préstamos desde el cajero
     /// </summary>
     public class LoanPaymentViewModel
-    {
+    {    
+
+
+
         [Required(ErrorMessage = "El número de cuenta origen es requerido")]
         [Display(Name = "Número de cuenta origen")]
         [StringLength(9, MinimumLength = 9, ErrorMessage = "El número de cuenta debe tener 9 dígitos")]
@@ -23,6 +26,7 @@ namespace BankingApp.Core.Application.ViewModels.Teller
         public string LoanNumber { get; set; } = string.Empty;
 
         // Propiedades para la confirmación
+        public Guid LoanId { get; set; }
         public string LoanHolderName { get; set; } = string.Empty;
         public decimal RemainingBalance { get; set; }
         public bool ShowConfirmation { get; set; }
