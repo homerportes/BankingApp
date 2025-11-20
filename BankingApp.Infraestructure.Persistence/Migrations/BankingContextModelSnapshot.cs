@@ -337,9 +337,6 @@ namespace BankingApp.Infraestructure.Persistence.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("int");
 
-                    b.Property<string>("OperationId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Origin")
                         .IsRequired()
