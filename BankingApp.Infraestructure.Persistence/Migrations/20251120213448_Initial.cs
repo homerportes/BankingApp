@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace BankingApp.Infraestructure.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialMigration : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -120,7 +120,6 @@ namespace BankingApp.Infraestructure.Persistence.Migrations
                     Beneficiary = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
                     Description = table.Column<int>(type: "int", maxLength: 100, nullable: false),
-                    OperationId = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     TellerId = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
