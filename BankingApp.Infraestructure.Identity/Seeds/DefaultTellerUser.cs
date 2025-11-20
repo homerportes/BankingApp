@@ -20,7 +20,7 @@ namespace BankingApp.Infraestructure.Identity.Seeds
             //Agregando un usuario de tipo Teller 
             await userManager.CreateAsync(new AppUser
             {
-                DocumentIdNumber = "",
+                DocumentIdNumber = "10234567856",
                 LastName = "",
                 Name = "DIKEY",
                 UserName = "TellerUser02",

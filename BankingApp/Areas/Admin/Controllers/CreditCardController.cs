@@ -250,15 +250,57 @@ namespace BankingApp.Areas.Admin.Controllers
                     return View(viewModel);
                 }
 
-                await _creditCardService.CreateAsync(viewModel.ClientId, viewModel.CreditLimit, adminId);
+                var createdCard = await _creditCardService.CreateAsync(viewModel.ClientId, viewModel.CreditLimit, adminId);
 
+                // Guardar el CVC sin hashear en TempData para mostrarlo una sola vez
+                TempData["CardCVC"] = createdCard.CVC;
+                TempData["CardNumber"] = createdCard.Number;
+                TempData["CardClientName"] = createdCard.ClientName;
+                TempData["CardExpirationDate"] = createdCard.ExpirationDate; // Se guarda como string en el DTO
+                TempData["CardCreditLimit"] = createdCard.CreditLimitAmount.ToString("N2");
+                
                 TempData["Success"] = "Tarjeta de crédito creada exitosamente";
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("CardCreated", new { id = createdCard.Id });
             }
             catch (Exception ex)
             {
                 ModelState.AddModelError("", "Error al crear la tarjeta: " + ex.Message);
                 return View(viewModel);
+            }
+        }
+
+        // GET: Admin/CreditCard/CardCreated/5
+        public async Task<IActionResult> CardCreated(int id)
+        {
+            try
+            {
+                // Verificar que tengamos los datos en TempData (solo disponibles una vez)
+                if (TempData["CardCVC"] == null)
+                {
+                    TempData["Warning"] = "Esta información ya no está disponible. Los detalles completos solo se muestran una vez al crear la tarjeta.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                var card = await _creditCardService.GetByIdAsync(id);
+                if (card == null)
+                {
+                    TempData["Error"] = "La tarjeta especificada no existe";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                var viewModel = _mapper.Map<CreditCardViewModel>(card);
+                
+                // Sobrescribir con los datos de TempData que incluyen el CVC sin hashear
+                viewModel.CVC = TempData["CardCVC"]?.ToString();
+                viewModel.CardNumber = TempData["CardNumber"]?.ToString() ?? viewModel.CardNumber;
+                viewModel.ClientName = TempData["CardClientName"]?.ToString() ?? viewModel.ClientName;
+                
+                return View(viewModel);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Error al cargar los detalles: " + ex.Message;
+                return RedirectToAction(nameof(Index));
             }
         }
 
