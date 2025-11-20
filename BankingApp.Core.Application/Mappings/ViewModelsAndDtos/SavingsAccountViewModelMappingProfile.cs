@@ -18,6 +18,7 @@ namespace BankingApp.Core.Application.Mappings.ViewModelsAndDtos
             CreateMap<SaveSavingsAccountViewModel, AccountDto>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.Number, opt => opt.Ignore()) // Se generará
+                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.ClientId))
                 .ForMember(dest => dest.Balance, opt => opt.MapFrom(src => src.InitialBalance))
                 .ForMember(dest => dest.Type, opt => opt.MapFrom(src => AccountType.SECONDARY))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => AccountStatus.ACTIVE))
