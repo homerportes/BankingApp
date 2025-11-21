@@ -114,7 +114,7 @@ namespace BankingApp.Core.Application.Services
                                 .Where(c => c.Number == requestDto.CardNumber)
                                 .Select(c => c.ClientId)
                                 .FirstOrDefaultAsync();
-                var user = await _userService.GetUserById(clientId);
+                var user = await _userService.GetUserById(clientId!);
                 if (user == null)
                     throw new Exception("Usuario del cliente no encontrado");
 

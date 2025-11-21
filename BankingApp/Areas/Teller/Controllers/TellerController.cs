@@ -458,7 +458,7 @@ namespace BankingApp.Areas.Teller.Controllers
             }
 
             var tellerId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
-            var validationResult = await _tellerService.ValidateThirdPartyTransactionAsync(model.SourceAccountNumber, model.DestinationAccountNumber);
+            var validationResult = await _tellerService.ValidateThirdPartyTransactionAsync(model.SourceAccountNumber, model.DestinationAccountNumber,model.Amount);
 
             if (!validationResult.IsValid)
             {

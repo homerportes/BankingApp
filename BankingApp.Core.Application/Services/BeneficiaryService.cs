@@ -44,6 +44,7 @@ namespace BankingApp.Core.Application.Services
             {
               
                 var beneficiaries = await  repo.GetBeneficiariesByIdCliente(idUser);
+                 
 
                 var listBeneficiaries = new List<DataBeneficiaryDto>();
                 foreach (var item in beneficiaries)
@@ -51,7 +52,7 @@ namespace BankingApp.Core.Application.Services
 
                    var beneficiary = await  serviceForWebApi.GetUserById(item.BeneficiaryId);
                    var account = await serviceBank.GetAccountByClientId(item.BeneficiaryId);
-
+                  
                     if (account == null || beneficiary == null)
                         continue;
 

@@ -43,6 +43,7 @@ namespace BankingApp.Areas.Client.Controllers
 
             var user = await userManager.GetUserAsync(User);
             var beneficiaries = await service.GetBeneficiaryList(user!.Id);
+       
 
             var entities = mapper.Map<List<DataBeneficiaryViewModel>>(beneficiaries);
             var data = new DataBeneficiaryListViewModel() {ListBeneficiary = entities};

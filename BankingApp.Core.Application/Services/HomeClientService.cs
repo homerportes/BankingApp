@@ -70,6 +70,7 @@ namespace BankingApp.Core.Application.Services
                 var _entities = ListAccount
                  .OrderBy(s => s.Type != AccountType.PRIMARY)
                  .ThenByDescending(s => s.Balance)
+                 .Where(s => s.Status == AccountStatus.ACTIVE)
                  .ToList();
 
 
