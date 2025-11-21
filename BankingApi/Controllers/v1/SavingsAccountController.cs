@@ -1,8 +1,10 @@
 using BankingApp.Core.Application.Dtos.Account;
 using BankingApp.Core.Application.Interfaces;
 using BankingApp.Core.Domain.Common.Enums;
+using BankingApp.Infraestructure.Persistence.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System.Security.Claims;
 
@@ -14,13 +16,16 @@ namespace BankingApi.Controllers.v1
     {
         private readonly ISavingAccountServiceForApi _savingsAccountService;
         private readonly IUserService _userService;
+        private readonly ITransacctionRepository _transactionRepository;
 
         public SavingsAccountController(
             ISavingAccountServiceForApi savingsAccountService,
+            ITransacctionRepository transacctionRepository,
             IUserService userService)
         {
             _savingsAccountService = savingsAccountService;
             _userService = userService;
+            _transactionRepository = transacctionRepository;
         }
 
         [HttpGet(Name = "ObtenerCuentasDeAhorro")]
@@ -277,11 +282,25 @@ namespace BankingApi.Controllers.v1
                     return NotFound("La cuenta especificada no existe");
                 }
 
-                // TODO: Implementar obtención de transacciones cuando esté disponible el servicio
-                // Por ahora retornamos una lista vacía
+                // Obtener transacciones de la cuenta
+                var transactions = await _transactionRepository.GetAllQuery()
+                    .Where(t => t.AccountNumber == accountNumber)
+                    .OrderByDescending(t => t.DateTime)
+                    .ToListAsync();
+
                 var response = new
                 {
-                    transacciones = new List<object>()
+                    transacciones = transactions.Select(t => new
+                    {
+                        id = t.Id,
+                        monto = t.Amount,
+                        tipo = t.Type.ToString(),
+                        descripcion = t.Description.ToString(),
+                        estado = t.Status.ToString(),
+                        fecha = t.DateTime.ToString("yyyy-MM-dd HH:mm:ss"),
+                        origen = t.Origin,
+                        beneficiario = t.Beneficiary
+                    }).ToList()
                 };
 
                 return Ok(JsonConvert.SerializeObject(response));

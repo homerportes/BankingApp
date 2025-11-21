@@ -48,7 +48,7 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
             if (entry != null)
             {
                 entry.Balance += amount;
-                _context.Set<Account>().Update(entry);
+                // No se llama a Update() porque EF ya rastrea los cambios automáticamente
             }
 
             return entry;
@@ -63,7 +63,7 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
             if (entry != null)
             {
                 entry.Balance -= amount;
-                _context.Set<Account>().Update(entry);
+                // No se llama a Update() porque EF ya rastrea los cambios automáticamente
             }
 
             return entry;

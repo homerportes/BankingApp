@@ -153,7 +153,6 @@ namespace BankingApp.Core.Application.Services
                 AccountId = account.Id,
                 Status = OperationStatus.APPROVED,
                 Description = DescriptionTransaction.DEPOSIT,
-                OperationId = operationId1,
                 TellerId = null
             };
 
@@ -183,7 +182,6 @@ namespace BankingApp.Core.Application.Services
                         await _accountRepository.UpdateAsync(primaryAccount.Id, primaryAccountEntity);
 
 
-                        var operationId1 = transacctionRepository.GenerateOperationId();
                         var transaction = new Transaction
                         {
                             Amount = account.Balance,
@@ -195,7 +193,6 @@ namespace BankingApp.Core.Application.Services
                             AccountId = account.Id,
                             Status = OperationStatus.APPROVED,
                             Description = DescriptionTransaction.TRANSFER,
-                            OperationId = operationId1,
                             TellerId = null
                         };
 

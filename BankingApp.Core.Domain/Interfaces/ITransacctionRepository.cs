@@ -17,6 +17,7 @@ namespace BankingApp.Infraestructure.Persistence.Repositories
 
         Task<List<Transaction>> GetListTransactionByNumberCreditCard(string number);
 
+        void AddWithoutSave(Transaction transaction);
 
         string GenerateOperationId();
 

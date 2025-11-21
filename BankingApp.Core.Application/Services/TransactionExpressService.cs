@@ -79,7 +79,6 @@ namespace BankingApp.Core.Application.Services
                 if (entity is not null)
                 {
                     entity.TellerId = null;
-                    entity.OperationId = operationId;
                     var transac = await transacctionRepository.AddAsync(entity);
                     var dto = _mapper.Map<CreateTransactionDto>(transac);
                     await unitOfWork.CommitAsync();

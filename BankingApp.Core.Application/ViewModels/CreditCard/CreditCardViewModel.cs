@@ -14,6 +14,7 @@ namespace BankingApp.Core.Application.ViewModels.CreditCard
         public decimal AvailableCredit => CreditLimit - CurrentDebt;
         public CardStatus CardStatus { get; set; }
         public string? AdminId { get; set; }
+        public string? CVC { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime? ModifiedDate { get; set; }
     }

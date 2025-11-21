@@ -573,13 +573,12 @@ namespace BankingApp.Core.Application.Services
                         AccountId = account.Id,
                         AccountNumber = account.Number,
                         Type = TransactionType.CREDIT,
-                        OperationId = _transacctionRepository.GenerateOperationId(),
                         Status = OperationStatus.APPROVED,
                         Amount = request.LoanAmount,
                         DateTime = DateTime.Now,
                         Description = DescriptionTransaction.DISBURSEMENT,
                         Beneficiary = account.Number,
-                        Origin = "SYSTEM",
+                        Origin = loanEntity.PublicId.ToString(),
                         Id = Guid.NewGuid()
                     });
                 }

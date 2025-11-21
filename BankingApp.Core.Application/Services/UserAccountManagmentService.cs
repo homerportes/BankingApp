@@ -64,7 +64,7 @@ namespace BankingApp.Core.Application.Services
                 AdminId = AdminId
             };  await _SavingAccountService.AddAsync(accountDto);
 
-                var operationId = transacctionRepository.GenerateOperationId();
+     
                 await transacctionRepository.AddAsync(new Transaction
                 {
                     Id = Guid.NewGuid(),
@@ -75,8 +75,8 @@ namespace BankingApp.Core.Application.Services
                     Description = DescriptionTransaction.DEPOSIT,
                     Amount = accountDto.Balance,
                     Status = OperationStatus.APPROVED,
-                    DateTime = DateTime.Now,
-                    OperationId = operationId
+                    DateTime = DateTime.Now
+                 
                 });
 
                 response = _mapper.Map<RegisterUserWithAccountResponseDto>(user);
@@ -150,7 +150,7 @@ namespace BankingApp.Core.Application.Services
                     account.Balance += request.AdditionalBalance.Value;
                     await _SavingAccountService.UpdateAsync(account.Id, account);
 
-                    var operationId = transacctionRepository.GenerateOperationId();
+                 
                     await transacctionRepository.AddAsync(new Transaction
                     {
                         Id = Guid.NewGuid(),
@@ -161,8 +161,8 @@ namespace BankingApp.Core.Application.Services
                         Description = DescriptionTransaction.DEPOSIT,
                         Amount = request.AdditionalBalance.Value,
                         Status = OperationStatus.APPROVED,
-                        DateTime = DateTime.Now,
-                        OperationId = operationId
+                        DateTime = DateTime.Now
+                      
                     });
                 }
 

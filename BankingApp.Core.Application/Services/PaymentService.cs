@@ -114,11 +114,10 @@ namespace BankingApp.Core.Application.Services
                                 .Where(c => c.Number == requestDto.CardNumber)
                                 .Select(c => c.ClientId)
                                 .FirstOrDefaultAsync();
-                var user = await _userService.GetUserById(clientId);
+                var user = await _userService.GetUserById(clientId!);
                 if (user == null)
                     throw new Exception("Usuario del cliente no encontrado");
 
-                // Acreditar monto
                 commerceAccount.Balance += requestDto.TransactionAmount;
                 await _accountRepository.UpdateAsync(commerceAccount.Id, commerceAccount);
 
@@ -129,12 +128,13 @@ namespace BankingApp.Core.Application.Services
                     Status= OperationStatus.APPROVED,
                     Origin=creditCard.Number,
                     Amount= requestDto.TransactionAmount,
-                    Type= TransactionType.CREDIT
+                    Type= TransactionType.CREDIT,
+                  
                     
                 };
+               
 
                 await _transactionRepository.AddAsync(transaction);
-                // Registrar consumo
                 var purchase = new Purchase
                 {
                     MerchantName = commerce.Name,

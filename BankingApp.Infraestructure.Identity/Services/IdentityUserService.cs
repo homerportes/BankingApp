@@ -92,6 +92,35 @@ namespace BankingApp.Infraestructure.Identity.Services
             return userDto;
         }
 
+        public async Task<UserDto?> GetUserByName(string name)
+        {
+            var user = await _userManager.FindByNameAsync(name);
+
+            if (user == null)
+            {
+                return null;
+            }
+
+            var rolesList = await _userManager.GetRolesAsync(user);
+            var role = EnumMapper<AppRoles>.FromString(rolesList.First());
+
+            var userDto = new UserDto()
+            {
+                Id = user.Id,
+                Email = user.Email ?? "",
+                LastName = user.LastName,
+                Name = user.Name,
+                UserName = user.UserName ?? "",
+                DocumentIdNumber = user.DocumentIdNumber,
+                IsVerified = user.EmailConfirmed,
+                Status = user.IsActive ? "Activo" : "Inactivo",
+                IsActive = user.IsActive,
+                Role = EnumMapper<AppRoles>.ToString(role)
+            };
+
+            return userDto;
+        }
+
         public async Task<UserDto?> GetById(string Id)
         {
             var user = await _userManager.Users.Where(r => r.Id == Id).FirstOrDefaultAsync();
@@ -240,6 +269,8 @@ namespace BankingApp.Infraestructure.Identity.Services
                     Role = displayRole,
                     DocumentIdNumber = u.DocumentIdNumber,
                     UserName = u.UserName ?? "",
+                    IsActive=u.IsActive,
+                    IsVerified=u.EmailConfirmed,
                     Status = u.IsActive ? "activo" : "inactivo"
                 };
             }).ToList();
@@ -452,6 +483,7 @@ namespace BankingApp.Infraestructure.Identity.Services
 
             return users;
         }
+
 
 
 

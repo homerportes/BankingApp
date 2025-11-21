@@ -26,6 +26,7 @@ namespace BankingApp.Core.Application.Mappings.ViewModelsAndDtos
                 .ForMember(dest => dest.CurrentDebt, opt => opt.MapFrom(src => src.TotalAmountOwed))
                 .ForMember(dest => dest.CardStatus, opt => opt.MapFrom(src => src.Status))
                 .ForMember(dest => dest.ClientName, opt => opt.MapFrom(src => src.ClientName))
+                .ForMember(dest => dest.CVC, opt => opt.MapFrom(src => src.CVC))
                 .ForMember(dest => dest.ExpirationDate, opt => opt.MapFrom(src =>
                     !string.IsNullOrEmpty(src.ExpirationDate)
                         ? DateTime.ParseExact(src.ExpirationDate, "MM/yy", System.Globalization.CultureInfo.InvariantCulture)
