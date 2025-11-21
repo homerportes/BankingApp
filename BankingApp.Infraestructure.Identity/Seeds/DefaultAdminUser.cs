@@ -12,8 +12,8 @@ namespace BankingApp.Infraestructure.Identity.Seeds
             await userManager.CreateAsync(new AppUser
             {
                 DocumentIdNumber = "10234567356",
-                LastName = "",
-                Name = "",
+                LastName = "ADMIN",
+                Name = "ADMIN",
                 UserName = "superAdmin",
                 Email = "no.repply.bankingappp@gmail.com",
                 EmailConfirmed = true,
@@ -27,45 +27,6 @@ namespace BankingApp.Infraestructure.Identity.Seeds
             await userManager.AddToRoleAsync(user!, AppRoles.ADMIN.ToString());
 
 
-
-
-
-
-
-            await userManager.CreateAsync(new AppUser
-            {
-                DocumentIdNumber = "",
-                LastName = "",
-                Name = "BeeThree",
-                UserName = "Client02",
-                Email = "Client.bankingapp@gmail.com",
-                EmailConfirmed = true,
-                IsActive = true
-
-            });
-
-            var _user = await userManager.FindByNameAsync("Client02");
-            await userManager.AddPasswordAsync(_user!, "Cli$Pas1");
-            await userManager.AddToRoleAsync(_user!, AppRoles.CLIENT.ToString());
-
-
-         
-            await userManager.CreateAsync(new AppUser
-            {
-                DocumentIdNumber = "",
-                LastName = "",
-                Name = "DIKEY",
-                UserName = "TellerUser02",
-                Email = "Teller02.bankingapp@gmail.com",
-                EmailConfirmed = true,
-                IsActive = true
-
-            });
-
-
-            var Teller = await userManager.FindByNameAsync("TellerUser02");
-            await userManager.AddPasswordAsync(Teller!, "Tel$Pas2");
-            await userManager.AddToRoleAsync(Teller!, AppRoles.TELLER.ToString());
 
         }
     }

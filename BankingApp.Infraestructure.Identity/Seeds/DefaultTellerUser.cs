@@ -21,18 +21,18 @@ namespace BankingApp.Infraestructure.Identity.Seeds
             await userManager.CreateAsync(new AppUser
             {
                 DocumentIdNumber = "10234567856",
-                LastName = "",
-                Name = "DIKEY",
-                UserName = "TellerUser02",
-                Email = "Teller02.bankingapp@gmail.com",
+                LastName = "TELLER",
+                Name = "TELLER",
+                UserName = "TellerUser01",
+                Email = "Teller01.bankingapp@gmail.com",
                 EmailConfirmed = true,
                 IsActive = true
 
             });
 
 
-            var Teller = await userManager.FindByNameAsync("TellerUser02");
-            await userManager.AddPasswordAsync(Teller!, "Tel$Pas2");
+            var Teller = await userManager.FindByNameAsync("TellerUser01");
+            await userManager.AddPasswordAsync(Teller!, "Tel$Pas1");
             await userManager.AddToRoleAsync(Teller!, AppRoles.TELLER.ToString());
 
         }
